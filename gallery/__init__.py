@@ -9,6 +9,8 @@ from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 
 import requests
 
+import zipfile
+
 app = Flask(__name__)
 
 if os.path.exists(os.path.join(os.getcwd(), "config.py")):
@@ -27,6 +29,21 @@ auth = OIDCAuthentication(app,
 @auth.oidc_auth
 def index():
     return "Hello " + str(session['userinfo'].get('name', ''))
+
+@app.route("/preload")
+@auth.oidc_auth
+def preload_images():
+    if not os.path.exists("images"):
+        os.makedirs("images")
+
+    r = requests.get("https://csh.rit.edu/~loothelion/test.zip")
+    with open("test.zip", "wb") as archive:
+        archive.write(r.content)
+
+    with zipfile.ZipFile("test.zip", "r") as zip_file:
+        zip_file.extractall("images/")
+
+    return redirect(url_for("index"), 302)
 
 @app.route("/logout")
 @auth.oidc_logout
