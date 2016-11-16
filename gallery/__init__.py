@@ -70,7 +70,7 @@ def check_for_dir_db_entry(dictionary, path, parent_dir):
         dir_model = Directory.query.filter(Directory.parent == parent_dir.id and \
                                            Directory.name == path.split('/')[-1]).first()
     else:
-        dir_model = Directory.query.filter(Directory.parent == None and \
+        dir_model = Directory.query.filter(Directory.parent is None and \
                                            Directory.name == path.split('/')[-1]).first()
 
     if dir_model is None:
