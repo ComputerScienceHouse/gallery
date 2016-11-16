@@ -1,3 +1,6 @@
 flask
 flask-pyoidc
 csh_ldap
+addict
+flask_sqlalchemy
+flask_migrate
