@@ -4,3 +4,4 @@ csh_ldap
 addict
 flask_sqlalchemy
 flask_migrate
+psycopg2

@@ -2,13 +2,17 @@ import os
 
 from addict import Dict
 
+from alembic import command
+
 from flask import Flask
+from flask import current_app
 from flask import redirect
 from flask import url_for
 from flask import session
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
+
+import flask_migrate
 
 import requests
 
@@ -18,10 +22,14 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_NOTIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+migrate = flask_migrate.Migrate(app, db)
 
-from .models import Directory
-from .models import File
+with app.app_context():
+    config = current_app.extensions['migrate'].migrate.get_config("migrations")
+    command.upgrade(config, 'head')
+
+from gallery.models import Directory
+from gallery.models import File
 
 
 if os.path.exists(os.path.join(os.getcwd(), "config.py")):

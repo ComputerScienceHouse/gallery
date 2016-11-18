@@ -21,3 +21,7 @@ OIDC_CLIENT_CONFIG = {
     'post_logout_redirect_uris': [os.environ.get('GALLERY_OIDC_LOGOUT_REDIRECT_URI',
                                                  'https://gallery-py.csh.rit.edu/logout')]
 }
+SQLALCHEMY_DATABASE_URI = os.environ.get(
+    'GALLERY_DATABASE_URI',
+    'sqlite:///{}'.format(os.path.join(os.getcwd(), 'data.db')))
+SQLALCHEMY_TRACK_MODIFICATIONS = False
