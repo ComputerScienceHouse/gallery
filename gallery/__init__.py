@@ -1,4 +1,7 @@
+import json
 import os
+from pprint import pprint
+from sys import stderr
 
 from addict import Dict
 
@@ -9,10 +12,13 @@ from flask import current_app
 from flask import redirect
 from flask import url_for
 from flask import session
+from flask import send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 
 import flask_migrate
+import filetype
+import piexif
 
 import requests
 
@@ -23,10 +29,6 @@ app.config['SQLALCHEMY_TRACK_NOTIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 migrate = flask_migrate.Migrate(app, db)
-
-with app.app_context():
-    config = current_app.extensions['migrate'].migrate.get_config("migrations")
-    command.upgrade(config, 'head')
 
 from gallery.models import Directory
 from gallery.models import File
@@ -68,25 +70,37 @@ def preload_images():
 @auth.oidc_auth
 def refresh_db():
     files = get_dir_tree_dict()
+    pprint(files, stream=stderr)
     check_for_dir_db_entry(files, '', None)
+    return redirect(url_for("index"), 302)
 
 def check_for_dir_db_entry(dictionary, path, parent_dir):
     # check db for this path with parents shiggg
-    print("Directory Path: " + path)
-
+    dir_name = path.split('/')[-1]
+    if dir_name == "":
+        dir_name = "root"
+    dir_model = None
     if parent_dir:
-        dir_model = Directory.query.filter(Directory.parent == parent_dir.id and \
-                                           Directory.name == path.split('/')[-1]).first()
+        dir_model = Directory.query.filter(Directory.name == dir_name) \
+                                   .filter(Directory.parent == parent_dir.id).first()
     else:
-        dir_model = Directory.query.filter(Directory.parent is None and \
-                                           Directory.name == path.split('/')[-1]).first()
+        dir_model = Directory.query.filter(Directory.parent is None).first()
 
     if dir_model is None:
         # fuck go back this directory doesn't exist as a model
         # we gotta add this shit
-        print("help me: no dir for: " + path)
+        UUID_THUMBNAIL = "test123"
+        if parent_dir:
+            dir_model = Directory(parent_dir.id, dir_name, "", "root",
+                                  UUID_THUMBNAIL, "{\"g\":[]}")
+        else:
+            dir_model = Directory(None, dir_name, "", "root",
+                                  UUID_THUMBNAIL, "{\"g\":[]}")
+        db.session.add(dir_model)
+        db.session.flush()
+        db.session.commit()
+        db.session.refresh(dir_model)
 
-    print(dir_model.__dict__)
     # get directory class as dir_model
     for dir_p in dictionary:
         # Don't traverse local files
@@ -99,16 +113,45 @@ def check_for_dir_db_entry(dictionary, path, parent_dir):
 
     for file_p in dictionary['.']:
         # check db for this file path
-        print("File path: " + file_p)
-        file_model = File.query.filter(File.parent == dir_model.id and \
-                                       File.name == file_p).first()
+        file_model = File.query.filter(File.parent == dir_model.id) \
+                               .filter(File.name == file_p).first()
         if file_model is None:
-            print("help me: do file for: " + path + file_p)
+            is_image = filetype.image(os.path.join("images", path, file_p)) is not None
+            is_video = filetype.video(os.path.join("images", path, file_p)) is not None
 
-        print(file_model.__dict__)
+            exif_dict = {'Exif':{}}
+            file_type = "Text"
+            if is_image:
+                file_type = "Photo"
+                if filetype.guess(os.path.join("images",
+                                               path,
+                                               file_p)).mime == "text/jpeg":
+                    exif_dict = piexif.load(os.path.join("images", path, file_p))
+            elif is_video:
+                file_type = "Video"
+            exif = json.dumps(convert_bytes_to_utf8(exif_dict['Exif']))
+            file_model = File(dir_model.id, file_p, "",
+                              "root", UUID_THUMBNAIL, file_type, exif)
+            db.session.add(file_model)
+            db.session.flush()
+            db.session.commit()
+            db.session.refresh(file_model)
+
+
+def convert_bytes_to_utf8(dic):
+    for key in dic:
+        if isinstance(key, bytes):
+            k = key.decode('utf-8')
+            v = dic[key]
+            del dic[key]
+            dic[k] = v
+        if isinstance(dic[key], bytes):
+            v = dic[key].decode('utf-8')
+            dic[key] = v
+    return dic
 
 def get_dir_tree_dict():
-    path = os.path.normpath("images")
+    path = os.path.normpath("images/root")
     file_tree = Dict()
     for root, dirs, files in os.walk(path, topdown=True):
         path = root.split('/')
@@ -120,6 +163,25 @@ def get_dir_tree_dict():
 
     return file_tree
 
+@app.route("/api/image/get/<image_id>")
+@auth.oidc_auth
+def display_image(image_id):
+    path_stack = []
+    file_model = File.query.filter(File.id == image_id).first()
+    path_stack.append(file_model.name)
+    dir_model = Directory.query.filter(Directory.id == file_model.parent).first()
+    path_stack.append(dir_model.name)
+    while dir_model.parent != None:
+        dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
+        path_stack.append(dir_model.name)
+
+    path = ""
+    while not len(path_stack) == 0:
+        path = os.path.join(path, path_stack.pop())
+
+    print(path, file=stderr)
+
+    return send_from_directory('../images', path)
 
 @app.route("/logout")
 @auth.oidc_logout

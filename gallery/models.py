@@ -47,7 +47,7 @@ class File(db.Model):
     exif_data = Column(Text, nullable = False)
 
     def __init__(self, parent, name, caption,
-                 date_uploaded, author, thumbnail_uuid,
+                 author, thumbnail_uuid,
                  filetype, exif_data):
         self.parent = parent
         self.name = name
