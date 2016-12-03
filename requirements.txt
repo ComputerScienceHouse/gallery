@@ -7,3 +7,4 @@ flask_migrate
 psycopg2
 filetype
 piexif
+wand
