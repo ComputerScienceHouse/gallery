@@ -10,6 +10,7 @@ from flask import current_app
 from flask import jsonify
 from flask import redirect
 from flask import url_for
+from flask import render_template
 from flask import session
 from flask import send_from_directory
 from flask_sqlalchemy import SQLAlchemy
@@ -190,14 +191,30 @@ def display_thumbnail(image_id):
     file_model = File.query.filter(File.id == image_id).first()
 
     if file_model is None:
-        return send_from_directory('thumbnails', 'reedphoto.jpg')
+        return send_from_directory('../thumbnails', 'reedphoto.jpg')
 
-    return send_from_directory('thumbnails', file_model.thumbnail_uuid)
+    return send_from_directory('../thumbnails', file_model.thumbnail_uuid)
 
 @app.route("/api/directory/get/<dir_id>")
 @auth.oidc_auth
-def display_files(dir_id):
-    return jsonify([f.id for f in File.query.filter(File.parent == dir_id).all()])
+def display_files(dir_id, internal=False):
+    file_list = [f.id for f in File.query.filter(File.parent == dir_id).all()]
+    dir_list = [d.id for d in Directory.query.filter(Directory.parent == dir_id).all()]
+    ret_dict = {'directories': dir_list, 'files': file_list}
+    if internal:
+        return ret_dict
+    return jsonify(ret_dict)
+
+@app.route("/view/dir/<dir_id>")
+@auth.oidc_auth
+def render_dir(dir_id):
+    children = display_files(dir_id, internal=True)
+    return render_template("view_dir.html", children=children)
+
+@app.route("/view/file/<file_id>")
+@auth.oidc_auth
+def render_file(file_id):
+    return render_template("view_file.html", file_id=file_id)
 
 @app.route("/logout")
 @auth.oidc_logout

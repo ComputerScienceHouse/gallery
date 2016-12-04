@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+    <head>
+    </head>
+    <body>
+        <h1>View Directory</h1>
+        {% set directories = children['directories'] %}
+        {% set files = children['files'] %}
+        <h2>Subdirectories:</h2>
+        {% for directory in directories %}
+            <a href="/view/dir/{{ directory }}">{{ directory }}</a>
+        {% endfor %}
+
+        <h2>Files:</h2>
+        {% for file in files %}
+            <a href="/view/file/{{ file }}"><img src="/api/thumbnail/get/{{ file }}"></a>
+        {% endfor %}
+    </body>
+</html>
