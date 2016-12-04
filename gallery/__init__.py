@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 from sys import stderr
@@ -19,7 +20,7 @@ import filetype
 import piexif
 
 import requests
-
+from wand.image import Image
 import zipfile
 
 from gallery.util import get_dir_tree_dict
@@ -75,7 +76,8 @@ def refresh_db():
     return redirect(url_for("index"), 302)
 
 def check_for_dir_db_entry(dictionary, path, parent_dir):
-    UUID_THUMBNAIL = "test123"
+    UUID_THUMBNAIL = "reedphoto.jpg"
+
     # check db for this path with parents shiggg
     dir_name = path.split('/')[-1]
     if dir_name == "":
@@ -119,26 +121,46 @@ def check_for_dir_db_entry(dictionary, path, parent_dir):
             add_file(file_p, path, dir_model.id, "", "root")
 
 def add_file(file_name, path, dir_id, description, owner):
+    UUID_THUMBNAIL = "reedphoto.jpg"
+
     is_image = filetype.image(os.path.join("images", path, file_name)) is not None
     is_video = filetype.video(os.path.join("images", path, file_name)) is not None
+
+    file_path = os.path.join("images", path, file_name)
+
+    def hash_file(fname):
+        m = hashlib.md5()
+        with open(fname, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                m.update(chunk)
+        return m.hexdigest()
 
     exif_dict = {'Exif':{}}
     file_type = "Text"
     if is_image:
+        UUID_THUMBNAIL = hash_file(file_path) + ".jpg"
         file_type = "Photo"
-        if filetype.guess(os.path.join("images",
-                                       path,
-                                       file_name)).mime == "text/jpeg":
+
+        if filetype.guess(file_path).mime == "text/jpeg":
             exif_dict = piexif.load(os.path.join("images", path, file_name))
+
+        # add thumbnail
+        with Image(filename=file_path) as img:
+            with img.clone() as image:
+                image.resize(128, 128)
+                image.format = 'jpeg'
+                image.save(filename=os.path.join("thumbnails", UUID_THUMBNAIL))
     elif is_video:
         file_type = "Video"
     exif = json.dumps(convert_bytes_to_utf8(exif_dict['Exif']))
+
     file_model = File(dir_id, file_name, description,
                       owner, UUID_THUMBNAIL, file_type, exif)
     db.session.add(file_model)
     db.session.flush()
     db.session.commit()
     db.session.refresh(file_model)
+
 
 @app.route("/api/image/get/<image_id>")
 @auth.oidc_auth
@@ -161,6 +183,16 @@ def display_image(image_id):
         path = os.path.join(path, path_stack.pop())
 
     return send_from_directory('../images', path)
+
+@app.route("/api/thumbnail/get/<image_id>")
+@auth.oidc_auth
+def display_thumbnail(image_id):
+    file_model = File.query.filter(File.id == image_id).first()
+
+    if file_model is None:
+        return send_from_directory('thumbnails', 'reedphoto.jpg')
+
+    return send_from_directory('thumbnails', file_model.thumbnail_uuid)
 
 @app.route("/api/directory/get/<dir_id>")
 @auth.oidc_auth
