@@ -4,6 +4,9 @@
         <title>View file</title>
     </head>
     <body>
+        {% if display_parent %}
+            <a href="/view/dir/{{parent_id}}">Parent directory</a>
+        {% endif %}
         <h1>View file {{ file_id }}:</h1>
         <img src="/api/image/get/{{file_id}}">
     </body>

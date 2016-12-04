@@ -209,12 +209,26 @@ def display_files(dir_id, internal=False):
 @auth.oidc_auth
 def render_dir(dir_id):
     children = display_files(dir_id, internal=True)
-    return render_template("view_dir.html", children=children)
+    dir_model = Directory.query.filter(Directory.id == dir_id).first()
+    display_parent = True
+    if dir_model is None or dir_model.parent is None:
+        display_parent = False
+    return render_template("view_dir.html",
+                           children=children,
+                           parent_id=dir_model.parent,
+                           display_parent=display_parent)
 
 @app.route("/view/file/<file_id>")
 @auth.oidc_auth
 def render_file(file_id):
-    return render_template("view_file.html", file_id=file_id)
+    file_model =  File.query.filter(File.id == file_id).first()
+    display_parent = True
+    if file_model is None or file_model.parent is None:
+        display_parent = False
+    return render_template("view_file.html",
+                           file_id=file_id,
+                           parent_id=file_model.parent,
+                           display_parent=display_parent)
 
 @app.route("/logout")
 @auth.oidc_logout
