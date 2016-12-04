@@ -4,7 +4,7 @@ from addict import Dict
 def get_dir_tree_dict():
     path = os.path.normpath("images/root")
     file_tree = Dict()
-    for root, dirs, files in os.walk(path, topdown=True):
+    for root, _, files in os.walk(path, topdown=True):
         path = root.split('/')
         path.pop(0)
         file_tree_fd = file_tree
@@ -25,4 +25,3 @@ def convert_bytes_to_utf8(dic):
             v = dic[key].decode('utf-8')
             dic[key] = v
     return dic
-

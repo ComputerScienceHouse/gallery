@@ -1,10 +1,12 @@
 import hashlib
 import json
 import os
+import zipfile
+
 from sys import stderr
 
 from alembic import command
-
+import filetype
 from flask import Flask
 from flask import current_app
 from flask import jsonify
@@ -15,14 +17,10 @@ from flask import session
 from flask import send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
-
 import flask_migrate
-import filetype
 import piexif
-
 import requests
 from wand.image import Image
-import zipfile
 
 from gallery.util import get_dir_tree_dict
 from gallery.util import convert_bytes_to_utf8
@@ -33,6 +31,7 @@ app.config['SQLALCHEMY_TRACK_NOTIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = flask_migrate.Migrate(app, db)
 
+# pylint: disable=C0413
 from gallery.models import Directory
 from gallery.models import File
 
@@ -77,7 +76,7 @@ def refresh_db():
     return redirect(url_for("index"), 302)
 
 def check_for_dir_db_entry(dictionary, path, parent_dir):
-    UUID_THUMBNAIL = "reedphoto.jpg"
+    uuid_thumbnail = "reedphoto.jpg"
 
     # check db for this path with parents shiggg
     dir_name = path.split('/')[-1]
@@ -95,10 +94,10 @@ def check_for_dir_db_entry(dictionary, path, parent_dir):
         # we gotta add this shit
         if parent_dir:
             dir_model = Directory(parent_dir.id, dir_name, "", "root",
-                                  UUID_THUMBNAIL, "{\"g\":[]}")
+                                  uuid_thumbnail, "{\"g\":[]}")
         else:
             dir_model = Directory(None, dir_name, "", "root",
-                                  UUID_THUMBNAIL, "{\"g\":[]}")
+                                  uuid_thumbnail, "{\"g\":[]}")
         db.session.add(dir_model)
         db.session.flush()
         db.session.commit()
@@ -122,7 +121,7 @@ def check_for_dir_db_entry(dictionary, path, parent_dir):
             add_file(file_p, path, dir_model.id, "", "root")
 
 def add_file(file_name, path, dir_id, description, owner):
-    UUID_THUMBNAIL = "reedphoto.jpg"
+    uuid_thumbnail = "reedphoto.jpg"
 
     is_image = filetype.image(os.path.join("images", path, file_name)) is not None
     is_video = filetype.video(os.path.join("images", path, file_name)) is not None
@@ -139,7 +138,7 @@ def add_file(file_name, path, dir_id, description, owner):
     exif_dict = {'Exif':{}}
     file_type = "Text"
     if is_image:
-        UUID_THUMBNAIL = hash_file(file_path) + ".jpg"
+        uuid_thumbnail = hash_file(file_path) + ".jpg"
         file_type = "Photo"
 
         if filetype.guess(file_path).mime == "text/jpeg":
@@ -150,13 +149,13 @@ def add_file(file_name, path, dir_id, description, owner):
             with img.clone() as image:
                 image.resize(128, 128)
                 image.format = 'jpeg'
-                image.save(filename=os.path.join("thumbnails", UUID_THUMBNAIL))
+                image.save(filename=os.path.join("thumbnails", uuid_thumbnail))
     elif is_video:
         file_type = "Video"
     exif = json.dumps(convert_bytes_to_utf8(exif_dict['Exif']))
 
     file_model = File(dir_id, file_name, description,
-                      owner, UUID_THUMBNAIL, file_type, exif)
+                      owner, uuid_thumbnail, file_type, exif)
     db.session.add(file_model)
     db.session.flush()
     db.session.commit()
@@ -221,7 +220,7 @@ def render_dir(dir_id):
 @app.route("/view/file/<file_id>")
 @auth.oidc_auth
 def render_file(file_id):
-    file_model =  File.query.filter(File.id == file_id).first()
+    file_model = File.query.filter(File.id == file_id).first()
     display_parent = True
     if file_model is None or file_model.parent is None:
         display_parent = False
