@@ -56,15 +56,15 @@ def index():
 @app.route("/preload")
 @auth.oidc_auth
 def preload_images():
-    if not os.path.exists("images"):
-        os.makedirs("images")
+    if not os.path.exists("/gallery-data"):
+        os.makedirs("/gallery-data")
 
     r = requests.get("https://csh.rit.edu/~loothelion/test.zip")
     with open("test.zip", "wb") as archive:
         archive.write(r.content)
 
     with zipfile.ZipFile("test.zip", "r") as zip_file:
-        zip_file.extractall("images/")
+        zip_file.extractall("/gallery-data/")
 
     return redirect(url_for("index"), 302)
 
@@ -123,10 +123,10 @@ def check_for_dir_db_entry(dictionary, path, parent_dir):
 def add_file(file_name, path, dir_id, description, owner):
     uuid_thumbnail = "reedphoto.jpg"
 
-    is_image = filetype.image(os.path.join("images", path, file_name)) is not None
-    is_video = filetype.video(os.path.join("images", path, file_name)) is not None
+    is_image = filetype.image(os.path.join("/gallery-data", path, file_name)) is not None
+    is_video = filetype.video(os.path.join("/gallery-data", path, file_name)) is not None
 
-    file_path = os.path.join("images", path, file_name)
+    file_path = os.path.join("/gallery-data", path, file_name)
 
     def hash_file(fname):
         m = hashlib.md5()
@@ -142,7 +142,7 @@ def add_file(file_name, path, dir_id, description, owner):
         file_type = "Photo"
 
         if filetype.guess(file_path).mime == "text/jpeg":
-            exif_dict = piexif.load(os.path.join("images", path, file_name))
+            exif_dict = piexif.load(os.path.join("/gallery-data", path, file_name))
 
         # add thumbnail
         with Image(filename=file_path) as img:
@@ -182,7 +182,7 @@ def display_image(image_id):
     while not len(path_stack) == 0:
         path = os.path.join(path, path_stack.pop())
 
-    return send_from_directory('../images', path)
+    return send_from_directory('/gallery-data', path)
 
 @app.route("/api/thumbnail/get/<image_id>")
 @auth.oidc_auth
