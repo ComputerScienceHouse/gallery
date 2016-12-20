@@ -72,6 +72,7 @@ def preload_images():
 @auth.oidc_auth
 def refresh_db():
     files = get_dir_tree_dict()
+    print(files, file=stderr)
     check_for_dir_db_entry(files, '', None)
     return redirect(url_for("index"), 302)
 
