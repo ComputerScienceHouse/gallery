@@ -2,7 +2,7 @@ import os
 from addict import Dict
 
 def get_dir_tree_dict():
-    path = os.path.normpath("images/root")
+    path = os.path.normpath("/gallery-data/root")
     file_tree = Dict()
     for root, _, files in os.walk(path, topdown=True):
         path = root.split('/')
