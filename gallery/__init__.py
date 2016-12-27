@@ -124,10 +124,10 @@ def check_for_dir_db_entry(dictionary, path, parent_dir):
 def add_file(file_name, path, dir_id, description, owner):
     uuid_thumbnail = "reedphoto.jpg"
 
-    is_image = filetype.image(os.path.join("/gallery-data", path, file_name)) is not None
-    is_video = filetype.video(os.path.join("/gallery-data", path, file_name)) is not None
+    is_image = filetype.image(os.path.join(path, file_name)) is not None
+    is_video = filetype.video(os.path.join(path, file_name)) is not None
 
-    file_path = os.path.join("/gallery-data", path, file_name)
+    file_path = os.path.join(path, file_name)
 
     def hash_file(fname):
         m = hashlib.md5()
@@ -143,7 +143,7 @@ def add_file(file_name, path, dir_id, description, owner):
         file_type = "Photo"
 
         if filetype.guess(file_path).mime == "text/jpeg":
-            exif_dict = piexif.load(os.path.join("/gallery-data", path, file_name))
+            exif_dict = piexif.load(os.path.join(path, file_name))
 
         # add thumbnail
         with Image(filename=file_path) as img:
@@ -182,7 +182,7 @@ def display_image(image_id):
     path = ""
     while not len(path_stack) == 0:
         path = os.path.join(path, path_stack.pop())
-
+    print("disp image: " + path, file=stderr)
     return send_from_directory('/gallery-data', path)
 
 @app.route("/api/thumbnail/get/<image_id>")
