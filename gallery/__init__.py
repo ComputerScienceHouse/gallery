@@ -72,7 +72,6 @@ def preload_images():
 @auth.oidc_auth
 def refresh_db():
     files = get_dir_tree_dict()
-    print(files, file=stderr)
     check_for_dir_db_entry(files, '', None)
     return redirect(url_for("index"), 302)
 
@@ -182,8 +181,7 @@ def display_image(image_id):
     path = ""
     while not len(path_stack) == 0:
         path = os.path.join(path, path_stack.pop())
-    print("disp image: " + path, file=stderr)
-    return send_from_directory('/gallery-data', path)
+    return send_from_directory('/', path)
 
 @app.route("/api/thumbnail/get/<image_id>")
 @auth.oidc_auth
