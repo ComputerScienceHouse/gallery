@@ -149,7 +149,7 @@ def add_file(file_name, path, dir_id, description, owner):
             with img.clone() as image:
                 image.resize(128, 128)
                 image.format = 'jpeg'
-                image.save(filename=os.path.join("thumbnails", uuid_thumbnail))
+                image.save(filename=os.path.join("/gallery-data/thumbnails", uuid_thumbnail))
     elif is_video:
         file_type = "Video"
     exif = json.dumps(convert_bytes_to_utf8(exif_dict['Exif']))
@@ -189,9 +189,9 @@ def display_thumbnail(image_id):
     file_model = File.query.filter(File.id == image_id).first()
 
     if file_model is None:
-        return send_from_directory('../thumbnails', 'reedphoto.jpg')
+        return send_from_directory('/gallery-data/thumbnails', 'reedphoto.jpg')
 
-    return send_from_directory('../thumbnails', file_model.thumbnail_uuid)
+    return send_from_directory('/gallery-data/thumbnails', file_model.thumbnail_uuid)
 
 @app.route("/api/directory/get/<dir_id>")
 @auth.oidc_auth
