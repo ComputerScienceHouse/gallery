@@ -27,7 +27,7 @@ def convert_bytes_to_utf8(dic):
     return dic
 
 def allowed_file(filename):
-    return '.' in filename and \ filename.lower().rsplit('.', 1)[1] in
+    return '.' in filename and filename.lower().rsplit('.', 1)[1] in \
             [
                     'txt',
                     'png',
