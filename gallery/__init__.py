@@ -102,7 +102,7 @@ def update_file():
                 add_file(filename, file_location, parent, "A New File", owner)
                 files.append(filepath)
 
-        return jsonify(files)
+        return redirect("/view/dir/" + parent, 302)
     else:
         return """<!DOCTYPE html>
 <html lang="en">
@@ -329,8 +329,8 @@ def get_dir_tree():
 @app.route("/api/directory/get/<dir_id>")
 @auth.oidc_auth
 def display_files(dir_id, internal=False):
-    file_list = [f.id for f in File.query.filter(File.parent == dir_id).all()]
-    dir_list = [d.id for d in Directory.query.filter(Directory.parent == dir_id).all()]
+    file_list = [f for f in File.query.filter(File.parent == dir_id).all()]
+    dir_list = [d for d in Directory.query.filter(Directory.parent == dir_id).all()]
     ret_dict = {'directories': dir_list, 'files': file_list}
     if internal:
         return ret_dict
