@@ -225,6 +225,7 @@ def render_file(file_id):
         display_parent = False
     return render_template("view_file.html",
                            file_id=file_id,
+                           file_type=file_model.filetype,
                            parent_id=file_model.parent,
                            display_parent=display_parent)
 

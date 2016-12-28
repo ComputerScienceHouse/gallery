@@ -8,6 +8,14 @@
             <a href="/view/dir/{{parent_id}}">Parent directory</a>
         {% endif %}
         <h1>View file {{ file_id }}:</h1>
+	{% if file_type == "Photo" %}
         <img src="/api/image/get/{{file_id}}">
+	{% elif file_type == "Video" %}
+	<video width="800" height="600" controls>
+		<source src="/api/image/get{{file_id}}">
+	</video>
+	{% else %}
+	Text Data
+	{% endif}
     </body>
 </html
