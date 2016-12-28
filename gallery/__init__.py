@@ -102,7 +102,7 @@ def update_file():
                 add_file(filename, file_location, parent, "A New File", owner)
                 files.append(filepath)
 
-        return redirect("/view/dir/" + parent, 302)
+        return redirect("/view/dir/" + str(parent), 302)
     else:
         return """<!DOCTYPE html>
 <html lang="en">
