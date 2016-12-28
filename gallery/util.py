@@ -25,3 +25,15 @@ def convert_bytes_to_utf8(dic):
             v = dic[key].decode('utf-8')
             dic[key] = v
     return dic
+
+def allowed_file(filename):
+    return '.' in filename and \ filename.lower().rsplit('.', 1)[1] in \
+            [
+                    'txt',
+                    'png',
+                    'jpg',
+                    'jpeg',
+                    'mpg',
+                    'mp4',
+                    'avi'
+            ]
