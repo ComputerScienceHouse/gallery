@@ -8,9 +8,9 @@
             <a href="/view/dir/{{file.parent}}">Parent directory</a>
         {% endif %}
         <h1>View file {{ file.name }}:</h1>
-	{% if file_type == "Photo" %}
+	{% if file.filetype == "Photo" %}
         <img src="/api/image/get/{{file.id}}">
-	{% elif file_type == "Video" %}
+	{% elif file.filetype == "Video" %}
 	<video controls>
 		<source src="/api/image/get/{{file.id}}">
 	</video>
