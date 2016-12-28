@@ -53,7 +53,7 @@ auth = OIDCAuthentication(app,
 def index():
     return "Hello " + str(session['userinfo'].get('name', ''))
 
-@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 def update_file():
     if request.method == 'POST':
         uploaded_files = request.files.getlist("file[]")
