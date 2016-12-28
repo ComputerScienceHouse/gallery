@@ -106,9 +106,9 @@ def update_file():
     <script>
 
 $(function() {
-    $.get("/api/get_dir_tree', function (data) {
+    $.get("/api/get_dir_tree", function (data) {
         $('#fileList').tree({
-            data: data
+            data: [data]
         });
         $('#fileList').bind(
           'tree.click',
