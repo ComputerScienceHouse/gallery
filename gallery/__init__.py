@@ -270,6 +270,30 @@ def display_thumbnail(image_id):
 
     return send_from_directory('/gallery-data/thumbnails', file_model.thumbnail_uuid)
 
+@app.route("/api/get_dir_tree")
+@auth.oidc_auth
+def get_dir_tree():
+    def get_dir_children(dir_id):
+        dirs = [d for d in Directory.query.filter(Directory.parent == dir_id).all()]
+        children = []
+        for child in dirs:
+            children.append({
+                'name': child.name,
+                'id': child.id,
+                'children': get_dir_children(child.id)
+                })
+        return children
+
+    root = dir_model = Directory.query.filter(Directory.parent == None).first()
+
+    tree = {}
+
+    tree['name'] = root.name
+    tree['id'] = root.id
+    tree['children'] = get_dir_children(root.id)
+
+    return jsonify(tree)
+
 @app.route("/api/directory/get/<dir_id>")
 @auth.oidc_auth
 def display_files(dir_id, internal=False):
