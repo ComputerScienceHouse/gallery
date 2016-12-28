@@ -73,12 +73,15 @@ def update_file():
         if not os.path.exists(file_location):
             os.makedirs(file_location)
 
-        path = file_path.split('/')
-
-        # now put these dirs in the db
         parent = base_path
-        for directory in path:
-            parent = add_directory(parent, directory, "A new Directory!", owner)
+
+        # Sometimes we want to put things in their place
+        if file_path != "":
+            path = file_path.split('/')
+
+            # now put these dirs in the db
+            for directory in path:
+                parent = add_directory(parent, directory, "A new Directory!", owner)
 
         for upload in uploaded_files:
             if allowed_file(upload.filename):
