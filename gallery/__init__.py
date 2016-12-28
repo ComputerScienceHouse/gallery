@@ -346,7 +346,7 @@ def render_dir(dir_id):
         display_parent = False
     return render_template("view_dir.html",
                            children=children,
-                           parent_id=dir_model.parent,
+                           directory=dir_model,
                            display_parent=display_parent)
 
 @app.route("/view/file/<file_id>")
@@ -358,8 +358,7 @@ def render_file(file_id):
         display_parent = False
     return render_template("view_file.html",
                            file_id=file_id,
-                           file_type=file_model.filetype,
-                           parent_id=file_model.parent,
+                           file=file_model,
                            display_parent=display_parent)
 
 @app.route("/logout")

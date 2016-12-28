@@ -4,14 +4,14 @@
     </head>
     <body>
         {% if display_parent %}
-            <a href="/view/dir/{{ parent_id }}">Parent directory</a>
+            <a href="/view/dir/{{ directory.parent.id }}">Parent directory</a>
         {% endif %}
-        <h1>View Directory</h1>
+	<h1>View Directory {{directory.name}}</h1>
         {% set directories = children['directories'] %}
         {% set files = children['files'] %}
         <h2>Subdirectories:</h2>
-        {% for directory in directories %}
-            <a href="/view/dir/{{ directory }}">{{ directory }}</a>
+        {% for dir in directories %}
+            <a href="/view/dir/{{ dir }}">{{ dir }}</a>
         {% endfor %}
 
         <h2>Files:</h2>
