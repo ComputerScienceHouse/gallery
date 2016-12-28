@@ -185,6 +185,7 @@ def update_file():
 #             add_file(file_p, path, dir_model.id, "", "root")
 
 def add_directory(parent_id, name, description, owner):
+    uuid_thumbnail = "reedphoto.jpg"
     dir_model = Directory(parent_id, name, description, owner,
                           uuid_thumbnail, "{\"g\":[]}")
     db.session.add(dir_model)
