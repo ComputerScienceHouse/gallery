@@ -87,7 +87,7 @@ def update_file():
                 filepath = os.path.join(file_location, filename)
                 upload.save(filepath)
 
-                add_file(filename, filepath, parent, "A New File", owner)
+                add_file(filename, file_location, parent, "A New File", owner)
                 files.append(filepath)
 
         return jsonify(files)
