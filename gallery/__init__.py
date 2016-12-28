@@ -57,9 +57,12 @@ def index():
 @app.route('/upload', methods=['GET', 'POST'])
 def update_file():
     if request.method == 'POST':
-        uploaded_files = request.files.getlist("file[]")
-        print(uploaded_files, file=stderr)
-        return jsonify(uploaded_files)
+        uploaded_files = request.files.getlist("gallery-upload")
+        files = []
+
+        for upload in uploaded_files:
+            files.append(upload.filename)
+        return jsonify(files)
     else:
         return """<!DOCTYPE html>
 <html lang="en">
@@ -76,7 +79,7 @@ def update_file():
       <div>
       
       <form action="upload" method="post" enctype="multipart/form-data">
-        <input type="file" multiple="" name="file[]" class="span3" /><br />
+        <input type="file" multiple="" name="gallery-upload" class="span3" /><br />
         <input type="submit" value="Upload"  class="span2">
       </form>
       </div>
