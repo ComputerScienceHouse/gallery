@@ -74,7 +74,7 @@ def update_file():
                 # mkdir -p that shit
                 os.makedirs(file_location)
 
-                file.save(os.path.join(file_location, filename))
+                upload.save(os.path.join(file_location, filename))
                 files.append(os.path.join(file_location, filename))
 
         return jsonify(files)
