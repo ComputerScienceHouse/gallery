@@ -67,7 +67,17 @@ def update_file():
         base_path = request.form.get('gallery_dir_id')
         file_path = request.form.get('gallery_location')
 
-        file_location = os.path.join('/gallery-data/root', file_path)
+        path_stack = []
+        dir_model = Directory.query.filter(Directory.parent == base_path).first()
+        path_stack.append(dir_model.name)
+        while dir_model.parent != None:
+            dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
+            path_stack.append(dir_model.name)
+        path_stack.pop()
+        path = ""
+        while not len(path_stack) == 0:
+            path = os.path.join(path, path_stack.pop())
+        file_location = os.path.join('/', path, file_path)
 
         # mkdir -p that shit
         if not os.path.exists(file_location):
