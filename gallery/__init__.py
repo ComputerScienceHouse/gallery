@@ -53,6 +53,36 @@ auth = OIDCAuthentication(app,
 def index():
     return "Hello " + str(session['userinfo'].get('name', ''))
 
+@app.route('/upload', methods=['POST'])
+def update_file():
+    if request.method == 'POST':
+        uploaded_files = request.files.getlist("file[]")
+        print(uploaded_files, file=stderr)
+        return jsonify(uploaded_files)
+    else:
+        return """<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"
+          rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h3 class="text-muted">How To Upload a File</h3>
+      </div>
+      <hr/>
+      <div>
+      
+      <form action="upload" method="post" enctype="multipart/form-data">
+        <input type="file" multiple="" name="file[]" class="span3" /><br />
+        <input type="submit" value="Upload"  class="span2">
+      </form>
+      </div>
+    </div>
+  </body>
+</html>"""
+
 # @app.route("/preload")
 # @auth.oidc_auth
 # def preload_images():
