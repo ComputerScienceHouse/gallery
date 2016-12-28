@@ -61,22 +61,34 @@ def update_file():
     if request.method == 'POST':
         uploaded_files = request.files.getlist("gallery-upload")
         files = []
+        owner = str(session['userinfo'].get('entryUUID', ''))
+        print(owner)
+
+        # hardcoding is bad
+        base_path = request.form.get('gallery_dir_id')
+        file_path = request.form.get('gallery_location')
+
+        file_location = os.path.join('/gallery-data/root', file_path)
+
+        # mkdir -p that shit
+        if not os.path.exists(file_location):
+            os.makedirs(file_location)
+
+        path = file_path.split('/')
+
+        # now put these dirs in the db
+        parent = base_path
+        for directory in path:
+            parent = add_directory(parent, directory, "A new Directory!", owner)
 
         for upload in uploaded_files:
             if allowed_file(upload.filename):
                 filename = secure_filename(upload.filename)
+                filepath = os.path.join(file_location, filename)
+                upload.save(filepath)
 
-                # hardcoding is bad
-                file_path = request.form.get('gallery_location')
-
-                file_location = os.path.join('/gallery-data/root', file_path)
-
-                # mkdir -p that shit
-                if not os.path.exists(file_location):
-                    os.makedirs(file_location)
-
-                upload.save(os.path.join(file_location, filename))
-                files.append(os.path.join(file_location, filename))
+                add_file(filename, filepath, parent, "A New File", owner)
+                files.append(filepath)
 
         return jsonify(files)
     else:
@@ -170,6 +182,16 @@ def update_file():
 #                                .filter(File.name == file_p).first()
 #         if file_model is None:
 #             add_file(file_p, path, dir_model.id, "", "root")
+
+def add_directory(parent_id, name, description, owner):
+    dir_model = Directory(parent_id, name, description, owner,
+                          uuid_thumbnail, "{\"g\":[]}")
+    db.session.add(dir_model)
+    db.session.flush()
+    db.session.commit()
+    db.session.refresh(dir_model)
+
+    return dir_model.id
 
 def add_file(file_name, path, dir_id, description, owner):
     uuid_thumbnail = "reedphoto.jpg"
