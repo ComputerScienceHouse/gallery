@@ -56,7 +56,8 @@ auth = OIDCAuthentication(app,
 def index():
     return "Hello " + str(session['userinfo'].get('name', ''))
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload', methods=['GET', 'POST']
+@auth.oidc_auth
 def update_file():
     if request.method == 'POST':
         uploaded_files = request.files.getlist("gallery-upload")
