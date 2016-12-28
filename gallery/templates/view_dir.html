@@ -16,7 +16,7 @@
 
         <h2>Files:</h2>
         {% for file in files %}
-            <a href="/view/file/{{ file.id }}"><img src="/api/thumbnail/get/{{ file.name }}"></a>
+	<a href="/view/file/{{ file.id }}"><img src="/api/thumbnail/get/{{ file.thumbnail_uuid }}"><p>{{file.name}}</p></a>
         {% endfor %}
 
 	<br />
