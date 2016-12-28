@@ -109,6 +109,7 @@ def update_file():
       <form action="upload" method="post" enctype="multipart/form-data">
         <input type="file" multiple="" name="gallery-upload" class="span3" /><br />
         File Location: <input type="text" name="gallery_location"/><br />
+        Parent Directory Id: <input type="number" name="gallery_dir_id"/><br />
         <input type="submit" value="Upload"  class="span2">
       </form>
       </div>
