@@ -72,7 +72,8 @@ def update_file():
                 file_location = os.path.join('/gallery-data/root', file_path)
 
                 # mkdir -p that shit
-                os.makedirs(file_location)
+                if not os.path.exists(file_location):
+                    os.makedirs(file_location)
 
                 upload.save(os.path.join(file_location, filename))
                 files.append(os.path.join(file_location, filename))
