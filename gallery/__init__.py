@@ -22,6 +22,7 @@ import flask_migrate
 import piexif
 import requests
 from wand.image import Image
+from werkzeug import secure_filename
 
 from gallery.util import get_dir_tree_dict
 from gallery.util import convert_bytes_to_utf8
@@ -61,7 +62,20 @@ def update_file():
         files = []
 
         for upload in uploaded_files:
-            files.append(upload.filename)
+            if allowed_file(upload.filename):
+                filename = secure_filename(upload.filename)
+
+                # hardcoding is bad
+                file_path = request.form.get('gallery_location')
+
+                file_location = os.path.join('/gallery-data/root', file_path)
+
+                # mkdir -p that shit
+                os.makedirs(file_location)
+
+                file.save(os.path.join(file_location, filename))
+                files.append(os.path.join(file_location, filename))
+
         return jsonify(files)
     else:
         return """<!DOCTYPE html>
@@ -80,6 +94,7 @@ def update_file():
       
       <form action="upload" method="post" enctype="multipart/form-data">
         <input type="file" multiple="" name="gallery-upload" class="span3" /><br />
+        File Location: <input type="text" name="gallery_location"/><br />
         <input type="submit" value="Upload"  class="span2">
       </form>
       </div>
