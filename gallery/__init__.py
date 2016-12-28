@@ -68,7 +68,7 @@ def update_file():
         file_path = request.form.get('gallery_location')
 
         path_stack = []
-        dir_model = Directory.query.filter(Directory.parent == base_path).first()
+        dir_model = Directory.query.filter(Directory.id == base_path).first()
         path_stack.append(dir_model.name)
         while dir_model.parent != None:
             dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
