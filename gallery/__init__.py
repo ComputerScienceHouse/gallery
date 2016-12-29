@@ -329,7 +329,7 @@ def get_dir_tree():
     tree['children'] = get_dir_children(root.id)
 
     # return after gallery-data
-    return jsonify(tree['children'][0]['children'][0]['children'][0])
+    return jsonify(tree['children'][0]['children'][0])
 
 @app.route("/api/directory/get/<dir_id>")
 @auth.oidc_auth
