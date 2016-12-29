@@ -63,6 +63,7 @@ def update_file():
         uploaded_files = request.files.getlist("gallery-upload")
         files = []
         owner = str(session['userinfo'].get('uuid', ''))
+        print(session['userinfo'], file=stderr)
 
         # hardcoding is bad
         base_path = request.form.get('gallery_dir_id')
