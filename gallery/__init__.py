@@ -107,52 +107,7 @@ def update_file():
 
         return redirect("/view/dir/" + str(parent), 302)
     else:
-        return """<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"
-          rel="stylesheet">
-    <link href="https://mbraak.github.io/jqTree/jqtree.css"
-          rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqtree/1.3.5/tree.jquery.min.js"></script>
-    <script>
-
-$(function() {
-    $.get("/api/get_dir_tree", function (data) {
-        $('#fileList').tree({
-            data: [data]
-        });
-        $('#fileList').bind(
-          'tree.click',
-          function(event) {
-              // The clicked node is 'event.node'
-              var node = event.node;
-              $('input[name="gallery_dir_id"]').val(node.id);
-          }
-        );
-    });
-});
-</script>
-  </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <h3 class="text-muted">How To Upload a File</h3>
-      </div>
-      <hr/>
-      <div>
-      <div id="fileList"></div>
-      <form action="upload" method="post" enctype="multipart/form-data">
-        <input type="file" multiple="" name="gallery-upload" class="span3" /><br />
-        File Location: <input type="text" name="gallery_location"/><br />
-        Parent Directory Id: <input type="number" name="gallery_dir_id" readonly/><br />
-        <input type="submit" value="Upload"  class="span2">
-      </form>
-      </div>
-    </div>
-  </body>
-</html>"""
+        return render_template("upload.html")
 
 def add_directory(parent_id, name, description, owner):
     uuid_thumbnail = "reedphoto.jpg"
