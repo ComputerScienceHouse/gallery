@@ -24,10 +24,6 @@ import requests
 from wand.image import Image
 from werkzeug import secure_filename
 
-from gallery.util import allowed_file
-from gallery.util import get_dir_tree_dict
-from gallery.util import convert_bytes_to_utf8
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_NOTIFICATIONS'] = False
 
@@ -37,6 +33,10 @@ migrate = flask_migrate.Migrate(app, db)
 # pylint: disable=C0413
 from gallery.models import Directory
 from gallery.models import File
+
+from gallery.util import allowed_file
+from gallery.util import get_dir_tree_dict
+from gallery.util import convert_bytes_to_utf8
 
 
 if os.path.exists(os.path.join(os.getcwd(), "config.py")):
@@ -192,6 +192,36 @@ def display_thumbnail(image_id):
         return send_from_directory('/gallery-data/thumbnails', 'reedphoto.jpg')
 
     return send_from_directory('/gallery-data/thumbnails', file_model.thumbnail_uuid)
+
+@app.route("/api/image/next/<image_id>")
+@auth.oidc_auth
+def get_image_next_id(image_id):
+    file_model = File.query.filter(File.id == image_id).first()
+    files = [f.id for f in get_dir_file_contents(file_model.parent)]
+
+    idx = files.index(image_id) + 1
+
+    if idx >= len(files):
+        idx = -1
+    else:
+        idx = files[idx]
+
+    return jsonify({"index": idx})
+
+@app.route("/api/image/prev/<image_id>")
+@auth.oidc_auth
+def get_image_prev_id(image_id):
+    file_model = File.query.filter(File.id == image_id).first()
+    files = [f.id for f in get_dir_file_contents(file_model.parent)]
+
+    idx = files.index(image_id) - 1
+
+    if idx < 0:
+        idx = -1
+    else:
+        idx = files[idx]
+
+    return jsonify({"index": idx})
 
 @app.route("/api/get_dir_tree")
 @auth.oidc_auth

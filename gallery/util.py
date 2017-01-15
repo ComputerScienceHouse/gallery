@@ -1,6 +1,11 @@
 import os
 from addict import Dict
 
+from gallery.models import File
+
+def get_dir_file_contents(dir_id):
+    return [File.query.filter(File.parent == dir_id).all()]
+
 def get_dir_tree_dict():
     path = os.path.normpath("/gallery-data/root")
     file_tree = Dict()
