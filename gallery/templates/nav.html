@@ -1,3 +1,34 @@
 {% extends "base.html" %}
 {% block nav %}
+<nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Gallery</a>
+            </div>
+            <div class="navbar-collapse collapse" id="navbar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown navbar-user">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                            <img src="https://profiles.csh.rit.edu/image/{{ username }}">
+                            {{ display_name }}
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="https://profiles.csh.rit.edu/user/{{ username }}"><span class="glyphicon glyphicon-user"></span> Profile</a></li>
+                            <li class="divider"></li>
+                            <li><a href="https://members.csh.rit.edu/"><span class="glyphicon glyphicon-globe"></span> Members Portal</a></li>
+                            <li><a href="https://github.com/liam-middlebrook/gallery/issues"><span class="glyphicon glyphicon-exclamation-sign"></span> Report an Issue</a></li>
+                            <li><a href="{{ url_for('logout') }}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 {% endblock %}
