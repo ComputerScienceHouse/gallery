@@ -1,24 +1,26 @@
-<!doctype html>
-<html>
-    <head>
-        <title>View file</title>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/csh-bootstrap.css') }}">
-    </head>
-    <body>
-        {% if display_parent %}
-            <a href="/view/dir/{{file.parent}}">Parent directory</a>
-        {% endif %}
-        <h1>View file {{ file.name }}:</h1>
-	{% if file.filetype == "Photo" %}
-        <img src="/api/image/get/{{file.id}}">
-	{% elif file.filetype == "Video" %}
-	<video controls>
-		<source src="/api/image/get/{{file.id}}">
-	</video>
-	{% else %}
-	Text Data
-	{% endif %}
-	<br />
-	<a href="/upload">Upload</a>
-    </body>
-</html
+{% extends "nav.html" %}
+{% block title %}
+View File
+{% endblock %}
+
+{% block body %}
+{% if display_parent %}
+    <a href="/view/dir/{{file.parent}}">Parent directory</a>
+{% endif %}
+
+<h1>View file {{ file.name }}:</h1>
+{% if file.filetype == "Photo" %}
+    <img src="/api/image/get/{{file.id}}">
+
+{% elif file.filetype == "Video" %}
+<video controls>
+	<source src="/api/image/get/{{file.id}}">
+</video>
+
+{% else %}
+    Text Data
+{% endif %}
+
+<br />
+<a href="/upload">Upload</a>
+{% endblock %}

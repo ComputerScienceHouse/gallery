@@ -1,27 +1,27 @@
-<!doctype html>
-<html>
-    <head>
-        <title>View directory</title>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/csh-bootstrap.css') }}">
-    </head>
-    <body>
-        {% if display_parent %}
-            <a href="/view/dir/{{ directory.parent }}">Parent directory</a>
-        {% endif %}
-	<h1>View Directory {{directory.name}}</h1>
-        {% set directories = children['directories'] %}
-        {% set files = children['files'] %}
-        <h2>Subdirectories:</h2>
-        {% for dir in directories %}
-            <a href="/view/dir/{{ dir.id }}">{{ dir.name }}</a>
-        {% endfor %}
+{% extends "nav.html" %}
+{% block title %}
+View Directory
+{% endblock %}
 
-        <h2>Files:</h2>
-        {% for file in files %}
-	<a href="/view/file/{{ file.id }}"><img src="/api/thumbnail/get/{{ file.id }}"><p>{{file.name}}</p></a>
-        {% endfor %}
+{% block body %}
+{% if display_parent %}
+    <a href="/view/dir/{{ directory.parent }}">Parent directory</a>
+{% endif %}
 
-	<br />
-	<a href="/upload">Upload</a>
-    </body>
-</html>
+<h1>View Directory {{directory.name}}</h1>
+{% set directories = children['directories'] %}
+{% set files = children['files'] %}
+
+<h2>Subdirectories:</h2>
+{% for dir in directories %}
+    <a href="/view/dir/{{ dir.id }}">{{ dir.name }}</a>
+{% endfor %}
+
+<h2>Files:</h2>
+{% for file in files %}
+    <a href="/view/file/{{ file.id }}"><img src="/api/thumbnail/get/{{ file.id }}"><p>{{file.name}}</p></a>
+{% endfor %}
+
+<br />
+<a href="/upload">Upload</a>
+{% endblock %}
