@@ -108,7 +108,9 @@ def update_file():
 
         return redirect("/view/dir/" + str(parent), 302)
     else:
-        return render_template("upload.html")
+        return render_template("upload.html",
+                                username=session['userinfo'].get('preferred_username', ''),
+                                display_name=session['userinfo'].get('name', 'CSH Member'))
 
 def add_directory(parent_id, name, description, owner):
     uuid_thumbnail = "reedphoto.jpg"
@@ -270,7 +272,9 @@ def render_dir(dir_id):
     return render_template("view_dir.html",
                            children=children,
                            directory=dir_model,
-                           display_parent=display_parent)
+                           display_parent=display_parent,
+                           username=session['userinfo'].get('preferred_username', ''),
+                           display_name=session['userinfo'].get('name', 'CSH Member'))
 
 @app.route("/view/file/<file_id>")
 @auth.oidc_auth
@@ -282,7 +286,9 @@ def render_file(file_id):
     return render_template("view_file.html",
                            file_id=file_id,
                            file=file_model,
-                           display_parent=display_parent)
+                           display_parent=display_parent,
+                           username=session['userinfo'].get('preferred_username', ''),
+                           display_name=session['userinfo'].get('name', 'CSH Member'))
 
 @app.route("/logout")
 @auth.oidc_logout
