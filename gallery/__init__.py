@@ -35,6 +35,7 @@ from gallery.models import Directory
 from gallery.models import File
 
 from gallery.util import allowed_file
+from gallery.util import get_dir_file_contents
 from gallery.util import get_dir_tree_dict
 from gallery.util import convert_bytes_to_utf8
 
