@@ -14,7 +14,7 @@ View Directory
 
 <h2>Subdirectories:</h2>
 {% for dir in directories %}
-    <a href="/view/dir/{{ dir.id }}">{{ dir.name }}</a>
+    <a href="/view/dir/{{ dir.id }}"><img src="/api/thumbnail/get/dir/{{ dir.id }}"><p>{{ dir.name }}</p></a>
 {% endfor %}
 
 <h2>Files:</h2>
