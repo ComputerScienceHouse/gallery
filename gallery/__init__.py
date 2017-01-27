@@ -56,7 +56,7 @@ auth = OIDCAuthentication(app,
 @auth.oidc_auth
 def index():
     root_id = get_dir_tree(internal=True)
-    return redirect("/view/dir/" + root_id)
+    return redirect("/view/dir/" + root_id['id'])
 
 @app.route('/upload', methods=['GET', 'POST'])
 @auth.oidc_auth
