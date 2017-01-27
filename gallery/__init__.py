@@ -55,7 +55,8 @@ auth = OIDCAuthentication(app,
 @app.route("/")
 @auth.oidc_auth
 def index():
-    return "Hello " + str(session['userinfo'].get('name', ''))
+    root_id = get_dir_tree(internal=True)
+    return redirect("/view/dir/" + root_id)
 
 @app.route('/upload', methods=['GET', 'POST'])
 @auth.oidc_auth
@@ -228,7 +229,7 @@ def get_image_prev_id(image_id):
 
 @app.route("/api/get_dir_tree")
 @auth.oidc_auth
-def get_dir_tree():
+def get_dir_tree(internal=False):
     def get_dir_children(dir_id):
         dirs = [d for d in Directory.query.filter(Directory.parent == dir_id).all()]
         children = []
@@ -249,7 +250,10 @@ def get_dir_tree():
     tree['children'] = get_dir_children(root.id)
 
     # return after gallery-data
-    return jsonify(tree['children'][0]['children'][0])
+    if internal:
+        return tree['children'][0]['children'][0]
+    else:
+        return jsonify(tree['children'][0]['children'][0])
 
 @app.route("/api/directory/get/<dir_id>")
 @auth.oidc_auth
