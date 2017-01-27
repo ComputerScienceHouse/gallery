@@ -302,7 +302,7 @@ def render_file(file_id):
                            file=file_model,
                            display_parent=display_parent,
                            username=session['userinfo'].get('preferred_username', ''),
-                           display_name=session['userinfo'].get('name', 'CSH Member')))
+                           display_name=session['userinfo'].get('name', 'CSH Member'))
 
 @app.route("/logout")
 @auth.oidc_logout
