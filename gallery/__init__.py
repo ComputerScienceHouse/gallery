@@ -68,9 +68,6 @@ def update_file():
 
         # hardcoding is bad
         base_path = request.form.get('gallery_dir_id')
-        file_path = os.path.normpath(request.form.get('gallery_location'))
-        if file_path == ".":
-            file_path = ""
 
         path_stack = []
         dir_model = Directory.query.filter(Directory.id == base_path).first()
@@ -82,6 +79,12 @@ def update_file():
         path = ""
         while not len(path_stack) == 0:
             path = os.path.join(path, path_stack.pop())
+        file_path = os.path.realpath(os.path.join('/', path, request.form.get('gallery_location')))
+        if not file_path.startswith("/gallery-data/root"):
+            return "invalid path" + file_path, 400
+
+        if file_path == ".":
+            file_path = ""
         file_location = os.path.join('/', path, file_path)
 
         # mkdir -p that shit
