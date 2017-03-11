@@ -131,57 +131,57 @@ def update_file():
 # 
 #     return redirect(url_for("index"), 302)
 # 
-# @app.route("/refreshdb")
-# @auth.oidc_auth
-# def refresh_db():
-#     files = get_dir_tree_dict()
-#     check_for_dir_db_entry(files, '', None)
-#     return redirect(url_for("index"), 302)
-# 
-# def check_for_dir_db_entry(dictionary, path, parent_dir):
-#     uuid_thumbnail = "reedphoto.jpg"
-# 
-#     # check db for this path with parents shiggg
-#     dir_name = path.split('/')[-1]
-#     if dir_name == "":
-#         dir_name = "root"
-#     dir_model = None
-#     if parent_dir:
-#         dir_model = Directory.query.filter(Directory.name == dir_name) \
-#                                    .filter(Directory.parent == parent_dir.id).first()
-#     else:
-#         dir_model = Directory.query.filter(Directory.parent == None).first()
-# 
-#     if dir_model is None:
-#         # fuck go back this directory doesn't exist as a model
-#         # we gotta add this shit
-#         if parent_dir:
-#             dir_model = Directory(parent_dir.id, dir_name, "", "root",
-#                                   uuid_thumbnail, "{\"g\":[]}")
-#         else:
-#             dir_model = Directory(None, dir_name, "", "root",
-#                                   uuid_thumbnail, "{\"g\":[]}")
-#         db.session.add(dir_model)
-#         db.session.flush()
-#         db.session.commit()
-#         db.session.refresh(dir_model)
-# 
-#     # get directory class as dir_model
-#     for dir_p in dictionary:
-#         # Don't traverse local files
-#         if dir_p == '.':
-#             continue
-#         check_for_dir_db_entry(
-#             dictionary[dir_p],
-#             os.path.join(path, dir_p),
-#             dir_model)
-# 
-#     for file_p in dictionary['.']:
-#         # check db for this file path
-#         file_model = File.query.filter(File.parent == dir_model.id) \
-#                                .filter(File.name == file_p).first()
-#         if file_model is None:
-#             add_file(file_p, path, dir_model.id, "", "root")
+@app.route("/refreshdb")
+@auth.oidc_auth
+def refresh_db():
+    files = get_dir_tree_dict()
+    check_for_dir_db_entry(files, '', None)
+    return redirect(url_for("index"), 302)
+
+def check_for_dir_db_entry(dictionary, path, parent_dir):
+    uuid_thumbnail = "reedphoto.jpg"
+
+    # check db for this path with parents shiggg
+    dir_name = path.split('/')[-1]
+    if dir_name == "":
+        dir_name = "root"
+    dir_model = None
+    if parent_dir:
+        dir_model = Directory.query.filter(Directory.name == dir_name) \
+                                   .filter(Directory.parent == parent_dir.id).first()
+    else:
+        dir_model = Directory.query.filter(Directory.parent == None).first()
+
+    if dir_model is None:
+        # fuck go back this directory doesn't exist as a model
+        # we gotta add this shit
+        if parent_dir:
+            dir_model = Directory(parent_dir.id, dir_name, "", "root",
+                                  uuid_thumbnail, "{\"g\":[]}")
+        else:
+            dir_model = Directory(None, dir_name, "", "root",
+                                  uuid_thumbnail, "{\"g\":[]}")
+        db.session.add(dir_model)
+        db.session.flush()
+        db.session.commit()
+        db.session.refresh(dir_model)
+
+    # get directory class as dir_model
+    for dir_p in dictionary:
+        # Don't traverse local files
+        if dir_p == '.':
+            continue
+        check_for_dir_db_entry(
+            dictionary[dir_p],
+            os.path.join(path, dir_p),
+            dir_model)
+
+    for file_p in dictionary['.']:
+        # check db for this file path
+        file_model = File.query.filter(File.parent == dir_model.id) \
+                               .filter(File.name == file_p).first()
+        if file_model is None:
+            add_file(file_p, path, dir_model.id, "", "root")
 
 def add_directory(parent_id, name, description, owner):
     uuid_thumbnail = "reedphoto.jpg"
