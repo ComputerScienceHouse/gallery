@@ -154,7 +154,14 @@ def add_file(file_name, path, dir_id, description, owner):
         # add thumbnail
         with Image(filename=file_path) as img:
             with img.clone() as image:
-                image.resize(128, 128)
+                if image.width < image.height:
+                    image.transform(resize="256x")
+                    image.transform(resize=("256+0+" + str((image.height - 256) / 2)))
+                elif image.height < image.width:
+                    image.transform(resize="x256")
+                    image.transform(resize=("256+" + str((image.height - 256) / 2) + "+0"))
+                else:
+                    image.resize(256, 256)
                 image.format = 'jpeg'
                 image.save(filename=os.path.join("/gallery-data/thumbnails", uuid_thumbnail))
     elif is_video:
