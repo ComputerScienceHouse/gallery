@@ -374,7 +374,7 @@ def display_files(dir_id, internal=False):
 @auth.oidc_auth
 def render_dir(dir_id):
     if dir_id < 3:
-        dir_id = 3
+        return redirect('/view/dir/3')
 
     children = display_files(dir_id, internal=True)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
