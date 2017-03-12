@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import zipfile
+import re
 
 from sys import stderr
 
@@ -79,23 +80,37 @@ def update_file():
         path = ""
         while not len(path_stack) == 0:
             path = os.path.join(path, path_stack.pop())
-        file_path = os.path.realpath(os.path.join('/', path, request.form.get('gallery_location')))
-        if not file_path.startswith("/gallery-data/root"):
+
+        file_path = os.path.join('/', path, request.form.get('gallery_location'))
+        print(path, file=stderr)
+        print(request.form.get('gallery-location'), file=stderr)
+        print(file_path, file=stderr)
+
+        _, count = re.subn(r'[^a-zA-Z0-9 \/\-\_]', '', file_path)
+        if not file_path.startswith("/gallery-data/root") or count != 0:
             return "invalid path" + file_path, 400
 
-        if file_path == ".":
-            file_path = ""
-        file_location = os.path.join('/', path, file_path)
+        #if file_path == ".":
+        #    file_path = ""
+        #file_location = os.path.join('/', path, file_path)
+        file_location = file_path
 
         # mkdir -p that shit
         if not os.path.exists(file_location):
             os.makedirs(file_location)
 
         parent = base_path
-
+        print(base_path, file=stderr)
+        print(file_path, file=stderr)
+        print(path, file=stderr)
+        if file_path.startswith("/" + path):
+            file_path = file_path[(len(path) + 1):]
+        print(file_path, file=stderr)
+        print(file_path.split('/'), file=stderr)
         # Sometimes we want to put things in their place
         if file_path != "":
             path = file_path.split('/')
+            path.pop(0) # remove blank
 
             # now put these dirs in the db
             for directory in path:
