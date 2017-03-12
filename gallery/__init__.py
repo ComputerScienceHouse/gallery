@@ -351,6 +351,9 @@ def get_dir_tree(internal=False):
     tree['id'] = root.id
     tree['children'] = get_dir_children(root.id)
 
+    # Hardcode gallery name to not be root FIXME
+    tree['children'][0]['children'][0]['name'] = "CSH Gallery"
+
     # return after gallery-data
     if internal:
         return tree['children'][0]['children'][0]
@@ -370,8 +373,17 @@ def display_files(dir_id, internal=False):
 @app.route("/view/dir/<dir_id>")
 @auth.oidc_auth
 def render_dir(dir_id):
+    if dir_id < 3:
+        dir_id = 3
+
     children = display_files(dir_id, internal=True)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
+
+
+    # Hardcode gallery name to not be root FIXME
+    if dir_id == 3:
+        dir_model.name = "CSH Gallery"
+
     display_parent = True
     if dir_model is None or dir_model.parent is None:
         display_parent = False
