@@ -31,7 +31,7 @@ View Directory
     {% for row in files|batch(4) %}
     <div class="row">
         {% for file in row %}
-            <div class="col-sm-12">
+            <div class="col-sm-3">
                 <a href="/view/file/{{ file.id }}"><img src="/api/thumbnail/get/{{ file.id }}"><p>{{file.name}}</p></a>
             </div>
         {% endfor %}
