@@ -258,7 +258,7 @@ def add_file(file_name, path, dir_id, description, owner):
     db.session.refresh(file_model)
 
 
-@app.route("/api/image/get/<image_id>")
+@app.route("/api/image/get/<int:image_id>")
 @auth.oidc_auth
 def display_image(image_id):
     path_stack = []
@@ -279,7 +279,7 @@ def display_image(image_id):
         path = os.path.join(path, path_stack.pop())
     return send_from_directory('/', path)
 
-@app.route("/api/thumbnail/get/<image_id>")
+@app.route("/api/thumbnail/get/<int:image_id>")
 @auth.oidc_auth
 def display_thumbnail(image_id):
     file_model = File.query.filter(File.id == image_id).first()
@@ -289,7 +289,7 @@ def display_thumbnail(image_id):
 
     return send_from_directory('/gallery-data/thumbnails', file_model.thumbnail_uuid)
 
-@app.route("/api/thumbnail/get/dir/<dir_id>")
+@app.route("/api/thumbnail/get/dir/<int:dir_id>")
 @auth.oidc_auth
 def display_dir_thumbnail(dir_id):
     first_child = File.query.filter(File.parent == dir_id).first()
@@ -299,7 +299,7 @@ def display_dir_thumbnail(dir_id):
 
     return send_from_directory('/gallery-data/thumbnails', first_child.thumbnail_uuid)
 
-@app.route("/api/image/next/<image_id>")
+@app.route("/api/image/next/<int:image_id>")
 @auth.oidc_auth
 def get_image_next_id(image_id):
     file_model = File.query.filter(File.id == image_id).first()
@@ -314,7 +314,7 @@ def get_image_next_id(image_id):
 
     return jsonify({"index": idx})
 
-@app.route("/api/image/prev/<image_id>")
+@app.route("/api/image/prev/<int:image_id>")
 @auth.oidc_auth
 def get_image_prev_id(image_id):
     file_model = File.query.filter(File.id == image_id).first()
@@ -360,7 +360,7 @@ def get_dir_tree(internal=False):
     else:
         return jsonify(tree['children'][0]['children'][0])
 
-@app.route("/api/directory/get/<dir_id>")
+@app.route("/api/directory/get/<int:dir_id>")
 @auth.oidc_auth
 def display_files(dir_id, internal=False):
     file_list = [f for f in File.query.filter(File.parent == dir_id).all()]
@@ -370,7 +370,7 @@ def display_files(dir_id, internal=False):
         return ret_dict
     return jsonify(ret_dict)
 
-@app.route("/view/dir/<dir_id>")
+@app.route("/view/dir/<int:dir_id>")
 @auth.oidc_auth
 def render_dir(dir_id):
     if dir_id < 3:
