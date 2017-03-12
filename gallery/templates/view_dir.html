@@ -12,15 +12,19 @@ View Directory
 {% set directories = children['directories'] %}
 {% set files = children['files'] %}
 
-<h2>Subdirectories:</h2>
-{% for dir in directories %}
-    <a href="/view/dir/{{ dir.id }}"><img src="/api/thumbnail/get/dir/{{ dir.id }}"><p>{{ dir.name }}</p></a>
-{% endfor %}
+{% if directories|size >= 1 %}
+    <h2>Subdirectories:</h2>
+    {% for dir in directories %}
+        <a href="/view/dir/{{ dir.id }}"><img src="/api/thumbnail/get/dir/{{ dir.id }}"><p>{{ dir.name }}</p></a>
+    {% endfor %}
+{% endif %}
 
-<h2>Files:</h2>
-{% for file in files %}
-    <a href="/view/file/{{ file.id }}"><img src="/api/thumbnail/get/{{ file.id }}"><p>{{file.name}}</p></a>
-{% endfor %}
+{% if files|size >= 1 %}
+    <h2>Files:</h2>
+    {% for file in files %}
+        <a href="/view/file/{{ file.id }}"><img src="/api/thumbnail/get/{{ file.id }}"><p>{{file.name}}</p></a>
+    {% endfor %}
+{% endif %}
 
 <br />
 <a href="/upload">Upload</a>
