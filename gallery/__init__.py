@@ -3,6 +3,7 @@ import json
 import os
 import zipfile
 import re
+import subprocess
 
 from sys import stderr
 
@@ -48,6 +49,12 @@ else:
 
 # Disable SSL certificate verification warning
 requests.packages.urllib3.disable_warnings()
+
+app.config["GIT_REVISION"] = subprocess.check_output(['git',
+                                                      'rev-parse',
+                                                      '--short',
+                                                      'HEAD']).decode('utf-8').rstrip()
+
 
 auth = OIDCAuthentication(app,
                           issuer=app.config['OIDC_ISSUER'],

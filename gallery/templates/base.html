@@ -19,5 +19,8 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         {% block extraFooter %}
         {% endblock %}
+        <footer>
+            <a class="footer-version" href="https://github.com/liam-middlebrook/gallery/tree/{{config["GIT_REVISION"]}}">Gallery ({{config["GIT_REVISION"]}})</a>
+        </footer>
     </body>
 </html>
