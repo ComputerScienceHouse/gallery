@@ -304,12 +304,10 @@ def display_dir_thumbnail(dir_id):
 @app.route("/api/image/next/<int:image_id>")
 @auth.oidc_auth
 def get_image_next_id(image_id, internal=False):
+    image_id = int(image_id)
     file_model = File.query.filter(File.id == image_id).first()
     files = [f.id for f in get_dir_file_contents(file_model.parent)]
 
-    print(files, file=stderr)
-    print(image_id, file=stderr)
-    print(image_id in files, file=stderr)
     idx = files.index(image_id) + 1
 
     if idx >= len(files):
@@ -324,6 +322,7 @@ def get_image_next_id(image_id, internal=False):
 @app.route("/api/image/prev/<int:image_id>")
 @auth.oidc_auth
 def get_image_prev_id(image_id, internal=False):
+    image_id = int(image_id)
     file_model = File.query.filter(File.id == image_id).first()
     files = [f.id for f in get_dir_file_contents(file_model.parent)]
 
