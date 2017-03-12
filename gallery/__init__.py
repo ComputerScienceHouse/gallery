@@ -307,6 +307,8 @@ def get_image_next_id(image_id, internal=False):
     file_model = File.query.filter(File.id == image_id).first()
     files = [f.id for f in get_dir_file_contents(file_model.parent)]
 
+    print(files, file=stderr)
+    print(image_id, file=stderr)
     idx = files.index(image_id) + 1
 
     if idx >= len(files):
