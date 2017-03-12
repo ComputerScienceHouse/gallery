@@ -243,7 +243,7 @@ def add_file(file_name, path, dir_id, description, owner):
         # add thumbnail
         with Image(filename=file_path) as img:
             with img.clone() as image:
-                size = image.width if image.width > image.height else image.height
+                size = image.width if image.width < image.height else image.height
                 image.crop(width=size, height=size, gravity='center')
                 image.resize(256, 256)
                 image.format = 'jpeg'
