@@ -412,8 +412,8 @@ def render_file(file_id):
     return render_template("view_file.html",
                            file_id=file_id,
                            file=file_model,
-                           next_file=get_image_next_id(file_id),
-                           prev_file=get_image_prev_id(file_id),
+                           next_file=get_image_next_id(file_id, internal=True),
+                           prev_file=get_image_prev_id(file_id, internal=True),
                            display_parent=display_parent,
                            username=session['userinfo'].get('preferred_username', ''),
                            display_name=session['userinfo'].get('name', 'CSH Member'))
