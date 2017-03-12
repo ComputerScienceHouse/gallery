@@ -385,7 +385,7 @@ def render_dir(dir_id):
         dir_model.name = "CSH Gallery"
 
     display_parent = True
-    if dir_model is None or dir_model.parent is None:
+    if dir_model is None or dir_model.parent is None or dir_id == 3:
         display_parent = False
     return render_template("view_dir.html",
                            children=children,
