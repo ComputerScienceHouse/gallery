@@ -8,6 +8,10 @@ View File
     <a href="/view/dir/{{file.parent}}">Parent directory</a>
 {% endif %}
 
+{% if next_file != -1 %}
+<a href="/view/file/{{next_file}}">Next File</a>
+{% endif %}
+
 <h1>View file {{ file.name }}:</h1>
 {% if file.filetype == "Photo" %}
     <img src="/api/image/get/{{file.id}}">
@@ -19,6 +23,10 @@ View File
 
 {% else %}
     Text Data
+{% endif %}
+
+{% if prev_file != -1 %}
+<a href="/view/file/{{prev_file}}">Previous File</a>
 {% endif %}
 
 <br />

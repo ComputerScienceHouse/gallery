@@ -303,7 +303,7 @@ def display_dir_thumbnail(dir_id):
 
 @app.route("/api/image/next/<int:image_id>")
 @auth.oidc_auth
-def get_image_next_id(image_id):
+def get_image_next_id(image_id, internal=False):
     file_model = File.query.filter(File.id == image_id).first()
     files = [f.id for f in get_dir_file_contents(file_model.parent)]
 
@@ -314,11 +314,13 @@ def get_image_next_id(image_id):
     else:
         idx = files[idx]
 
+    if internal:
+        return idx
     return jsonify({"index": idx})
 
 @app.route("/api/image/prev/<int:image_id>")
 @auth.oidc_auth
-def get_image_prev_id(image_id):
+def get_image_prev_id(image_id, internal=False):
     file_model = File.query.filter(File.id == image_id).first()
     files = [f.id for f in get_dir_file_contents(file_model.parent)]
 
@@ -329,6 +331,8 @@ def get_image_prev_id(image_id):
     else:
         idx = files[idx]
 
+    if internal:
+        return idx
     return jsonify({"index": idx})
 
 @app.route("/api/get_dir_tree")
@@ -406,6 +410,8 @@ def render_file(file_id):
     return render_template("view_file.html",
                            file_id=file_id,
                            file=file_model,
+                           next_file=get_image_next_id(file_id),
+                           prev_file=get_image_prev_id(file_id),
                            display_parent=display_parent,
                            username=session['userinfo'].get('preferred_username', ''),
                            display_name=session['userinfo'].get('name', 'CSH Member'))
