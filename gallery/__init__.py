@@ -309,6 +309,7 @@ def get_image_next_id(image_id, internal=False):
 
     print(files, file=stderr)
     print(image_id, file=stderr)
+    print(image_id in files, file=stderr)
     idx = files.index(image_id) + 1
 
     if idx >= len(files):
