@@ -108,7 +108,7 @@ def update_file():
         print(file_path, file=stderr)
         print(file_path.split('/'), file=stderr)
         # Sometimes we want to put things in their place
-        if file_path != "":
+        if file_path != "" and file_path != "/":
             path = file_path.split('/')
             path.pop(0) # remove blank
 
