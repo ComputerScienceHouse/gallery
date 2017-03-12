@@ -12,19 +12,33 @@ View Directory
 {% set directories = children['directories'] %}
 {% set files = children['files'] %}
 
+<div class="container">
 {% if directories|size >= 1 %}
-    <h2>Subdirectories:</h2>
-    {% for dir in directories %}
-        <a href="/view/dir/{{ dir.id }}"><img src="/api/thumbnail/get/dir/{{ dir.id }}"><p>{{ dir.name }}</p></a>
+    <h2 class="text-primary">Subdirectories:</h2>
+    {% for row in directories|batch(4) %}
+    <div class="row">
+        {% for dir in row %}
+            <div class="col-sm-3">
+                <a href="/view/dir/{{ dir.id }}"><img src="/api/thumbnail/get/dir/{{ dir.id }}"><p>{{ dir.name }}</p></a>
+            </div>
+        {% endfor %}
+    </div>
     {% endfor %}
 {% endif %}
 
 {% if files|size >= 1 %}
-    <h2>Files:</h2>
-    {% for file in files %}
-        <a href="/view/file/{{ file.id }}"><img src="/api/thumbnail/get/{{ file.id }}"><p>{{file.name}}</p></a>
+    <h2 class="text-primary">Files:</h2>
+    {% for row in files|batch(4) %}
+    <div class="row">
+        {% for file in row %}
+            <div class="col-sm-12">
+                <a href="/view/file/{{ file.id }}"><img src="/api/thumbnail/get/{{ file.id }}"><p>{{file.name}}</p></a>
+            </div>
+        {% endfor %}
+    </div>
     {% endfor %}
 {% endif %}
+</div>
 
 <br />
 <a href="/upload">Upload</a>
