@@ -41,5 +41,6 @@ def allowed_file(filename):
                     'jpeg',
                     'mpg',
                     'mp4',
-                    'avi'
+                    'avi',
+                    'cr2'
             ]
