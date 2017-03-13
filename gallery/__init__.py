@@ -128,11 +128,10 @@ def update_file():
         error_files = []
         for upload in uploaded_files:
             if allowed_file(upload.filename):
+                filename = secure_filename(upload.filename)
                 file_model = File.query.filter(File.parent == parent) \
                                        .filter(File.name == filename).first()
                 if file_model is None:
-                    filename = secure_filename(upload.filename)
-
                     filepath = os.path.join(file_location, filename)
                     upload.save(filepath)
 
