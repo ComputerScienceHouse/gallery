@@ -125,15 +125,26 @@ def update_file():
                     continue
                 parent = add_directory(parent, directory, "A new Directory!", owner)
 
+        error_files = []
         for upload in uploaded_files:
             if allowed_file(upload.filename):
-                filename = secure_filename(upload.filename)
-                filepath = os.path.join(file_location, filename)
-                upload.save(filepath)
+                if file_model is None:
+                    filename = secure_filename(upload.filename)
 
-                add_file(filename, file_location, parent, "A New File", owner)
-                files.append(filepath)
+                    filepath = os.path.join(file_location, filename)
+                    upload.save(filepath)
 
+                    add_file(filename, file_location, parent, "A New File", owner)
+                    files.append(filepath)
+                else:
+                    print("error file already exists in dir!", file=stderr)
+                    error_files.append(filename)
+
+        if len(error_files) != 0:
+            return jsonify({
+                "errored_files": error_files,
+                "redirect_url": "/view/dir/" + str(parent)
+                })
         return redirect("/view/dir/" + str(parent), 302)
     else:
         return render_template("upload.html",
