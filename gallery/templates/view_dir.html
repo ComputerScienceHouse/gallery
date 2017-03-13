@@ -5,11 +5,11 @@ View Directory
 
 {% block body %}
 
-<h1>View Directory {{directory.name}}</h1>
 {% set directories = children['directories'] %}
 {% set files = children['files'] %}
 
 <div class="container">
+<h1>View Directory: {{directory.name}}</h1>
 {% if directories|length >= 1 %}
     <h2 class="text-primary">Subdirectories:</h2>
     {% for row in directories|batch(4) %}

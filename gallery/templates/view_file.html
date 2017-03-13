@@ -6,6 +6,7 @@ View File
 {% block body %}
 
 <div class="container">
+    <h1>View File: {{ file.name }}:</h1>
     <div class="row">
         <div class="col-md-10 col-md-offset-1 col-sm-12 col-sm-offset-0">
             {% if prev_file != -1 %}
@@ -15,7 +16,6 @@ View File
             <a href="/view/file/{{next_file}}">Next File &gt;</a>
             {% endif %}
 
-            <h1>View file {{ file.name }}:</h1>
             {% if file.filetype == "Photo" %}
                 <img src="/api/image/get/{{file.id}}">
 
