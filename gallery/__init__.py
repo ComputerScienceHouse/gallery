@@ -404,7 +404,7 @@ def get_dir_tree(internal=False):
 def display_files(dir_id, internal=False):
     file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).all()]
     dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).all()]
-    ret_dict = file_list + dir_list
+    ret_dict = dir_list + file_list
     if internal:
         return ret_dict
     return jsonify(ret_dict)
