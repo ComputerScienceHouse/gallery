@@ -450,10 +450,18 @@ def render_file(file_id):
     display_parent = True
     if file_model is None or file_model.parent is None:
         display_parent = False
+    path_stack = []
+    path_stack.append(file_model)
+    dir_model = file_model
+    while dir_model.parent is not None:
+        dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
+        path_stack.append(dir_model)
+    path_stack.reverse()
     return render_template("view_file.html",
                            file_id=file_id,
                            file=file_model,
                            parent=file_model.parent,
+                           parents=path_stack[2:],
                            next_file=get_image_next_id(file_id, internal=True),
                            prev_file=get_image_prev_id(file_id, internal=True),
                            display_parent=display_parent,
