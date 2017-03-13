@@ -7,7 +7,7 @@ View Directory
 
 <div class="container">
 <h1>View Directory: {{directory.name}}</h1>
-{% if directories|length >= 1 %}
+{% if children|length >= 1 %}
     <h2 class="text-primary">Subdirectories:</h2>
     {% for row in children|batch(3) %}
     <div class="row">
