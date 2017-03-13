@@ -8,26 +8,38 @@ View File
     <a href="/view/dir/{{file.parent}}">Parent directory</a>
 {% endif %}
 
-{% if next_file != -1 %}
-<a href="/view/file/{{next_file}}">Next File</a>
-{% endif %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1 col-sm-12 col-sm-offset-0">
+            {% if prev_file != -1 %}
+            <a href="/view/file/{{prev_file}}">&lt; Previous File</a>
+            {% endif %}
+            {% if next_file != -1 %}
+            <a href="/view/file/{{next_file}}">Next File &gt;</a>
+            {% endif %}
 
-<h1>View file {{ file.name }}:</h1>
-{% if file.filetype == "Photo" %}
-    <img src="/api/image/get/{{file.id}}">
+            <h1>View file {{ file.name }}:</h1>
+            {% if file.filetype == "Photo" %}
+                <img src="/api/image/get/{{file.id}}">
 
-{% elif file.filetype == "Video" %}
-<video controls>
-	<source src="/api/image/get/{{file.id}}">
-</video>
+            {% elif file.filetype == "Video" %}
+            <video controls>
+                <source src="/api/image/get/{{file.id}}">
+            </video>
 
-{% else %}
-    Text Data
-{% endif %}
+            {% else %}
+                Text Data
+            {% endif %}
 
-{% if prev_file != -1 %}
-<a href="/view/file/{{prev_file}}">Previous File</a>
-{% endif %}
+            {% if prev_file != -1 %}
+            <a href="/view/file/{{prev_file}}">&lt; Previous File</a>
+            {% endif %}
+            {% if next_file != -1 %}
+            <a href="/view/file/{{next_file}}">Next File &gt;</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
 <br />
 <a href="/upload">Upload</a>
