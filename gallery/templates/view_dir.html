@@ -5,35 +5,43 @@ View Directory
 
 {% block body %}
 
-{% set directories = children['directories'] %}
-{% set files = children['files'] %}
-
 <div class="container">
 <h1>View Directory: {{directory.name}}</h1>
 {% if directories|length >= 1 %}
     <h2 class="text-primary">Subdirectories:</h2>
-    {% for row in directories|batch(4) %}
+    {% for row in children|batch(3) %}
     <div class="row">
-        {% for dir in row %}
-            <div class="col-sm-3">
-                <a href="/view/dir/{{ dir.id }}"><img src="/api/thumbnail/get/dir/{{ dir.id }}"><p>{{ dir.name }}</p></a>
+        {% for child_type, child in row %}
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                    {% if child_type == "Directory" %}
+                    <div class="album-wrapper">
+                        <a class="album" href="/view/dir/{{ child.id }}">
+                            <img src="/api/thumbnail/get/dir/{{ child.id }}">
+                            <p>{{ child.name }}</p>
+                        </a>
+                        <p>Owner: {{ child.author }}</p>
+                    </div>
+                    {% elif child_type == "File" %}
+                    <a class="file" href="/view/file/{{ child.id }}">
+                        <img src="/api/thumbnail/get/{{ child.id }}">
+                        <p>{{ child.name }}</p>
+                    </a>
+                    <p>Owner: {{ child.author }}</p>
+                    {% endif %}
+                    </div>
+                </div>
             </div>
         {% endfor %}
     </div>
     {% endfor %}
-{% endif %}
-
-{% if files|length >= 1 %}
-    <h2 class="text-primary">Files:</h2>
-    {% for row in files|batch(4) %}
+{% else %}
     <div class="row">
-        {% for file in row %}
-            <div class="col-sm-3">
-                <a href="/view/file/{{ file.id }}"><img src="/api/thumbnail/get/{{ file.id }}"><p>{{file.name}}</p></a>
-            </div>
-        {% endfor %}
+        <div class="col-sm-12">
+            <h2>This album is empty.</h2>
+        </div>
     </div>
-    {% endfor %}
 {% endif %}
 </div>
 

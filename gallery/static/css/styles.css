@@ -24,14 +24,30 @@ h2 {
     font-weight: 300;
 }
 
-.col-sm-3 {
-    text-align: center;
+.file {
+  width: 90%;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
-.col-sm-3 img {
-    margin: 0 auto;
-    width: 100%;
-    max-width: 256px;
+.album-wrapper {
+  transform: rotate(-5deg);
+  display: inline-block;
+  width: 90%;
+  background: #666;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  border: 5px solid white;
+}
+
+.album {
+  transform: rotate(5deg);
+  display: block;
+  width: 100%;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  border: 5px solid white;
+}
+
+.panel p {
+    margin: 0;
 }
 
 /* view_file.html */

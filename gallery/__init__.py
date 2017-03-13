@@ -388,9 +388,9 @@ def get_dir_tree(internal=False):
 @app.route("/api/directory/get/<int:dir_id>")
 @auth.oidc_auth
 def display_files(dir_id, internal=False):
-    file_list = [f for f in File.query.filter(File.parent == dir_id).all()]
-    dir_list = [d for d in Directory.query.filter(Directory.parent == dir_id).all()]
-    ret_dict = {'directories': dir_list, 'files': file_list}
+    file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).all()]
+    dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).all()]
+    ret_dict = file_list + dir_list
     if internal:
         return ret_dict
     return jsonify(ret_dict)
