@@ -12,6 +12,11 @@ h1 {
     margin: 0 0 20px 0;
 }
 
+footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
 /* view_dir.html */
 
 h2 {
