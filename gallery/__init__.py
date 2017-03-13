@@ -50,10 +50,10 @@ else:
 # Disable SSL certificate verification warning
 requests.packages.urllib3.disable_warnings()
 
-app.config["GIT_REVISION"] = subprocess.check_output(['git',
+app.config["git_revision"] = subprocess.check_output(['git',
                                                       'rev-parse',
                                                       '--short',
-                                                      'HEAD']).decode('utf-8').rstrip()
+                                                      'head']).decode('utf-8').rstrip()
 
 
 auth = OIDCAuthentication(app,
@@ -234,11 +234,21 @@ def add_file(file_name, path, dir_id, description, owner):
     exif_dict = {'Exif':{}}
     file_type = "Text"
     if is_image:
+        if filetype.guess(file_path).mime == "image/x-canon-cr2":
+            # wand convert from cr2 to jpeg remove cr2 file
+            old_file_path = file_path
+            file_path = os.path.splitext(file_path)[0]
+            subprocess.check_output(['convert',
+                                     old_file_path,
+                                     file_path])
+            # rm the old file
+            os.remove(old_file_path)
+
         uuid_thumbnail = hash_file(file_path) + ".jpg"
         file_type = "Photo"
 
-        if filetype.guess(file_path).mime == "text/jpeg":
-            exif_dict = piexif.load(os.path.join('/', path, file_name))
+        if filetype.guess(file_path).mime == "image/jpeg":
+            exif_dict = piexif.load(file_path)
 
         # add thumbnail
         with Image(filename=file_path) as img:
@@ -252,7 +262,7 @@ def add_file(file_name, path, dir_id, description, owner):
         file_type = "Video"
     exif = json.dumps(convert_bytes_to_utf8(exif_dict['Exif']))
 
-    file_model = File(dir_id, file_name, description,
+    file_model = File(dir_id, file_path.split('/')[-1], description,
                       owner, uuid_thumbnail, file_type, exif)
     db.session.add(file_model)
     db.session.flush()
