@@ -4,9 +4,6 @@ View Directory
 {% endblock %}
 
 {% block body %}
-{% if display_parent %}
-    <a href="/view/dir/{{ directory.parent }}">Parent directory</a>
-{% endif %}
 
 <h1>View Directory {{directory.name}}</h1>
 {% set directories = children['directories'] %}
@@ -41,5 +38,4 @@ View Directory
 </div>
 
 <br />
-<a href="/upload">Upload</a>
 {% endblock %}

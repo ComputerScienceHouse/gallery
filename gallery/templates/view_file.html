@@ -4,9 +4,6 @@ View File
 {% endblock %}
 
 {% block body %}
-{% if display_parent %}
-    <a href="/view/dir/{{file.parent}}">Parent directory</a>
-{% endif %}
 
 <div class="container">
     <div class="row">
@@ -42,5 +39,4 @@ View File
 </div>
 
 <br />
-<a href="/upload">Upload</a>
 {% endblock %}
