@@ -24,8 +24,9 @@ h2 {
     font-weight: 300;
 }
 
-.file {
-  width: 90%;
+.file img {
+  width: 88%;
+  margin: 6px 0;
   box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
@@ -46,8 +47,24 @@ h2 {
   border: 5px solid white;
 }
 
+.album img {
+    width: 100%;
+}
+
+.panel {
+    text-align: center;
+    padding: 30px 10px 5px 10px;
+}
+
+.panel-body {
+    padding: 25px;
+}
+
 .panel p {
-    margin: 0;
+    margin: 5px 0 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* view_file.html */

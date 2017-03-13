@@ -8,33 +8,31 @@ View Directory
 <div class="container">
 <h1>View Directory: {{directory.name}}</h1>
 {% if children|length >= 1 %}
-    {% for row in children|batch(3) %}
     <div class="row">
-        {% for child_type, child in row %}
-            <div class="col-md-4 col-sm-6 col-xs-12">
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                    {% if child_type == "Directory" %}
-                    <div class="album-wrapper">
-                        <a class="album" href="/view/dir/{{ child.id }}">
-                            <img src="/api/thumbnail/get/dir/{{ child.id }}">
-                            <p>{{ child.name }}</p>
-                        </a>
-                        <p>Owner: {{ child.author }}</p>
-                    </div>
-                    {% elif child_type == "File" %}
-                    <a class="file" href="/view/file/{{ child.id }}">
-                        <img src="/api/thumbnail/get/{{ child.id }}">
-                        <p>{{ child.name }}</p>
+    {% for child_type, child in children %}
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                {% if child_type == "Directory" %}
+                <div class="album-wrapper">
+                    <a class="album" href="/view/dir/{{ child.id }}">
+                        <img src="/api/thumbnail/get/dir/{{ child.id }}">
                     </a>
-                    <p>Owner: {{ child.author }}</p>
-                    {% endif %}
-                    </div>
+                </div>
+                <p>{{ child.name }}</p>
+                <p>Owner: {{ child.author }}</p>
+                {% elif child_type == "File" %}
+                <a class="file" href="/view/file/{{ child.id }}">
+                    <img src="/api/thumbnail/get/{{ child.id }}">
+                    <p>{{ child.name }}</p>
+                </a>
+                <p>Owner: {{ child.author }}</p>
+                {% endif %}
                 </div>
             </div>
-        {% endfor %}
-    </div>
+        </div>
     {% endfor %}
+    </div>
 {% else %}
     <div class="row">
         <div class="col-sm-12">
