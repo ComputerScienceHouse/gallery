@@ -19,7 +19,9 @@ View Directory
                         <img class="album" src="/api/thumbnail/get/dir/{{ child.id }}">
                     </a>
                 </div>
-                <p>{{ child.name }}</p>
+                <a href="/view/dir/{{ child.id }}">
+                    <p>{{ child.name }}</p>
+                </a>
                 <p>Owner: {{ child.author }}</p>
                 {% elif child_type == "File" %}
                 <a class="file" href="/view/file/{{ child.id }}">
