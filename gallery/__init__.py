@@ -240,7 +240,7 @@ def add_file(file_name, path, dir_id, description, owner):
             file_path = os.path.splitext(file_path)[0]
             subprocess.check_output(['dcraw',
                                      '-w',
-                                     old_file_path,
+                                     old_file_path])
             subprocess.check_output(['convert',
                                      file_path + ".ppm",
                                      file_path + ".jpg"])
