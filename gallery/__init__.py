@@ -50,10 +50,10 @@ else:
 # Disable SSL certificate verification warning
 requests.packages.urllib3.disable_warnings()
 
-app.config["git_revision"] = subprocess.check_output(['git',
+app.config["GIT_REVISION"] = subprocess.check_output(['git',
                                                       'rev-parse',
                                                       '--short',
-                                                      'head']).decode('utf-8').rstrip()
+                                                      'HEAD']).decode('utf-8').rstrip()
 
 
 auth = OIDCAuthentication(app,
