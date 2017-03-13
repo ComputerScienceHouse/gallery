@@ -24,6 +24,7 @@ import flask_migrate
 import piexif
 import requests
 from wand.image import Image
+from wand.color import Color
 from werkzeug import secure_filename
 
 app = Flask(__name__)
@@ -277,6 +278,7 @@ def add_file(file_name, path, dir_id, description, owner):
                 size = image.width if image.width < image.height else image.height
                 image.crop(width=size, height=size, gravity='center')
                 image.resize(256, 256)
+                image.background_color(Color("#EEEEEE"))
                 image.format = 'jpeg'
                 image.save(filename=os.path.join("/gallery-data/thumbnails", uuid_thumbnail))
     elif is_video:
