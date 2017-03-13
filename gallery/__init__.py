@@ -121,6 +121,8 @@ def update_file():
 
             # now put these dirs in the db
             for directory in path:
+                if directory == "":
+                    continue
                 parent = add_directory(parent, directory, "A new Directory!", owner)
 
         for upload in uploaded_files:
