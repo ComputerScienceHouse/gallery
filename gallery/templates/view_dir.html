@@ -15,8 +15,8 @@ View Directory
                 <div class="panel-body">
                 {% if child_type == "Directory" %}
                 <div class="album-wrapper">
-                    <a class="album" href="/view/dir/{{ child.id }}">
-                        <img src="/api/thumbnail/get/dir/{{ child.id }}">
+                    <a href="/view/dir/{{ child.id }}">
+                        <img class="album" src="/api/thumbnail/get/dir/{{ child.id }}">
                     </a>
                 </div>
                 <p>{{ child.name }}</p>
