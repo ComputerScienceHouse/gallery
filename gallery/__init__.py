@@ -433,7 +433,7 @@ def render_dir(dir_id):
     while dir_model.parent is not None:
         dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
         path_stack.append(dir_model)
-    path_stack.pop()
+    path_stack = path_stack[:len(path_stack) - 2].reverse()
     return render_template("view_dir.html",
                            children=children,
                            directory=dir_model,

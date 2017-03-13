@@ -10,7 +10,9 @@ View Directory
         <div class="col-xs-12">
             <ul class="breadcrumb">
                 {% for p in parents %}
-                    {% if loop.last %}
+                    {% if loop.first %}
+                    <li><a href="/view/dir/{{ p.id }}">CSH Gallery</a></li>
+                    {% elif loop.last %}
                     <li class="active">{{ p.name }}</li>
                     {% else %}
                     <li><a href="/view/dir/{{ p.id }}">{{ p.name }}</a></li>
