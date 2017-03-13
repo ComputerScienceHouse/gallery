@@ -433,12 +433,12 @@ def render_dir(dir_id):
     while dir_model.parent is not None:
         dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
         path_stack.append(dir_model)
-    path_stack = path_stack[:len(path_stack) - 2].reverse()
+    path_stack.reverse()
     return render_template("view_dir.html",
                            children=children,
                            directory=dir_model,
                            parent=dir_model.parent,
-                           parents=path_stack,
+                           parents=path_stack[2:],
                            display_parent=display_parent,
                            username=session['userinfo'].get('preferred_username', ''),
                            display_name=session['userinfo'].get('name', 'CSH Member'))
