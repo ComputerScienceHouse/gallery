@@ -90,9 +90,6 @@ def update_file():
             path = os.path.join(path, path_stack.pop())
 
         file_path = os.path.join('/', path, request.form.get('gallery_location'))
-        print(path, file=stderr)
-        print(request.form.get('gallery-location'), file=stderr)
-        print(file_path, file=stderr)
 
         _, count = re.subn(r'[^a-zA-Z0-9 \/\-\_]', '', file_path)
         if not file_path.startswith("/gallery-data/root") or count != 0:
@@ -108,13 +105,8 @@ def update_file():
             os.makedirs(file_location)
 
         parent = base_path
-        print(base_path, file=stderr)
-        print(file_path, file=stderr)
-        print(path, file=stderr)
         if file_path.startswith("/" + path):
             file_path = file_path[(len(path) + 1):]
-        print(file_path, file=stderr)
-        print(file_path.split('/'), file=stderr)
         # Sometimes we want to put things in their place
         if file_path != "" and file_path != "/":
             path = file_path.split('/')
@@ -126,7 +118,12 @@ def update_file():
                     continue
                 parent = add_directory(parent, directory, "A new Directory!", owner)
 
-        error_files = []
+        # Create return object
+        upload_status = {}
+        upload_status['error'] = []
+        upload_status['success'] = []
+        upload_status['redirect'] = "/view/dir/" + str(parent)
+
         for upload in uploaded_files:
             if allowed_file(upload.filename):
                 filename = secure_filename(upload.filename)
@@ -137,17 +134,13 @@ def update_file():
                     upload.save(filepath)
 
                     add_file(filename, file_location, parent, "A New File", owner)
-                    files.append(filepath)
+                    upload_status['success'].append(filename)
                 else:
-                    print("error file already exists in dir!", file=stderr)
-                    error_files.append(filename)
+                    upload_status['error'].append(filename)
 
-        if len(error_files) != 0:
-            return jsonify({
-                "errored_files": error_files,
-                "redirect_url": "/view/dir/" + str(parent)
-                })
-        return redirect("/view/dir/" + str(parent), 302)
+        # actually redirect to URL
+        # change from FORM post to AJAX maybe?
+        return jsonify(upload_status)
     else:
         return render_template("upload.html",
                                 username=session['userinfo'].get('preferred_username', ''),
