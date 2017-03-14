@@ -266,15 +266,14 @@ def add_file(file_name, path, dir_id, description, owner):
             exif_dict = piexif.load(file_path)
 
         # add thumbnail
-        with Color("#EEEEEE") as background_color:
-            with Image(filename=file_path) as img:
-                with img.clone() as image:
-                    size = image.width if image.width < image.height else image.height
-                    image.crop(width=size, height=size, gravity='center')
-                    image.resize(256, 256)
-                    image.background_color(background_color)
-                    image.format = 'jpeg'
-                    image.save(filename=os.path.join("/gallery-data/thumbnails", uuid_thumbnail))
+        with Image(filename=file_path) as img:
+            with img.clone() as image:
+                size = image.width if image.width < image.height else image.height
+                image.crop(width=size, height=size, gravity='center')
+                image.resize(256, 256)
+                image.background_color = Color("#EEEEEE")
+                image.format = 'jpeg'
+                image.save(filename=os.path.join("/gallery-data/thumbnails", uuid_thumbnail))
     elif is_video:
         file_type = "Video"
     exif = json.dumps(convert_bytes_to_utf8(exif_dict['Exif']))
