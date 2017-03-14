@@ -50,18 +50,22 @@ h2 {
 
 .panel {
     text-align: center;
-    padding: 30px 10px 5px 10px;
 }
 
 .panel-body {
-    padding: 25px;
+    padding: 25px 15px 15px 15px;
 }
 
 .panel p {
+    line-height: 1.4;
     margin: 5px 0 0 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.panel p a {
+    font-weight: 500;
 }
 
 /* view_file.html */

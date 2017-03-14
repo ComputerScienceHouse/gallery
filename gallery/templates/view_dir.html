@@ -24,7 +24,7 @@ View Directory
 {% if children|length >= 1 %}
     <div class="row">
     {% for child_type, child in children %}
-        <div class="col-md-4 col-sm-6 col-xs-12">
+        <div class="col-md-3 col-sm-4 col-xs-6">
             <div class="panel panel-default">
                 <div class="panel-body">
                 {% if child_type == "Directory" %}
@@ -51,7 +51,7 @@ View Directory
     </div>
 {% else %}
     <div class="row">
-        <div class="col-sm-12">
+        <div class="col-sm-12 text-center">
             <h2>This album is empty.</h2>
         </div>
     </div>
