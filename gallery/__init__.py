@@ -73,7 +73,7 @@ for func in inspect.getmembers(gallery_ldap):
     if func[0].startswith("ldap_"):
         unwrapped = inspect.unwrap(func[1])
         if inspect.isfunction(unwrapped):
-            app.add_template_global(inspect.unwrap(unwrapped, name=func[0]))
+            app.add_template_global(inspect.unwrap(unwrapped), name=func[0])
 
 @app.route("/")
 @auth.oidc_auth
