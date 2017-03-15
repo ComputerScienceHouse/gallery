@@ -36,13 +36,13 @@ View Directory
                 <a href="/view/dir/{{ child.id }}">
                     <p>{{ child.name }}</p>
                 </a>
-                <p>Owner: {{ child.author }}</p>
+                <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
                 {% elif child_type == "File" %}
                 <a class="file" href="/view/file/{{ child.id }}">
                     <img src="/api/thumbnail/get/{{ child.id }}">
                     <p>{{ child.name }}</p>
                 </a>
-                <p>Owner: {{ child.author }}</p>
+                <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
                 {% endif %}
                 </div>
             </div>

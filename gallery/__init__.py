@@ -9,6 +9,7 @@ from sys import stderr
 
 from alembic import command
 import filetype
+from csh_ldap import CSHLDAP
 from flask import Flask
 from flask import current_app
 from flask import jsonify
@@ -33,6 +34,9 @@ app.config['SQLALCHEMY_TRACK_NOTIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = flask_migrate.Migrate(app, db)
 
+ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
+               app.config['LDAP_BIND_PW'])
+
 # pylint: disable=C0413
 from gallery.models import Directory
 from gallery.models import File
@@ -42,6 +46,7 @@ from gallery.util import get_dir_file_contents
 from gallery.util import get_dir_tree_dict
 from gallery.util import convert_bytes_to_utf8
 
+from gallery.ldap import ldap_convert_uuid_to_displayname
 
 if os.path.exists(os.path.join(os.getcwd(), "config.py")):
     app.config.from_pyfile(os.path.join(os.getcwd(), "config.py"))
