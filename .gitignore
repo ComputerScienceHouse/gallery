@@ -90,3 +90,6 @@ ENV/
 
 config.py
 data.db
+
+# Pycharm
+.idea/
