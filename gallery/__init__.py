@@ -326,8 +326,9 @@ def refresh_thumbnail():
     for dir_model in missing_thumbnails:
         print("Calling the recursive helper on dir with missing thumbnail: " + dir_model.name, file=stderr)
         dir_model.thumbnail_uuid = refresh_thumbnail_helper(dir_model)
-    db.session.flush()
-    db.session.commit()
+        db.session.flush()
+        db.session.commit()
+        db.session.refresh(dir_model)
     print("Finished, redirecting", file=stderr)
     return redirect('/view/dir/3')
 
