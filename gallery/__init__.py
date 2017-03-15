@@ -304,31 +304,25 @@ def add_file(file_name, path, dir_id, description, owner):
 @auth.oidc_auth
 def refresh_thumbnail():
     def refresh_thumbnail_helper(dir_model):
-        dir_children = Directory.query.filter(Directory.parent == dir_model.id).all()
-        file_children = File.query.filter(File.parent == dir_model.id).all()
+        dir_children = [d for d in Directory.query.filter(Directory.parent == dir_model.id).all()]
+        file_children = [f for f in File.query.filter(File.parent == dir_model.id).all()]
         for file in file_children:
             if file.thumbnail_uuid != "reedphoto.jpg":
-                print("It found a file w/ a thumbnail: " + file.name, file=stderr)
                 return file.thumbnail_uuid
         for d in dir_children:
             if d.thumbnail_uuid != "reedphoto.jpg":
-                print("It found a dir w/ a thumbnail: " + d.name, file=stderr)
                 return d.thumbnail_uuid
         # WE HAVE TO GO DEEPER (inception noise)
         for d in dir_children:
-            print("Recursing down from " + dir_model.name + " to " + d.name, file=stderr)
             return refresh_thumbnail_helper(d)
         # No thumbnail found
-        print("Found no children w/ thumbnails, returning 'reedphoto.jpg'", file=stderr)
         return "reedphoto.jpg"
 
     missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == "reedphoto.jpg").all()
     for dir_model in missing_thumbnails:
-        print("Calling the recursive helper on dir with missing thumbnail: " + dir_model.name, file=stderr)
         dir_model.thumbnail_uuid = refresh_thumbnail_helper(dir_model)
     db.session.flush()
     db.session.commit()
-    print("Finished, redirecting", file=stderr)
     return redirect('/view/dir/3')
 
 
