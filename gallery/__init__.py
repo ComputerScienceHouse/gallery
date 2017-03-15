@@ -152,6 +152,7 @@ def update_file():
                 else:
                     upload_status['error'].append(filename)
 
+        refresh_thumbnail()
         # actually redirect to URL
         # change from FORM post to AJAX maybe?
         return jsonify(upload_status)
