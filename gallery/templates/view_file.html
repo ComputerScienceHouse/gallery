@@ -31,11 +31,11 @@ View File
             {% endif %}
 
             {% if file.filetype == "Photo" %}
-                <img src="/api/image/get/{{file.id}}">
+                <img src="/api/file/get/{{file.id}}">
 
             {% elif file.filetype == "Video" %}
             <video controls>
-                <source src="/api/image/get/{{file.id}}">
+                <source src="/api/file/get/{{file.id}}">
             </video>
 
             {% else %}

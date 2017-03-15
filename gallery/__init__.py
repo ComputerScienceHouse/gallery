@@ -328,12 +328,12 @@ def refresh_thumbnail():
 
 
 
-@app.route("/api/image/get/<int:image_id>")
+@app.route("/api/file/get/<int:file_id>")
 @auth.oidc_auth
-def display_image(image_id):
-    image_id = int(image_id)
+def display_file(file_id):
+    file_id = int(file_id)
     path_stack = []
-    file_model = File.query.filter(File.id == image_id).first()
+    file_model = File.query.filter(File.id == file_id).first()
 
     if file_model is None:
         return "file not found", 404
@@ -350,11 +350,11 @@ def display_image(image_id):
         path = os.path.join(path, path_stack.pop())
     return send_from_directory('/', path)
 
-@app.route("/api/thumbnail/get/<int:image_id>")
+@app.route("/api/thumbnail/get/<int:file_id>")
 @auth.oidc_auth
-def display_thumbnail(image_id):
-    image_id = int(image_id)
-    file_model = File.query.filter(File.id == image_id).first()
+def display_thumbnail(file_id):
+    file_id = int(file_id)
+    file_model = File.query.filter(File.id == file_id).first()
 
     if file_model is None:
         return send_from_directory('/gallery-data/thumbnails', 'reedphoto.jpg')
@@ -369,14 +369,14 @@ def display_dir_thumbnail(dir_id):
 
     return send_from_directory('/gallery-data/thumbnails', dir_model.thumbnail_uuid)
 
-@app.route("/api/image/next/<int:image_id>")
+@app.route("/api/file/next/<int:file_id>")
 @auth.oidc_auth
-def get_image_next_id(image_id, internal=False):
-    image_id = int(image_id)
-    file_model = File.query.filter(File.id == image_id).first()
+def get_file_next_id(file_id, internal=False):
+    file_id = int(file_id)
+    file_model = File.query.filter(File.id == file_id).first()
     files = [f.id for f in get_dir_file_contents(file_model.parent)]
 
-    idx = files.index(image_id) + 1
+    idx = files.index(file_id) + 1
 
     if idx >= len(files):
         idx = -1
@@ -387,14 +387,14 @@ def get_image_next_id(image_id, internal=False):
         return idx
     return jsonify({"index": idx})
 
-@app.route("/api/image/prev/<int:image_id>")
+@app.route("/api/file/prev/<int:file_id>")
 @auth.oidc_auth
-def get_image_prev_id(image_id, internal=False):
-    image_id = int(image_id)
-    file_model = File.query.filter(File.id == image_id).first()
+def get_file_prev_id(file_id, internal=False):
+    file_id = int(file_id)
+    file_model = File.query.filter(File.id == file_id).first()
     files = [f.id for f in get_dir_file_contents(file_model.parent)]
 
-    idx = files.index(image_id) - 1
+    idx = files.index(file_id) - 1
 
     if idx < 0:
         idx = -1
@@ -500,8 +500,8 @@ def render_file(file_id):
                            file=file_model,
                            parent=file_model.parent,
                            parents=path_stack[2:],
-                           next_file=get_image_next_id(file_id, internal=True),
-                           prev_file=get_image_prev_id(file_id, internal=True),
+                           next_file=get_file_next_id(file_id, internal=True),
+                           prev_file=get_file_prev_id(file_id, internal=True),
                            display_parent=display_parent,
                            username=session['userinfo'].get('preferred_username', ''),
                            display_name=session['userinfo'].get('name', 'CSH Member'))
