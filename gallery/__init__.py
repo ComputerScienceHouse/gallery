@@ -300,6 +300,29 @@ def add_file(file_name, path, dir_id, description, owner):
     db.session.refresh(file_model)
 
 
+@app.route("/refresh_thumbnails")
+@auth.oidc_auth
+def refresh_thumbnail():
+    def refresh_thumbnail_helper(dir_model):
+        dir_children = Directory.query.filter(Directory.parent == dir_model.id).all()
+        file_children = File.query.filter(File.parent == dir_model.id).all()
+        for file in file_children:
+            if file.thumbnail_uuid != "reedphoto.jpg":
+                return file.thumbnail_uuid
+        for d in dir_children:
+            if d.thumbnail_uuid != "reedphoto.jpg":
+                return d.thumbnail_uuid
+        # WE HAVE TO GO DEEPER (inception noise)
+        for d in dir_children:
+            return refresh_thumbnail_helper(d)
+        # No thumbnail found
+        return "reedphoto.jpg"
+
+    missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == "reedphoto.jpg").all()
+    for dir_model in missing_thumbnails:
+        dir_model.thumbnail_uuid = refresh_thumbnail_helper(dir_model)
+
+
 @app.route("/api/image/get/<int:image_id>")
 @auth.oidc_auth
 def display_image(image_id):
