@@ -368,12 +368,9 @@ def display_thumbnail(image_id):
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
 @auth.oidc_auth
 def display_dir_thumbnail(dir_id):
-    first_child = File.query.filter(File.parent == dir_id).first()
+    dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
-    if first_child is None:
-        return send_from_directory('/gallery-data/thumbnails', 'reedphoto.jpg')
-
-    return send_from_directory('/gallery-data/thumbnails', first_child.thumbnail_uuid)
+    return send_from_directory('/gallery-data/thumbnails', dir_model.thumbnail_uuid)
 
 @app.route("/api/image/next/<int:image_id>")
 @auth.oidc_auth
