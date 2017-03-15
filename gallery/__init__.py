@@ -32,14 +32,14 @@ from werkzeug import secure_filename
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_NOTIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-migrate = flask_migrate.Migrate(app, db)
-
 
 if os.path.exists(os.path.join(os.getcwd(), "config.py")):
     app.config.from_pyfile(os.path.join(os.getcwd(), "config.py"))
 else:
     app.config.from_pyfile(os.path.join(os.getcwd(), "config.env.py"))
+
+db = SQLAlchemy(app)
+migrate = flask_migrate.Migrate(app, db)
 
 # Disable SSL certificate verification warning
 requests.packages.urllib3.disable_warnings()
