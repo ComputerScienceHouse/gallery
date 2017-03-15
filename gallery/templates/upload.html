@@ -29,7 +29,8 @@ View File
     $(function() {
         $.get("/api/get_dir_tree", function(data) {
             $('#fileList').tree({
-                data: [data]
+                data: [data],
+                autoOpen: 0
             });
             $('#fileList').bind(
                 'tree.click',
