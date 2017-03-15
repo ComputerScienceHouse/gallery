@@ -331,6 +331,7 @@ def refresh_thumbnail():
 @app.route("/api/image/get/<int:image_id>")
 @auth.oidc_auth
 def display_image(image_id):
+    image_id = int(image_id)
     path_stack = []
     file_model = File.query.filter(File.id == image_id).first()
 
@@ -352,6 +353,7 @@ def display_image(image_id):
 @app.route("/api/thumbnail/get/<int:image_id>")
 @auth.oidc_auth
 def display_thumbnail(image_id):
+    image_id = int(image_id)
     file_model = File.query.filter(File.id == image_id).first()
 
     if file_model is None:
@@ -362,6 +364,7 @@ def display_thumbnail(image_id):
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
 @auth.oidc_auth
 def display_dir_thumbnail(dir_id):
+    dir_id = int(dir_id)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
     return send_from_directory('/gallery-data/thumbnails', dir_model.thumbnail_uuid)
@@ -436,6 +439,7 @@ def get_dir_tree(internal=False):
 @app.route("/api/directory/get/<int:dir_id>")
 @auth.oidc_auth
 def display_files(dir_id, internal=False):
+    dir_id = int(dir_id)
     file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).all()]
     dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).all()]
     ret_dict = dir_list + file_list
@@ -446,6 +450,7 @@ def display_files(dir_id, internal=False):
 @app.route("/view/dir/<int:dir_id>")
 @auth.oidc_auth
 def render_dir(dir_id):
+    dir_id = int(dir_id)
     if dir_id < 3:
         return redirect('/view/dir/3')
 
@@ -475,9 +480,10 @@ def render_dir(dir_id):
                            username=session['userinfo'].get('preferred_username', ''),
                            display_name=session['userinfo'].get('name', 'CSH Member'))
 
-@app.route("/view/file/<file_id>")
+@app.route("/view/file/<int:file_id>")
 @auth.oidc_auth
 def render_file(file_id):
+    file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
     display_parent = True
     if file_model is None or file_model.parent is None:
