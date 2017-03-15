@@ -1,5 +1,6 @@
 import os
 from addict import Dict
+from sys import stderr
 
 from gallery.models import File
 
@@ -23,12 +24,18 @@ def get_dir_tree_dict():
 def convert_bytes_to_utf8(dic):
     for key in dic:
         if isinstance(key, bytes):
-            k = key.decode('utf-8')
+            try:
+                k = key.decode('utf-8')
+            except Exception as e:
+                print(e, file=stderr)
             v = dic[key]
             del dic[key]
             dic[k] = v
         if isinstance(dic[key], bytes):
-            v = dic[key].decode('utf-8')
+            try:
+                v = dic[key].decode('utf-8')
+            except Exception as e:
+                print(e, file=stderr)
             dic[key] = v
     return dic
 
