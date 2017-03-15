@@ -1,4 +1,5 @@
 import hashlib
+import inspect
 import json
 import os
 import zipfile
@@ -34,19 +35,6 @@ app.config['SQLALCHEMY_TRACK_NOTIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = flask_migrate.Migrate(app, db)
 
-ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
-               app.config['LDAP_BIND_PW'])
-
-# pylint: disable=C0413
-from gallery.models import Directory
-from gallery.models import File
-
-from gallery.util import allowed_file
-from gallery.util import get_dir_file_contents
-from gallery.util import get_dir_tree_dict
-from gallery.util import convert_bytes_to_utf8
-
-from gallery.ldap import ldap_convert_uuid_to_displayname
 
 if os.path.exists(os.path.join(os.getcwd(), "config.py")):
     app.config.from_pyfile(os.path.join(os.getcwd(), "config.py"))
@@ -65,6 +53,27 @@ app.config["GIT_REVISION"] = subprocess.check_output(['git',
 auth = OIDCAuthentication(app,
                           issuer=app.config['OIDC_ISSUER'],
                           client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
+
+
+ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
+               app.config['LDAP_BIND_PW'])
+
+# pylint: disable=C0413
+from gallery.models import Directory
+from gallery.models import File
+
+from gallery.util import allowed_file
+from gallery.util import get_dir_file_contents
+from gallery.util import get_dir_tree_dict
+from gallery.util import convert_bytes_to_utf8
+
+import gallery.ldap as gallery_ldap
+
+for func in inspect.getmembers(gallery_ldap):
+    if func[0].startswith("ldap_"):
+        unwrapped = inspect.unwrap(func[1])
+        if inspect.isfunction(unwrapped):
+            app.add_template_global(inspect.unwrap(unwrapped, name=func[0]))
 
 @app.route("/")
 @auth.oidc_auth
