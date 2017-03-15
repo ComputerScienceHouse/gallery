@@ -321,6 +321,10 @@ def refresh_thumbnail():
     missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == "reedphoto.jpg").all()
     for dir_model in missing_thumbnails:
         dir_model.thumbnail_uuid = refresh_thumbnail_helper(dir_model)
+    db.session.flush()
+    db.session.commit()
+    return redirect('/view/dir/3')
+
 
 
 @app.route("/api/image/get/<int:image_id>")
