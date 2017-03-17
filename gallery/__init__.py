@@ -85,7 +85,9 @@ def index():
 @auth.oidc_auth
 def update_file():
     if request.method == 'POST':
-        uploaded_files = request.files.getlist("gallery-upload")
+        # Dropzone multi file is broke with .getlist()
+        uploaded_files = [t[1] for t in request.files.items()]
+
         files = []
         owner = str(session['userinfo'].get('sub', ''))
 
@@ -139,6 +141,7 @@ def update_file():
         upload_status['redirect'] = "/view/dir/" + str(parent)
 
         for upload in uploaded_files:
+            print(upload)
             if allowed_file(upload.filename):
                 filename = secure_filename(upload.filename)
                 file_model = File.query.filter(File.parent == parent) \
@@ -155,6 +158,7 @@ def update_file():
         refresh_thumbnail()
         # actually redirect to URL
         # change from FORM post to AJAX maybe?
+        print(upload_status)
         return jsonify(upload_status)
     else:
         return render_template("upload.html",
