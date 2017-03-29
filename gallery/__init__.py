@@ -65,6 +65,7 @@ from gallery.models import File
 from gallery.util import allowed_file
 from gallery.util import get_dir_file_contents
 from gallery.util import get_dir_tree_dict
+from gallery.util import get_full_dir_path
 from gallery.util import convert_bytes_to_utf8
 
 import gallery.ldap as gallery_ldap
@@ -81,91 +82,114 @@ def index():
     root_id = get_dir_tree(internal=True)
     return redirect("/view/dir/" + str(root_id['id']))
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload', methods=['GET'])
 @auth.oidc_auth
-def update_file():
-    if request.method == 'POST':
-        # Dropzone multi file is broke with .getlist()
-        uploaded_files = [t[1] for t in request.files.items()]
+def view_upload():
+    return render_template("upload.html",
+                            username=session['userinfo'].get('preferred_username', ''),
+                            display_name=session['userinfo'].get('name', 'CSH Member'))
 
-        files = []
-        owner = str(session['userinfo'].get('sub', ''))
+@app.route('/upload', methods=['POST'])
+@auth.oidc_auth
+def upload_file():
+    # Dropzone multi file is broke with .getlist()
+    uploaded_files = [t[1] for t in request.files.items()]
 
-        # hardcoding is bad
-        base_path = request.form.get('gallery_dir_id')
+    files = []
+    owner = str(session['userinfo'].get('sub', ''))
 
-        path_stack = []
-        dir_model = Directory.query.filter(Directory.id == base_path).first()
-        path_stack.append(dir_model.name)
-        while dir_model.parent != None:
-            dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
-            path_stack.append(dir_model.name)
-        path_stack.pop()
-        path = ""
-        while not len(path_stack) == 0:
-            path = os.path.join(path, path_stack.pop())
+    # hardcoding is bad
+    parent = request.form.get('parent_id')
 
-        file_path = os.path.join('/', path, request.form.get('gallery_location'))
+    # Create return object
+    upload_status = {}
+    upload_status['error'] = []
+    upload_status['success'] = []
+    upload_status['redirect'] = "/view/dir/" + str(parent)
 
-        _, count = re.subn(r'[^a-zA-Z0-9 \/\-\_]', '', file_path)
-        if not file_path.startswith("/gallery-data/root") or count != 0:
-            return "invalid path" + file_path, 400
+    dir_path = get_full_dir_path(parent)
+    for upload in uploaded_files:
+        if allowed_file(upload.filename):
+            filename = secure_filename(upload.filename)
+            file_model = File.query.filter(File.parent == parent) \
+                                   .filter(File.name == filename).first()
+            if file_model is None:
+                filepath = os.path.join(dir_path, filename)
+                upload.save(filepath)
 
-        #if file_path == ".":
-        #    file_path = ""
-        #file_location = os.path.join('/', path, file_path)
-        file_location = file_path
+                file_model = add_file(filename, dir_path, parent, "A New File", owner)
+                upload_status['success'].append(
+                    {
+                        "name": file_model.name,
+                        "id": file_model.id
+                    })
+            else:
+                upload_status['error'].append(filename)
 
-        # mkdir -p that shit
-        if not os.path.exists(file_location):
-            os.makedirs(file_location)
+    refresh_thumbnail()
+    # actually redirect to URL
+    # change from FORM post to AJAX maybe?
+    return jsonify(upload_status)
 
-        parent = base_path
-        if file_path.startswith("/" + path):
-            file_path = file_path[(len(path) + 1):]
-        # Sometimes we want to put things in their place
-        if file_path != "" and file_path != "/":
-            path = file_path.split('/')
-            path.pop(0) # remove blank
+@app.route('/create_folder', methods=['GET'])
+@auth.oidc_auth
+def view_mkdir():
+    return render_template("mkdir.html",
+                            username=session['userinfo'].get('preferred_username', ''),
+                            display_name=session['userinfo'].get('name', 'CSH Member'))
 
-            # now put these dirs in the db
-            for directory in path:
-                if directory == "":
-                    continue
-                parent = add_directory(parent, directory, "A new Directory!", owner)
+@app.route('/api/mkdir', methods=['POST'])
+@auth.oidc_auth
+def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None):
+    owner = str(session['userinfo'].get('sub', ''))
 
-        # Create return object
-        upload_status = {}
-        upload_status['error'] = []
-        upload_status['success'] = []
-        upload_status['redirect'] = "/view/dir/" + str(parent)
+    # hardcoding is bad
+    parent_id = request.form.get('parent_id')
 
-        for upload in uploaded_files:
-            print(upload)
-            if allowed_file(upload.filename):
-                filename = secure_filename(upload.filename)
-                file_model = File.query.filter(File.parent == parent) \
-                                       .filter(File.name == filename).first()
-                if file_model is None:
-                    filepath = os.path.join(file_location, filename)
-                    upload.save(filepath)
+    path = get_full_dir_path(parent_id)
 
-                    add_file(filename, file_location, parent, "A New File", owner)
-                    upload_status['success'].append(filename)
-                else:
-                    upload_status['error'].append(filename)
+    # at this point path is something like
+    # gallery-data/root
+    file_path = os.path.join(path, request.form.get('dir_name'))
+    _, count = re.subn(r'[^a-zA-Z0-9 \/\-\_]', '', file_path)
+    if not file_path.startswith("/gallery-data/root") or count != 0:
+        return "invalid path" + file_path, 400
 
-        refresh_thumbnail()
-        # actually redirect to URL
-        # change from FORM post to AJAX maybe?
-        print(upload_status)
-        return jsonify(upload_status)
-    else:
-        return render_template("upload.html",
-                                username=session['userinfo'].get('preferred_username', ''),
-                                display_name=session['userinfo'].get('name', 'CSH Member'))
+    # mkdir -p that shit
+    if not os.path.exists(file_path):
+        os.makedirs(file_path)
 
-# @app.route("/preload")
+    # strip out new dir names now filtered by regex!
+    if file_path.startswith(path):
+        file_path = file_path[(len(path)):]
+
+
+    upload_status = {}
+    upload_status['error'] = []
+    upload_status['success'] = []
+
+    # Sometimes we want to put things in their place
+    if file_path != "" and file_path != "/":
+        path = file_path.split('/')
+        path.pop(0) # remove blank
+
+        # now put these dirs in the db
+        for directory in path:
+            # ignore dir//dir patterns
+            if directory == "":
+                continue
+            parent_id = add_directory(parent_id, directory, "A new Directory!", owner)
+            upload_status['success'].append(
+                {
+                    "name": directory,
+                    "id": parent_id
+                })
+
+    # Create return object
+    upload_status['redirect'] = "/view/dir/" + str(parent_id)
+    return jsonify(upload_status)
+
+# @route("/preload")
 # @auth.oidc_auth
 # def preload_images():
 #     if not os.path.exists("/gallery-data"):
@@ -303,6 +327,7 @@ def add_file(file_name, path, dir_id, description, owner):
     db.session.flush()
     db.session.commit()
     db.session.refresh(file_model)
+    return file_model
 
 
 @app.route("/refresh_thumbnails")
@@ -343,17 +368,11 @@ def display_file(file_id):
     if file_model is None:
         return "file not found", 404
 
-    path_stack.append(file_model.name)
     dir_model = Directory.query.filter(Directory.id == file_model.parent).first()
-    path_stack.append(dir_model.name)
-    while dir_model.parent != None:
-        dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
-        path_stack.append(dir_model.name)
-    path_stack.pop()
-    path = ""
-    while not len(path_stack) == 0:
-        path = os.path.join(path, path_stack.pop())
-    return send_from_directory('/', path)
+
+    path = get_full_dir_path(dir_model.id)
+
+    return send_from_directory(path, file_model.name)
 
 @app.route("/api/thumbnail/get/<int:file_id>")
 @auth.oidc_auth
@@ -479,7 +498,6 @@ def render_dir(dir_id):
     return render_template("view_dir.html",
                            children=children,
                            directory=dir_model,
-                           parent=dir_model.parent,
                            parents=path_stack[2:],
                            display_parent=display_parent,
                            username=session['userinfo'].get('preferred_username', ''),

@@ -86,3 +86,8 @@ h2 {
     font-weight: 700;
     white-space: nowrap;
 }
+
+.dropzone {
+    border 2px dotted #6495ED;
+    display: block;
+}

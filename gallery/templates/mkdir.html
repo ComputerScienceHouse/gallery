@@ -1,0 +1,34 @@
+{% extends "nav.html" %}
+{% block title %}
+Create Folder
+{% endblock %}
+
+{% block extraHead %}
+<link href="https://mbraak.github.io/jqTree/jqtree.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="header">
+        <h3 class="text-muted">Folder Creation</h3>
+    </div>
+    <hr/>
+    <div>
+        <div id="fileList"></div>
+        Parent Directory Id: <input type="number" name="gallery_dir_id" readonly/><br />
+        File Location: <input type="text" name="gallery_dir_name" /><br />
+        <input type="submit" value="Create Directory" class="span2" id="mkdir"><br />
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extraFooter %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqtree/1.3.5/tree.jquery.min.js"></script>
+<script>
+    $(function() {
+        populateDirTree();
+        document.getElementById("mkdir").onclick = createDirectory;
+    });
+</script>
+{% endblock %}
