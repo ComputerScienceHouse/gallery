@@ -67,6 +67,7 @@ from gallery.util import get_dir_file_contents
 from gallery.util import get_dir_tree_dict
 from gallery.util import get_full_dir_path
 from gallery.util import convert_bytes_to_utf8
+from gallery.util import gallery_auth
 
 import gallery.ldap as gallery_ldap
 
@@ -84,19 +85,21 @@ def index():
 
 @app.route('/upload', methods=['GET'])
 @auth.oidc_auth
-def view_upload():
+@gallery_auth
+def view_upload(auth_dict=None):
     return render_template("upload.html",
-                            username=session['userinfo'].get('preferred_username', ''),
-                            display_name=session['userinfo'].get('name', 'CSH Member'))
+                            username=auth_dict['uid'],
+                            display_name=auth_dict['name'])
 
 @app.route('/upload', methods=['POST'])
 @auth.oidc_auth
-def upload_file():
+@gallery_auth
+def upload_file(auth_dict=None):
     # Dropzone multi file is broke with .getlist()
     uploaded_files = [t[1] for t in request.files.items()]
 
     files = []
-    owner = str(session['userinfo'].get('sub', ''))
+    owner = auth_dict['uuid']
 
     # hardcoding is bad
     parent = request.form.get('parent_id')
@@ -133,15 +136,18 @@ def upload_file():
 
 @app.route('/create_folder', methods=['GET'])
 @auth.oidc_auth
-def view_mkdir():
+@gallery_auth
+def view_mkdir(auth_dict=None):
     return render_template("mkdir.html",
-                            username=session['userinfo'].get('preferred_username', ''),
-                            display_name=session['userinfo'].get('name', 'CSH Member'))
+                            username=auth_dict['uid'],
+                            display_name=auth_dict['name'])
 
 @app.route('/api/mkdir', methods=['POST'])
 @auth.oidc_auth
-def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None):
-    owner = str(session['userinfo'].get('sub', ''))
+@gallery_auth
+def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
+              auth_dict=None):
+    owner = auth_dict['uuid']
 
     # hardcoding is bad
     parent_id = request.form.get('parent_id')
@@ -473,7 +479,8 @@ def display_files(dir_id, internal=False):
 
 @app.route("/view/dir/<int:dir_id>")
 @auth.oidc_auth
-def render_dir(dir_id):
+@gallery_auth
+def render_dir(dir_id, auth_dict=None):
     dir_id = int(dir_id)
     if dir_id < 3:
         return redirect('/view/dir/3')
@@ -500,12 +507,13 @@ def render_dir(dir_id):
                            directory=dir_model,
                            parents=path_stack[2:],
                            display_parent=display_parent,
-                           username=session['userinfo'].get('preferred_username', ''),
-                           display_name=session['userinfo'].get('name', 'CSH Member'))
+                           username=auth_dict['uid'],
+                           display_name=auth_dict['name'])
 
 @app.route("/view/file/<int:file_id>")
 @auth.oidc_auth
-def render_file(file_id):
+@gallery_auth
+def render_file(file_id, auth_dict=None):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
     display_parent = True
@@ -526,8 +534,8 @@ def render_file(file_id):
                            next_file=get_file_next_id(file_id, internal=True),
                            prev_file=get_file_prev_id(file_id, internal=True),
                            display_parent=display_parent,
-                           username=session['userinfo'].get('preferred_username', ''),
-                           display_name=session['userinfo'].get('name', 'CSH Member'))
+                           username=auth_dict['uid'],
+                           display_name=auth_dict['name'])
 
 @app.route("/logout")
 @auth.oidc_logout

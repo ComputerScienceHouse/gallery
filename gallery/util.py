@@ -1,9 +1,11 @@
-import os
-from addict import Dict
-from sys import stderr
+from flask import session
+from functools import wraps
+from gallery.ldap import ldap_is_eboard
+from gallery.ldap import ldap_is_rtp
 
 from gallery.models import Directory
 from gallery.models import File
+import os
 
 def get_dir_file_contents(dir_id):
     print(File.query.filter(File.parent == dir_id).all())
@@ -66,3 +68,22 @@ def allowed_file(filename):
                     'avi',
                     'cr2'
             ]
+
+def gallery_auth(func):
+    @wraps(func)
+    def wrapped_function(*args, **kwargs):
+        uuid = str(session['userinfo'].get('sub', ''))
+        uid = str(session['userinfo'].get('preferred_username', ''))
+        name = str(session['userinfo'].get('name', ''))
+        is_eboard = ldap_is_eboard(uid)
+        is_rtp = ldap_is_rtp(uid)
+
+        auth_dict = {}
+        auth_dict['uuid'] = uuid
+        auth_dict['uid'] = uid
+        auth_dict['name'] = name
+        auth_dict['is_eboard'] = is_eboard
+        auth_dict['is_rtp'] = is_rtp
+        kwargs['auth_dict'] = auth_dict
+        return func(*args, **kwargs)
+    return wrapped_function
