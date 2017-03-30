@@ -35,7 +35,7 @@ from gallery.file_modules.jpg import JPEGFile
 from gallery.file_modules.jpg import PNGFile
 
 file_mimetype_relation = {
-    "image/jpeg": JPEGFile
+    "image/jpeg": JPEGFile,
     "image/png": PNGFile
 }
 

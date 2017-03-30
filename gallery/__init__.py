@@ -120,6 +120,9 @@ def upload_file(auth_dict=None):
                 upload.save(filepath)
 
                 file_model = add_file(filename, dir_path, parent, "A New File", owner)
+                if file_model is None:
+                    upload_status['error'].append(filename)
+                    continue
                 upload_status['success'].append(
                     {
                         "name": file_model.name,
@@ -303,6 +306,9 @@ def add_file(file_name, path, dir_id, description, owner):
     #    file_type = "Video"
 
     file_data = parse_file_info(file_path)
+    if file_data is None:
+        return None
+
     file_model = File(dir_id, file_data.get_name(), description, owner,
                       file_data.get_thumbnail(), file_data.get_type(),
                       json.dumps(file_data.get_exif()))
