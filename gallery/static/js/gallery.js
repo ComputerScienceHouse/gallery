@@ -2,6 +2,7 @@ function afterMkdir(data) {
     console.log(data);
     // TODO pop up a thing to create a directory description for each
     // new dir
+    // /api/dir/describe/<id>
 }
 
 // Create a new directory
@@ -22,6 +23,8 @@ function afterUpload(file, response) {
     console.log(file);
     console.log("Response:");
     console.log(response);
+    // TODO pop up a thing to create a directory description for each
+    // /api/file/describe/<id>
 }
 
 // Rebuild the directory tree
