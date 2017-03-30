@@ -50,4 +50,4 @@ class CR2File(FileModule):
         # rm the ppm transitional file
         os.remove(file_path + ".ppm")
         # final jpg
-        return file_path = file_path + ".jpg"
+        return file_path + ".jpg"
