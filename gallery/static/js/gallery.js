@@ -1,8 +1,25 @@
 function afterMkdir(data) {
     console.log(data);
-    // TODO pop up a thing to create a directory description for each
-    // new dir
-    // /api/dir/describe/<id>
+    if (data['success'].length > 0) {
+        $('#descriptions').appendTo("<div class='form-group'>");
+        for (var i = 0, len = data['success'].length; i < len; i++) {
+            var dir_name = data['success'][i]['id'];
+            var dir_id = data['success'][i]['name'];
+            var field = "<label class='control-label' for='desc-" + dir_id + "'>Description for folder '<strong>" + dir_name + "</strong>'</label>"
+                        + "<input type='text' class='form-control' id='desc-" + dir_id + "'>";
+            $('#descriptions .modal-body').appendTo(field);
+        }
+        $('#descriptions input').focusout(function() {
+            $.ajax({
+                type: "POST",
+                url: "/api/dir/describe/" + dir_id,
+                data: {
+                    description: $('input[id="desc-' + dir_id + '"]').val()
+                }
+            });
+        });
+        $('#descriptions').appendTo("</div>").modal();
+    }
 }
 
 // Create a new directory
