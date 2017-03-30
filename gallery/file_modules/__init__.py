@@ -37,7 +37,7 @@ from gallery.file_modules.png import PNGFile
 
 file_mimetype_relation = {
     "image/jpeg": JPEGFile,
-    "image/x-cannon-cr2": CR2File,
+    "image/x-canon-cr2": CR2File,
     "image/png": PNGFile
 }
 
