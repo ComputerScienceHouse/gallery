@@ -10,9 +10,8 @@ from gallery.util import hash_file
 class CR2File(FileModule):
 
     def __init__(self, file_path):
-        FileModule.__init__(self, file_path)
+        FileModule.__init__(self, self.convert_to_jpg(file_path))
         self.file_type = "Photo"
-        self.convert_to_jpg()
         self.load_exif()
         self.generate_thumbnail()
 
@@ -36,10 +35,10 @@ class CR2File(FileModule):
                 image.save(filename=os.path.join("/gallery-data/thumbnails",
                     self.thumbnail_uuid))
 
-    def convert_to_jpg(self):
+    def convert_to_jpg(self, _file_path):
         # wand convert from cr2 to jpeg remove cr2 file
-        old_file_path = self.file_path
-        file_path = os.path.splitext(self.file_path)[0]
+        old_file_path = _file_path
+        file_path = os.path.splitext(_file_path)[0]
         subprocess.check_output(['dcraw',
                                  '-w',
                                  old_file_path])
@@ -51,4 +50,4 @@ class CR2File(FileModule):
         # rm the ppm transitional file
         os.remove(file_path + ".ppm")
         # final jpg
-        self.file_path = file_path + ".jpg"
+        return file_path = file_path + ".jpg"
