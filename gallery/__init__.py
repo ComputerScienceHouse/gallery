@@ -1,4 +1,3 @@
-import hashlib
 import inspect
 import json
 import os
@@ -23,10 +22,7 @@ from flask import send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 import flask_migrate
-import piexif
 import requests
-from wand.image import Image
-from wand.color import Color
 from werkzeug import secure_filename
 
 app = Flask(__name__)
@@ -68,6 +64,9 @@ from gallery.util import get_dir_tree_dict
 from gallery.util import get_full_dir_path
 from gallery.util import convert_bytes_to_utf8
 from gallery.util import gallery_auth
+
+from gallery.file_modules import parse_file_info
+from gallery.file_modules import FileModule
 
 import gallery.ldap as gallery_ldap
 
@@ -276,59 +275,37 @@ def add_directory(parent_id, name, description, owner):
 def add_file(file_name, path, dir_id, description, owner):
     uuid_thumbnail = "reedphoto.jpg"
 
-    is_image = filetype.image(os.path.join('/', path, file_name)) is not None
-    is_video = filetype.video(os.path.join('/', path, file_name)) is not None
-
     file_path = os.path.join('/', path, file_name)
 
-    def hash_file(fname):
-        m = hashlib.md5()
-        with open(fname, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                m.update(chunk)
-        return m.hexdigest()
+    #exif_dict = {'Exif':{}}
+    #file_type = "Text"
+    #if filetype.guess(file_path).mime == "image/x-canon-cr2":
+    #    # wand convert from cr2 to jpeg remove cr2 file
+    #    old_file_path = file_path
+    #    file_path = os.path.splitext(file_path)[0]
+    #    subprocess.check_output(['dcraw',
+    #                             '-w',
+    #                             old_file_path])
+    #    subprocess.check_output(['convert',
+    #                             file_path + ".ppm",
+    #                             file_path + ".jpg"])
+    #    # rm the old file
+    #    os.remove(old_file_path)
+    #    # rm the ppm transitional file
+    #    os.remove(file_path + ".ppm")
+    #    # final jpg
+    #    file_path = file_path + ".jpg"
 
-    exif_dict = {'Exif':{}}
-    file_type = "Text"
-    if is_image:
-        if filetype.guess(file_path).mime == "image/x-canon-cr2":
-            # wand convert from cr2 to jpeg remove cr2 file
-            old_file_path = file_path
-            file_path = os.path.splitext(file_path)[0]
-            subprocess.check_output(['dcraw',
-                                     '-w',
-                                     old_file_path])
-            subprocess.check_output(['convert',
-                                     file_path + ".ppm",
-                                     file_path + ".jpg"])
-            # rm the old file
-            os.remove(old_file_path)
-            # rm the ppm transitional file
-            os.remove(file_path + ".ppm")
-            # final jpg
-            file_path = file_path + ".jpg"
+    #uuid_thumbnail = hash_file(file_path) + ".jpg"
+    #file_type = "Photo"
 
-        uuid_thumbnail = hash_file(file_path) + ".jpg"
-        file_type = "Photo"
+    #elif is_video:
+    #    file_type = "Video"
 
-        if filetype.guess(file_path).mime == "image/jpeg":
-            exif_dict = piexif.load(file_path)
-
-        # add thumbnail
-        with Image(filename=file_path) as img:
-            with img.clone() as image:
-                size = image.width if image.width < image.height else image.height
-                image.crop(width=size, height=size, gravity='center')
-                image.resize(256, 256)
-                image.background_color = Color("#EEEEEE")
-                image.format = 'jpeg'
-                image.save(filename=os.path.join("/gallery-data/thumbnails", uuid_thumbnail))
-    elif is_video:
-        file_type = "Video"
-    exif = json.dumps(convert_bytes_to_utf8(exif_dict['Exif']))
-
-    file_model = File(dir_id, file_path.split('/')[-1], description,
-                      owner, uuid_thumbnail, file_type, exif)
+    file_data = parse_file_info(file_path)
+    file_model = File(dir_id, file_data.get_name(), description, owner,
+                      file_data.get_thumbnail(), file_data.get_type(),
+                      json.dumps(file_data.get_exif()))
     db.session.add(file_model)
     db.session.flush()
     db.session.commit()

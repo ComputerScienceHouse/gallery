@@ -1,11 +1,13 @@
 from flask import session
 from functools import wraps
+import hashlib
+import os
+
 from gallery.ldap import ldap_is_eboard
 from gallery.ldap import ldap_is_rtp
 
 from gallery.models import Directory
 from gallery.models import File
-import os
 
 def get_dir_file_contents(dir_id):
     print(File.query.filter(File.parent == dir_id).all())
@@ -87,3 +89,10 @@ def gallery_auth(func):
         kwargs['auth_dict'] = auth_dict
         return func(*args, **kwargs)
     return wrapped_function
+
+def hash_file(fname):
+    m = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            m.update(chunk)
+    return m.hexdigest()
