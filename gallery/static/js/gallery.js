@@ -4,8 +4,8 @@ function afterMkdir(data) {
     if (data['success'].length > 0) {
         $('#descriptions .modal-body').append("<div class='form-group'>");
         for (var i = 0, len = data['success'].length; i < len; i++) {
-            var dir_name = data['success'][i]['id'];
-            var dir_id = data['success'][i]['name'];
+            var dir_name = data['success'][i]['name'];
+            var dir_id = data['success'][i]['id'];
             console.log("Dir: " + dir_name + " (" + dir_id + ")");
             var field = "<label class='control-label' for='desc-" + dir_id + "'>Description for folder '<strong>" + dir_name + "</strong>'</label>"
                         + "<input type='text' class='form-control' id='desc-" + dir_id + "'>";
@@ -24,7 +24,7 @@ function afterMkdir(data) {
             });
         });
         $('#descriptions .modal-body').append("</div>");
-        $('descriptions').modal('show');
+        $('#descriptions').modal('show');
     }
 }
 
