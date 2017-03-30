@@ -46,7 +46,7 @@ def convert_bytes_to_utf8(dic):
             try:
                 k = key.decode('utf-8')
             except Exception as e:
-                print(e, file=stderr)
+                print(e)
             v = dic[key]
             del dic[key]
             dic[k] = v
@@ -54,7 +54,7 @@ def convert_bytes_to_utf8(dic):
             try:
                 v = dic[key].decode('utf-8')
             except Exception as e:
-                print(e, file=stderr)
+                print(e)
             dic[key] = v
     return dic
 
