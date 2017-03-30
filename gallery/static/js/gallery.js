@@ -2,14 +2,14 @@ function afterMkdir(data) {
     console.log(data);
     console.log(data['success']);
     if (data['success'].length > 0) {
-        $('#descriptions').appendTo("<div class='form-group'>");
+        $('#descriptions .modal-body').append("<div class='form-group'>");
         for (var i = 0, len = data['success'].length; i < len; i++) {
             var dir_name = data['success'][i]['id'];
             var dir_id = data['success'][i]['name'];
             console.log("Dir: " + dir_name + " (" + dir_id + ")");
             var field = "<label class='control-label' for='desc-" + dir_id + "'>Description for folder '<strong>" + dir_name + "</strong>'</label>"
                         + "<input type='text' class='form-control' id='desc-" + dir_id + "'>";
-            $('#descriptions .modal-body').appendTo(field);
+            $('#descriptions .modal-body').append(field);
         }
         $('#descriptions input').focusout(function() {
             $.ajax({
@@ -23,7 +23,8 @@ function afterMkdir(data) {
                 }
             });
         });
-        $('#descriptions').appendTo("</div>").modal('show');
+        $('#descriptions .modal-body').append("</div>");
+        $('descriptions').modal('show');
     }
 }
 
