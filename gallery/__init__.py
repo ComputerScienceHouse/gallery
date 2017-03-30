@@ -387,7 +387,7 @@ def describe_dir(dir_id, auth_dict=None):
         return "Permission denied", 403
 
     Directory.query.filter(Directory.id == dir_id).update({
-        'caption': request.form.get('description')
+        'description': request.form.get('description')
     })
     db.session.flush()
     db.session.commit()
