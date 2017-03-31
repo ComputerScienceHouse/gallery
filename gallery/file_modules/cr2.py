@@ -23,7 +23,7 @@ class CR2File(FileModule):
 
     def generate_thumbnail(self):
         print("GEN THUMB")
-        self.thumbnail_uuid = hash_file(self.file_path)
+        self.thumbnail_uuid = hash_file(self.file_path) + ".jpg"
 
         with Image(filename=self.file_path) as img:
             with img.clone() as image:

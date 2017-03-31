@@ -17,9 +17,8 @@ class MP4File(FileModule):
 
 
     def generate_thumbnail(self):
-        self.thumbnail_uuid = hash_file(self.file_path)
+        self.thumbnail_uuid = hash_file(self.file_path) + ".jpg"
         thumbnail_loc = os.path.join("/gallery-data/thumbnails", self.thumbnail_uuid)
-        thumbnail_loc += ".jpg"
 
         clip = VideoFileClip(self.file_path)
         time_mark = clip.duration * 0.05
@@ -32,4 +31,4 @@ class MP4File(FileModule):
                 image.resize(256, 256)
                 image.background_color = Color("#EEEEEE")
                 image.format = 'jpeg'
-                image.save(filename=thumbnail_loc.split('.')[0])
+                image.save(filename=thumbnail_loc)
