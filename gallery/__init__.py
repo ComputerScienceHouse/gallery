@@ -550,7 +550,7 @@ def render_dir(dir_id, auth_dict=None):
 def render_file(file_id, auth_dict=None):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
-    description = file_model.description
+    description = file_model.caption
     display_description = len(description) > 0
     display_parent = True
     if file_model is None or file_model.parent is None:
