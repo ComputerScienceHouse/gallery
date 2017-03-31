@@ -7,7 +7,7 @@ from wand.color import Color
 from gallery.file_modules import FileModule
 from gallery.util import hash_file
 
-class MP4File(FileModule):
+class AVIFile(FileModule):
 
     def __init__(self, file_path):
         FileModule.__init__(self, file_path)
