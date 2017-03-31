@@ -9,3 +9,4 @@ filetype
 piexif
 wand
 gunicorn
+moviepy

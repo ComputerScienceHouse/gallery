@@ -34,11 +34,13 @@ class FileModule:
 from gallery.file_modules.jpg import JPEGFile
 from gallery.file_modules.cr2 import CR2File
 from gallery.file_modules.png import PNGFile
+from gallery.file_modules.mp4 import MP4File
 
 file_mimetype_relation = {
     "image/jpeg": JPEGFile,
     "image/x-canon-cr2": CR2File,
-    "image/png": PNGFile
+    "image/png": PNGFile,
+    "video/mp4": MP4File
 }
 
 # classism
