@@ -571,7 +571,7 @@ def render_file(file_id, auth_dict=None):
                            prev_file=get_file_prev_id(file_id, internal=True),
                            display_parent=display_parent,
                            description=description,
-                           display_description=display_description
+                           display_description=display_description,
                            username=auth_dict['uid'],
                            display_name=auth_dict['name'])
 
