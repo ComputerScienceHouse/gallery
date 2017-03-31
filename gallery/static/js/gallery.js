@@ -10,11 +10,12 @@ function afterMkdir(data) {
             $('#descriptions .modal-body .form-group').append(field);
         }
         $('#descriptions input').focusout(function() {
+            var this_id = $(this).attr('id').substr($(this).attr('id').indexOf("-") + 1)
             $.ajax({
                 type: "POST",
-                url: "/api/dir/describe/" + $(this).attr('id').substr($(this).attr('id').indexOf("-") + 1),
+                url: "/api/dir/describe/" + this_id,
                 data: {
-                    description: $('input[id="desc-' + dir_id + '"]').val()
+                    description: $('input[id="desc-' + this_id + '"]').val()
                 }
             });
         });
