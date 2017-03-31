@@ -118,7 +118,7 @@ def upload_file(auth_dict=None):
             filepath = os.path.join(dir_path, filename)
             upload.save(filepath)
 
-            file_model = add_file(filename, dir_path, parent, "A New File", owner)
+            file_model = add_file(filename, dir_path, parent, "", owner)
             if file_model is None:
                 upload_status['error'].append(filename)
                 continue
