@@ -32,4 +32,4 @@ class MP4File(FileModule):
                 image.resize(256, 256)
                 image.background_color = Color("#EEEEEE")
                 image.format = 'jpeg'
-                image.save(filename=thumbnail_loc)
+                image.save(filename=thumbnail_loc.split('.')[0])
