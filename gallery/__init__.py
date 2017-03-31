@@ -540,7 +540,7 @@ def render_dir(dir_id, auth_dict=None):
                            parents=path_stack[2:],
                            display_parent=display_parent,
                            description=description,
-                           display_description=display_description
+                           display_description=display_description,
                            username=auth_dict['uid'],
                            display_name=auth_dict['name'])
 
