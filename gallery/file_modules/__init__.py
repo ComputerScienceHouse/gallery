@@ -43,7 +43,7 @@ file_mimetype_relation = {
     "image/png": PNGFile,
     "video/mp4": MP4File,
     "video/avi": AVIFile,
-    "video/x-ms-video": AVIFile
+    "video/x-msvideo": AVIFile
 }
 
 # classism
