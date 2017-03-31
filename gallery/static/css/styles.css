@@ -95,3 +95,7 @@ h2 {
 .modal-dialog {
     position: static;
 }
+
+.well#description {
+    font-weight: bolder;
+}

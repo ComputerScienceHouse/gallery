@@ -20,6 +20,11 @@ View Directory
                 {% endfor %}
             </ul>
         </div>
+        {% if display_description %}
+        <div class="col-xs-12">
+            <div class="well well-sm" id="description">{{ description }}</div>
+        </div>
+        {% endif %}
     </div>
 {% if children|length >= 1 %}
     <div class="row">

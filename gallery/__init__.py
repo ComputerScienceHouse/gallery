@@ -202,16 +202,16 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
 # def preload_images():
 #     if not os.path.exists("/gallery-data"):
 #         os.makedirs("/gallery-data")
-# 
+#
 #     r = requests.get("https://csh.rit.edu/~loothelion/test.zip")
 #     with open("test.zip", "wb") as archive:
 #         archive.write(r.content)
-# 
+#
 #     with zipfile.ZipFile("test.zip", "r") as zip_file:
 #         zip_file.extractall("/gallery-data/")
-# 
+#
 #     return redirect(url_for("index"), 302)
-# 
+#
 @app.route("/refreshdb")
 @auth.oidc_auth
 def refresh_db():
@@ -517,6 +517,8 @@ def render_dir(dir_id, auth_dict=None):
 
     children = display_files(dir_id, internal=True)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
+    description = file_model.description
+    display_description = len(description) > 0
 
 
     # Hardcode gallery name to not be root FIXME
@@ -537,6 +539,8 @@ def render_dir(dir_id, auth_dict=None):
                            directory=dir_model,
                            parents=path_stack[2:],
                            display_parent=display_parent,
+                           description=description,
+                           display_description=display_description
                            username=auth_dict['uid'],
                            display_name=auth_dict['name'])
 
@@ -546,6 +550,8 @@ def render_dir(dir_id, auth_dict=None):
 def render_file(file_id, auth_dict=None):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
+    description = file_model.description
+    display_description = len(description) > 0
     display_parent = True
     if file_model is None or file_model.parent is None:
         display_parent = False
@@ -564,6 +570,8 @@ def render_file(file_id, auth_dict=None):
                            next_file=get_file_next_id(file_id, internal=True),
                            prev_file=get_file_prev_id(file_id, internal=True),
                            display_parent=display_parent,
+                           description=description,
+                           display_description=display_description
                            username=auth_dict['uid'],
                            display_name=auth_dict['name'])
 
