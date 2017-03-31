@@ -8,16 +8,16 @@ function afterMkdir(data) {
                         + "<a href='/view/dir/" + dir_id + "'>(View folder)</a></label>"
                         + "<input type='text' class='form-control' id='desc-" + dir_id + "'>";
             $('#descriptions .modal-body .form-group').append(field);
-        }
-        $('#descriptions input').focusout(function() {
-            $.ajax({
-                type: "POST",
-                url: "/api/dir/describe/" + dir_id,
-                data: {
-                    description: $('input[id="desc-' + dir_id + '"]').val()
-                }
+            $('#descriptions input').focusout(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/dir/describe/" + dir_id,
+                    data: {
+                        description: $('input[id="desc-' + dir_id + '"]').val()
+                    }
+                });
             });
-        });
+        }
         $('#descriptions').modal('show');
     }
 }
