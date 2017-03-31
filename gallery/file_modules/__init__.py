@@ -35,15 +35,16 @@ from gallery.file_modules.jpg import JPEGFile
 from gallery.file_modules.cr2 import CR2File
 from gallery.file_modules.png import PNGFile
 from gallery.file_modules.mp4 import MP4File
-from gallery.file_modules.avi import AVIFile
+from gallery.file_modules.webm import WebMFile
+from gallery.file_modules.ogg import OggFile
 
 file_mimetype_relation = {
     "image/jpeg": JPEGFile,
     "image/x-canon-cr2": CR2File,
     "image/png": PNGFile,
     "video/mp4": MP4File,
-    "video/avi": AVIFile,
-    "video/x-msvideo": AVIFile
+    "video/webm": WebMFile,
+    "video/ogg": OggFile
 }
 
 # classism
