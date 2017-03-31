@@ -42,7 +42,8 @@ file_mimetype_relation = {
     "image/x-canon-cr2": CR2File,
     "image/png": PNGFile,
     "video/mp4": MP4File,
-    "video/avi": AVIFile
+    "video/avi": AVIFile,
+    "video/x-ms-video": AVIFile
 }
 
 # classism
