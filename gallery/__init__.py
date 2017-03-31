@@ -111,25 +111,24 @@ def upload_file(auth_dict=None):
 
     dir_path = get_full_dir_path(parent)
     for upload in uploaded_files:
-        if allowed_file(upload.filename):
-            filename = secure_filename(upload.filename)
-            file_model = File.query.filter(File.parent == parent) \
-                                   .filter(File.name == filename).first()
-            if file_model is None:
-                filepath = os.path.join(dir_path, filename)
-                upload.save(filepath)
+        filename = secure_filename(upload.filename)
+        file_model = File.query.filter(File.parent == parent) \
+                               .filter(File.name == filename).first()
+        if file_model is None:
+            filepath = os.path.join(dir_path, filename)
+            upload.save(filepath)
 
-                file_model = add_file(filename, dir_path, parent, "A New File", owner)
-                if file_model is None:
-                    upload_status['error'].append(filename)
-                    continue
-                upload_status['success'].append(
-                    {
-                        "name": file_model.name,
-                        "id": file_model.id
-                    })
-            else:
+            file_model = add_file(filename, dir_path, parent, "A New File", owner)
+            if file_model is None:
                 upload_status['error'].append(filename)
+                continue
+            upload_status['success'].append(
+                {
+                    "name": file_model.name,
+                    "id": file_model.id
+                })
+        else:
+            upload_status['error'].append(filename)
 
     refresh_thumbnail()
     # actually redirect to URL
