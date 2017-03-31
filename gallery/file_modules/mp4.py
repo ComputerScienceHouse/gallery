@@ -25,7 +25,7 @@ class MP4File(FileModule):
         time_mark = clip.duration * 0.05
         clip.save_frame(thumbnail_loc, t=time_mark)
 
-        with Image(filename=self.thumbnail_uuid) as img:
+        with Image(filename=thumbnail_loc) as img:
             with img.clone() as image:
                 size = image.width if image.width < image.height else image.height
                 image.crop(width=size, height=size, gravity='center')
