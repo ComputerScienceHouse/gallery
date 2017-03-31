@@ -186,7 +186,7 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
             # ignore dir//dir patterns
             if directory == "":
                 continue
-            parent_id = add_directory(parent_id, directory, "A new Directory!", owner)
+            parent_id = add_directory(parent_id, directory, "", owner)
             upload_status['success'].append(
                 {
                     "name": directory,
