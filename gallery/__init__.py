@@ -517,7 +517,7 @@ def render_dir(dir_id, auth_dict=None):
 
     children = display_files(dir_id, internal=True)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
-    description = file_model.description
+    description = dir_model.description
     display_description = len(description) > 0
 
 
