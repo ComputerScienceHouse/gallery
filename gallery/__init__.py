@@ -569,7 +569,7 @@ def render_file(file_id, auth_dict=None):
                            display_parent=display_parent,
                            description=description,
                            display_description=display_description,
-                           auth_dict=auth_dict
+                           auth_dict=auth_dict)
 
 @app.route("/logout")
 @auth.oidc_logout
