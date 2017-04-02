@@ -360,7 +360,7 @@ def describe_file(file_id, auth_dict=None):
         return "Permission denied", 403
 
     File.query.filter(File.id == file_id).update({
-        'caption': request.form.get('description')
+        'caption': request.form.get('caption')
     })
     db.session.flush()
     db.session.commit()
