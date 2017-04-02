@@ -28,11 +28,15 @@ View File
     </div>
     <div class="row">
         <div class="col-md-10 col-md-offset-1 col-sm-12 col-sm-offset-0">
-            {% if prev_file != -1 %}
-            <a href="/view/file/{{prev_file}}">&lt; Previous File</a>
-            {% endif %}
-            {% if next_file != -1 %}
-            <a href="/view/file/{{next_file}}">Next File &gt;</a>
+            {% if prev_file != -1 or next_file != -1 %}
+                <ul class="pager">
+                {% if prev_file != -1 %}
+                    <li class="previous"><a href="/view/file/{{prev_file}}">&larr; Previous File</a></li>
+                {% endif %}
+                {% if next_file != -1 %}
+                    <li class="next"><a href="/view/file/{{next_file}}">Next File &rarr;</a></li>
+                {% endif %}
+                </ul>
             {% endif %}
 
             {% if file.filetype == "Photo" %}
@@ -47,11 +51,15 @@ View File
                 Text Data
             {% endif %}
 
-            {% if prev_file != -1 %}
-            <a href="/view/file/{{prev_file}}">&lt; Previous File</a>
-            {% endif %}
-            {% if next_file != -1 %}
-            <a href="/view/file/{{next_file}}">Next File &gt;</a>
+            {% if prev_file != -1 or next_file != -1 %}
+                <ul class="pager">
+                {% if prev_file != -1 %}
+                    <li class="previous"><a href="/view/file/{{prev_file}}">&larr; Previous File</a></li>
+                {% endif %}
+                {% if next_file != -1 %}
+                    <li class="next"><a href="/view/file/{{next_file}}">Next File &rarr;</a></li>
+                {% endif %}
+                </ul>
             {% endif %}
         </div>
     </div>

@@ -99,3 +99,7 @@ h2 {
 .well#description {
     font-weight: bolder;
 }
+
+.pager {
+    margin: 0;
+}
