@@ -87,8 +87,7 @@ def index():
 @gallery_auth
 def view_upload(auth_dict=None):
     return render_template("upload.html",
-                            username=auth_dict['uid'],
-                            display_name=auth_dict['name'])
+                            auth_dict=auth_dict)
 
 @app.route('/upload', methods=['POST'])
 @auth.oidc_auth
@@ -140,8 +139,7 @@ def upload_file(auth_dict=None):
 @gallery_auth
 def view_mkdir(auth_dict=None):
     return render_template("mkdir.html",
-                            username=auth_dict['uid'],
-                            display_name=auth_dict['name'])
+                            auth_dict=auth_dict)
 
 @app.route('/api/mkdir', methods=['POST'])
 @auth.oidc_auth
@@ -540,8 +538,7 @@ def render_dir(dir_id, auth_dict=None):
                            display_parent=display_parent,
                            description=description,
                            display_description=display_description,
-                           username=auth_dict['uid'],
-                           display_name=auth_dict['name'])
+                           auth_dict=auth_dict)
 
 @app.route("/view/file/<int:file_id>")
 @auth.oidc_auth
@@ -561,6 +558,7 @@ def render_file(file_id, auth_dict=None):
         dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
         path_stack.append(dir_model)
     path_stack.reverse()
+    auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == file_model.author)
     return render_template("view_file.html",
                            file_id=file_id,
                            file=file_model,
@@ -571,8 +569,7 @@ def render_file(file_id, auth_dict=None):
                            display_parent=display_parent,
                            description=description,
                            display_description=display_description,
-                           username=auth_dict['uid'],
-                           display_name=auth_dict['name'])
+                           auth_dict=auth_dict
 
 @app.route("/logout")
 @auth.oidc_logout

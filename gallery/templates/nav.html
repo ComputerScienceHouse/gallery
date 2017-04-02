@@ -21,12 +21,12 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown navbar-user">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            <img src="https://profiles.csh.rit.edu/image/{{ username }}">
-                            {{ display_name }}
+                            <img src="https://profiles.csh.rit.edu/image/{{ auth_dict['uid'] }}">
+                            {{ auth_dict['name'] }}
                             <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu" role="menu">
-                            <li><a href="https://profiles.csh.rit.edu/user/{{ username }}"><span class="glyphicon glyphicon-user"></span> Profile</a></li>
+                            <li><a href="https://profiles.csh.rit.edu/user/{{ auth_dict['uid'] }}"><span class="glyphicon glyphicon-user"></span> Profile</a></li>
                             <li class="divider"></li>
                             <li><a href="https://members.csh.rit.edu/"><span class="glyphicon glyphicon-globe"></span> Members Portal</a></li>
                             <li><a href="https://github.com/liam-middlebrook/gallery/issues"><span class="glyphicon glyphicon-exclamation-sign"></span> Report an Issue</a></li>
