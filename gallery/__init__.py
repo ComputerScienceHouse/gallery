@@ -531,6 +531,7 @@ def render_dir(dir_id, auth_dict=None):
         dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
         path_stack.append(dir_model)
     path_stack.reverse()
+    auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == dir_model.author)
     return render_template("view_dir.html",
                            children=children,
                            directory=dir_model,

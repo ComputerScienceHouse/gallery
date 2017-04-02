@@ -73,5 +73,20 @@ function editFileDescription() {
             data: {
                 caption: $('input[id="desc-' + this_id + '"]').val()
             }
+        });
+    });
+}
+
+function editDirDescription() {
+    $('#edit-description').modal('show');
+    $('#edit-description button').click(function() {
+        var this_id = $('#edit-description input').attr('id').substr($('#edit-description input').attr('id').indexOf("-") + 1);
+        $.ajax({
+            type: "POST",
+            url: "/api/dir/describe/" + this_id,
+            data: {
+                description: $('input[id="desc-' + this_id + '"]').val()
+            }
+        });
     });
 }
