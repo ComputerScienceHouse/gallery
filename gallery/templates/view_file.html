@@ -61,6 +61,30 @@ View File
                 {% endif %}
                 </ul>
             {% endif %}
+
+            {% if auth_dict['can_edit'] %}
+                <a href="#!" class="btn btn-primary" onclick="editFileDescription()">Edit Description</a>
+
+                <div class="modal fade" id="edit-description" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">Edit description</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class='form-group'>
+                                    <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.name }}</strong>:</label>
+                                    <input type="text" class="form-control" id="desc-{{ file.id }}">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
