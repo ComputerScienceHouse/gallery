@@ -67,17 +67,11 @@ function editFileDescription() {
     $('#edit-description').modal('show');
     $('#edit-description button').click(function() {
         var this_id = $('#edit-description input').attr('id').substr($('#edit-description input').attr('id').indexOf("-") + 1);
-            console.log($('#edit-description input').attr('id'));
-            console.log($('#edit-description input').attr('id').substr($('#edit-description input').attr('id').indexOf("-") + 1));
         $.ajax({
             type: "POST",
             url: "/api/file/describe/" + this_id,
             data: {
                 caption: $('input[id="desc-' + this_id + '"]').val()
-            },
-            success: function() {
-                console.log("Successfully posted description for file" + this_id);
             }
-        });
     });
 }
