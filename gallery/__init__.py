@@ -526,10 +526,11 @@ def render_dir(dir_id, auth_dict=None):
     if dir_model is None or dir_model.parent is None or dir_id == 3:
         display_parent = False
     path_stack = []
-    path_stack.append(dir_model)
-    while dir_model.parent is not None:
-        dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
-        path_stack.append(dir_model)
+    dir_model_breadcrumbs = dir_model
+    path_stack.append(dir_model_breadcrumbs)
+    while dir_model_breadcrumbs.parent is not None:
+        dir_model_breadcrumbs = Directory.query.filter(Directory.id == dir_model_breadcrumbs.parent).first()
+        path_stack.append(dir_model_breadcrumbs)
     path_stack.reverse()
     auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == dir_model.author)
     return render_template("view_dir.html",
