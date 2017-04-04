@@ -11,7 +11,7 @@ class WebMFile(FileModule):
 
     def __init__(self, file_path):
         FileModule.__init__(self, file_path)
-        self.file_type = "Video"
+        self.mime_type = "video/webm"
 
         self.generate_thumbnail()
 

@@ -9,8 +9,6 @@ from sqlalchemy import Text
 
 from gallery import db
 
-filetype_enum = Enum('Photo', 'Video', 'Text', name="filetype_enum")
-
 class Directory(db.Model):
     __tablename__ = 'directories'
     id = Column(Integer, primary_key=True)
@@ -41,17 +39,17 @@ class File(db.Model):
     date_uploaded = Column(DateTime, nullable=False)
     author = Column(Text, nullable=False)
     thumbnail_uuid = Column(Text, nullable=False)
-    filetype = Column(filetype_enum, nullable=False)
+    mimetype = Column(Text, nullable=False)
     exif_data = Column(Text, nullable=False)
 
     def __init__(self, parent, name, caption,
                  author, thumbnail_uuid,
-                 filetype, exif_data):
+                 mimetype, exif_data):
         self.parent = parent
         self.name = name
         self.caption = caption
         self.date_uploaded = datetime.now()
         self.author = author
         self.thumbnail_uuid = thumbnail_uuid
-        self.filetype = filetype
+        self.mimetype = mimetype
         self.exif_data = exif_data

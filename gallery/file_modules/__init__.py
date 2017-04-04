@@ -5,7 +5,7 @@ from gallery.util import convert_bytes_to_utf8
 class FileModule:
     file_path = None
     exif_dict = {'Exif': {}}
-    file_type = None
+    mime_type = None
     thumbnail_uuid = None
     file_name = None
 
@@ -20,7 +20,7 @@ class FileModule:
 
 
     def get_type(self):
-        return self.file_type
+        return self.mime_type
 
 
     def get_thumbnail(self):

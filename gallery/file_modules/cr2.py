@@ -11,7 +11,7 @@ class CR2File(FileModule):
 
     def __init__(self, file_path):
         FileModule.__init__(self, self.convert_to_jpg(file_path))
-        self.file_type = "Photo"
+        self.mime_type = "image/x-canon-cr2"
         self.load_exif()
         self.generate_thumbnail()
 

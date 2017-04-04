@@ -11,7 +11,7 @@ class MP4File(FileModule):
 
     def __init__(self, file_path):
         FileModule.__init__(self, file_path)
-        self.file_type = "Video"
+        self.mime_type = "video/mp4"
 
         self.generate_thumbnail()
 

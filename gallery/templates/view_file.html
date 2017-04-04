@@ -39,10 +39,10 @@ View File
                 </ul>
             {% endif %}
 
-            {% if file.filetype == "Photo" %}
+            {% if file.mimetype.split('/')[0] == "image" %}
                 <img src="/api/file/get/{{file.id}}">
 
-            {% elif file.filetype == "Video" %}
+            {% elif file.mimetype.split('/')[0] == "video" %}
             <video controls>
                 <source src="/api/file/get/{{file.id}}">
             </video>

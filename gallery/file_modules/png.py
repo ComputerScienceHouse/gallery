@@ -9,7 +9,7 @@ class PNGFile(FileModule):
 
     def __init__(self, file_path):
         FileModule.__init__(self, file_path)
-        self.file_type = "Photo"
+        self.mime_type = "image/png"
 
         self.generate_thumbnail()
 

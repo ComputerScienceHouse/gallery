@@ -11,7 +11,7 @@ class JPEGFile(FileModule):
     def __init__(self, file_path):
         print("JPEG CONSTRUCTOR")
         FileModule.__init__(self, file_path)
-        self.file_type = "Photo"
+        self.mime_type = "image/jpeg"
 
         self.load_exif()
         self.generate_thumbnail()
