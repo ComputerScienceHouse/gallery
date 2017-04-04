@@ -384,10 +384,10 @@ def delete_dir(dir_id, auth_dict=None):
     files = [f for f in File.query.filter(File.parent == dir_id).all()]
 
     for child_dir in dirs:
-        delete_dir(child_dir.id, auth_dict)
+        delete_dir(child_dir.id)
 
     for child_file in files:
-        delete_file(child_file.id, auth_dict)
+        delete_file(child_file.id)
 
     db.session.delete(dir_model)
     os.rmdir(get_full_dir_path(dir_model.id))
