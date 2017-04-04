@@ -342,6 +342,59 @@ def refresh_thumbnail():
         db.session.refresh(dir_model)
     return redirect('/view/dir/3')
 
+@app.route("/api/file/delete/<int:file_id>", methods=['POST'])
+@auth.oidc_auth
+@gallery_auth
+def delete_file(file_id, auth_dict=None):
+    file_id = int(file_id)
+    file_model = File.query.filter(File.id == file_id).first()
+
+    if file_model is None:
+        return "file not found", 404
+
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['uuid'] == file_model.author):
+        return "Permission denied", 403
+
+    db.session.delete(file_model)
+    file_path = os.path.join(get_full_dir_path(file_model.parent), file_model.name)
+    os.remove(file_path)
+    db.session.flush()
+    db.session.commit()
+
+    return "ok", 200
+
+@app.route("/api/dir/delete/<int:dir_id>", methods=['POST'])
+@auth.oidc_auth
+@gallery_auth
+def delete_dir(dir_id, auth_dict=None):
+    dir_id = int(dir_id)
+    dir_model = Directory.query.filter(Directory.id == dir_id).first()
+
+    if dir_model is None:
+        return "dir not found", 404
+
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['uuid'] == dir_model.author):
+        return "Permission denied", 403
+
+    dirs = [d for d in Directory.query.filter(Directory.parent == dir_id).all()]
+    files = [f for f in File.query.filter(File.parent == dir_id).all()]
+
+    for child_dir in dirs:
+        delete_dir(child_dir.id, auth_dict)
+
+    for child_file in files:
+        delete_file(child_file.id, auth_dict)
+
+    db.session.delete(dir_model)
+    os.rmdir(get_full_dir_path(dir_model.id))
+    db.session.flush()
+    db.session.commit()
+
+    return "ok", 200
 
 @app.route("/api/file/describe/<int:file_id>", methods=['POST'])
 @auth.oidc_auth
