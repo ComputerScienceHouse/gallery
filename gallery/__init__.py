@@ -357,8 +357,8 @@ def delete_file(file_id, auth_dict=None):
             or auth_dict['uuid'] == file_model.author):
         return "Permission denied", 403
 
-    db.session.delete(file_model)
     file_path = os.path.join(get_full_dir_path(file_model.parent), file_model.name)
+    db.session.delete(file_model)
     os.remove(file_path)
     db.session.flush()
     db.session.commit()
@@ -388,9 +388,9 @@ def delete_dir(dir_id, auth_dict=None):
 
     for child_file in files:
         delete_file(child_file.id)
-
+    dir_path = get_full_dir_path(dir_model.id)
     db.session.delete(dir_model)
-    os.rmdir(get_full_dir_path(dir_model.id))
+    os.rmdir(dir_path)
     db.session.flush()
     db.session.commit()
 
