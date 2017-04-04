@@ -343,7 +343,6 @@ def refresh_thumbnail():
     return redirect('/view/dir/3')
 
 
-# TODO implement me frontend
 @app.route("/api/file/describe/<int:file_id>", methods=['POST'])
 @auth.oidc_auth
 @gallery_auth
@@ -367,7 +366,6 @@ def describe_file(file_id, auth_dict=None):
 
     return "ok", 200
 
-# TODO implement me frontend
 @app.route("/api/dir/describe/<int:dir_id>", methods=['POST'])
 @auth.oidc_auth
 @gallery_auth
