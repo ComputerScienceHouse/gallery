@@ -6,7 +6,7 @@ class FileModule:
     file_path = None
     exif_dict = {'Exif': {}}
     mime_type = None
-    thumbnail_uuid = None
+    thumbnail_uuid = "reedphoto.jpg"
     file_name = None
 
     def __init__(self, file_path):
@@ -37,6 +37,7 @@ from gallery.file_modules.png import PNGFile
 from gallery.file_modules.mp4 import MP4File
 from gallery.file_modules.webm import WebMFile
 from gallery.file_modules.ogg import OggFile
+from gallery.file_modules.pdf import PDFFile
 
 file_mimetype_relation = {
     "image/jpeg": JPEGFile,
@@ -44,7 +45,8 @@ file_mimetype_relation = {
     "image/png": PNGFile,
     "video/mp4": MP4File,
     "video/webm": WebMFile,
-    "video/ogg": OggFile
+    "video/ogg": OggFile,
+    "application/pdf": PDFFile
 }
 
 # classism
