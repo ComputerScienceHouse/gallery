@@ -374,7 +374,8 @@ def delete_dir(dir_id, auth_dict=None):
 
     if dir_model is None:
         return "dir not found", 404
-
+    if dir_model <= 3:
+        return "Permission denied", 403
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
             or auth_dict['uuid'] == dir_model.author):
