@@ -46,7 +46,8 @@ file_mimetype_relation = {
     "video/mp4": MP4File,
     "video/webm": WebMFile,
     "video/ogg": OggFile,
-    "application/pdf": PDFFile
+    "application/pdf": PDFFile,
+    "text/plain": TXTFile
 }
 
 # classism
