@@ -38,6 +38,7 @@ from gallery.file_modules.mp4 import MP4File
 from gallery.file_modules.webm import WebMFile
 from gallery.file_modules.ogg import OggFile
 from gallery.file_modules.pdf import PDFFile
+from gallery.file_modules.txt import TXTFile
 
 file_mimetype_relation = {
     "image/jpeg": JPEGFile,
