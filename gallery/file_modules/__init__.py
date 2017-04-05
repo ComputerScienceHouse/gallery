@@ -63,7 +63,8 @@ def parse_file_info(file_path):
         mime_type = "text/plain"
     else:
         mime_type = file_type.mime
-
+    print(mime_type)
+    print(file_path)
     if mime_type in file_mimetype_relation:
         return file_mimetype_relation[mime_type](file_path)
 
