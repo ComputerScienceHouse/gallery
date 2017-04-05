@@ -12,17 +12,12 @@ class GIFFile(FileModule):
         FileModule.__init__(self, file_path)
         self.mime_type = "image/gif"
 
-        self.load_exif()
         self.generate_thumbnail()
-
-
-    def load_exif(self):
-        print("LOAD EXIF")
-        self.exif_dict = piexif.load(self.file_path)
+        print("START GIF")
 
 
     def generate_thumbnail(self):
-        print("GEN THUMB")
+        print("GEN THUMB GIF")
         self.thumbnail_uuid = hash_file(self.file_path) + ".jpg"
 
         with Image(filename=self.file_path) as img:
