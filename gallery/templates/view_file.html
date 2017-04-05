@@ -48,7 +48,7 @@ View File
             </video>
 
             {% elif file.mimetype == "application/pdf" or file.mimetype == "text/plain" %}
-            <iframe src="https://docs.google.com/gview?embedded=true&url=/api/file/get/{{file.id}}"></iframe>
+            <embed src="/api/file/get/{{file.id}}" width="70%">
             {% else %}
                 Text Data
             {% endif %}
