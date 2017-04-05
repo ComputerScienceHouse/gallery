@@ -26,6 +26,7 @@ class GIFFile(FileModule):
         self.thumbnail_uuid = hash_file(self.file_path) + ".jpg"
 
         with Image(filename=self.file_path) as img:
+            print(img.__dict__)
             with img.clone() as image:
                 size = image.width if image.width < image.height else image.height
                 image.crop(width=size, height=size, gravity='center')
