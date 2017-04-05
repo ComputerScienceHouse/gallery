@@ -55,9 +55,14 @@ file_mimetype_relation = {
 def parse_file_info(file_path):
     print("entering parse_file_info")
     file_type = filetype.guess(file_path)
-    print("mime: " + file_type.mime)
+    mime_type = None
 
-    if file_type.mime in file_mimetype_relation:
-        return file_mimetype_relation[file_type.mime](file_path)
+    if file_type is None:
+        mime_type = "text/plain"
+    else:
+        mime_type = file_type.mime
+
+    if mime_type in file_mimetype_relation:
+        return file_mimetype_relation[mime_type](file_path)
 
     return None
