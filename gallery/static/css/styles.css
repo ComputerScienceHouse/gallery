@@ -106,3 +106,24 @@ body.modal-open,
 .modal-open .navbar-fixed-bottom {
     margin-right: 0;
 }
+
+.well #galleryUpload {
+    background: transparent;
+    border: none;
+}
+
+ul.jqtree-tree li.jqtree-selected > .jqtree-element, ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
+    background: transparent;
+    font-weight: bolder;
+    text-shadow: none;
+}
+
+.modal img {
+    width: 100%;
+    max-width: 128px;
+    display: block;
+}
+
+.modal input {
+    margin-bottom: 25px;
+}

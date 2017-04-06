@@ -10,14 +10,38 @@ View File
 
 {% block body %}
 <div class="container">
-    <div class="header">
-        <h3 class="text-muted">How To Upload a File</h3>
+    <div class="row">
+        <div class="col-xs-12">
+            <h3>Upload</h3>
+            <h4 class="text-muted">Select a parent directory from the tree</h4>
+        </div>
+        <div class="col-xs-12">
+            <div id="fileList"></div>
+            <input type="number" name="gallery_dir_id" readonly hidden/>
+            <div class="well well-sm">
+                <div id="galleryUpload" class="dropzone">
+                    <div class="dz-message" data-dz-message><span>Click or drop images here to upload</span></div>
+                </div>
+            </div>
+        </div>
     </div>
-    <hr/>
-    <div>
-        <div id="fileList"></div>
-        Parent Directory Id: <input type="number" name="gallery_dir_id" readonly/><br />
-        <div id="galleryUpload" class="dropzone">
+</div>
+
+<div class="modal fade" id="descriptions" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">Enter descriptions for the files</h4>
+                <p class="text-muted">(Submits automatically)</p>
+            </div>
+            <div class="modal-body">
+                <div class='form-group'>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>

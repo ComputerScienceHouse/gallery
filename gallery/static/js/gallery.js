@@ -41,8 +41,29 @@ function afterUpload(file, response) {
     console.log(file);
     console.log("Response:");
     console.log(response);
-    // TODO pop up a thing to create a directory description for each
-    // /api/file/describe/<id>
+    if (response['success'].length > 0) {
+        for (var i = 0, len = response['success'].length; i < len; i++) {
+            var file_name = response['success'][i]['name'];
+            var file_id = response['success'][i]['id'];
+            var field = "<img src='/api/file/get/" + file_id + "'>"
+                        + "'<label class='control-label' for='desc-" + file_id + "'>"
+                        + "Enter a description for file \"<strong>" + file_name + "</strong>\": "
+                        + "<a href='/view/file/" + file_id + "'>(View file)</a></label>"
+                        + "<input type='text' class='form-control' id='desc-" + file_id + "'>";
+            $('#descriptions .modal-body .form-group').append(field);
+        }
+        $('#descriptions input').focusout(function() {
+            var this_id = $(this).attr('id').substr($(this).attr('id').indexOf("-") + 1)
+            $.ajax({
+                type: "POST",
+                url: "/api/file/describe/" + this_id,
+                data: {
+                    caption: $('input[id="desc-' + this_id + '"]').val()
+                }
+            });
+        });
+        $('#descriptions').modal('show');
+    }
 }
 
 // Rebuild the directory tree
