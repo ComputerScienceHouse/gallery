@@ -66,6 +66,7 @@ View File
 
             {% if auth_dict['can_edit'] %}
                 <a href="#!" class="btn btn-primary" onclick="editFileDescription()">Edit Description</a>
+                <a href="#!" class="btn btn-danger" onclick="deletFile()">Delete</a>
 
                 <div class="modal fade" id="edit-description" role="dialog">
                     <div class="modal-dialog">
@@ -96,7 +97,7 @@ View File
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-                                <button type="button" id="confirm-{{ directory.id }}" class="btn btn-primary" data-dismiss="modal">Yes</button>
+                                <button type="button" id="confirm-{{ file.id }}" class="btn btn-primary" data-dismiss="modal">Yes</button>
                             </div>
                         </div>
                     </div>

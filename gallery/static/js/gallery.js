@@ -91,11 +91,20 @@ function editDirDescription() {
     });
 }
 
-function delete() {
+function deleteDir() {
     $('#delete').modal('show');
     $('#delete button[id^="confirm"]').click(function() {
         var this_id = $('#delete button[id^="confirm"]').attr('id').substr($('#delete button[id^="confirm"]').attr('id').indexOf("-") + 1);
-        $.post("/api/dir/delete/<DIR_ID>");
+        $.post("/api/dir/delete/" + this_id);
         location.reload();
-    }
+    });
+}
+
+function deleteFile() {
+    $('#delete').modal('show');
+    $('#delete button[id^="confirm"]').click(function() {
+        var this_id = $('#delete button[id^="confirm"]').attr('id').substr($('#delete button[id^="confirm"]').attr('id').indexOf("-") + 1);
+        $.post("/api/file/delete/<DIR_ID>" + this_id);
+        location.reload();
+    });
 }
