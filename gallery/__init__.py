@@ -457,7 +457,8 @@ def display_file(file_id):
 
     path = get_full_dir_path(dir_model.id)
 
-    return send_from_directory(path, file_model.name)
+    return send_from_directory(path, file_model.name,
+                               mimetype=file_model.mimetype)
 
 @app.route("/api/thumbnail/get/<int:file_id>")
 @auth.oidc_auth
