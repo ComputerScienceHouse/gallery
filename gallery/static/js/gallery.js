@@ -90,3 +90,12 @@ function editDirDescription() {
         });
     });
 }
+
+function delete() {
+    $('#delete').modal('show');
+    $('#delete button[id^="confirm"]').click(function() {
+        var this_id = $('#delete button[id^="confirm"]').attr('id').substr($('#delete button[id^="confirm"]').attr('id').indexOf("-") + 1);
+        $.post("/api/dir/delete/<DIR_ID>");
+        location.reload();
+    }
+}
