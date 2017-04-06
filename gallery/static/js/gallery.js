@@ -93,7 +93,8 @@ function editDirDescription() {
 
 function deleteDir() {
     $('#delete').modal('show');
-    $('#delete button[id^="confirm"]').click(function() {
+    $('#delete button[id^="confirm"]').click(function(e) {
+        e.preventDefault();
         var this_id = $('#delete button[id^="confirm"]').attr('id').substr($('#delete button[id^="confirm"]').attr('id').indexOf("-") + 1);
         $.post("/api/dir/delete/" + this_id);
         location.reload();
@@ -102,7 +103,8 @@ function deleteDir() {
 
 function deleteFile() {
     $('#delete').modal('show');
-    $('#delete button[id^="confirm"]').click(function() {
+    $('#delete button[id^="confirm"]').click(function(e) {
+        e.preventDefault();
         var this_id = $('#delete button[id^="confirm"]').attr('id').substr($('#delete button[id^="confirm"]').attr('id').indexOf("-") + 1);
         $.post("/api/file/delete/<DIR_ID>" + this_id);
         location.reload();
