@@ -100,3 +100,9 @@ h2 {
 .pager {
     margin: 0;
 }
+
+body.modal-open,
+.modal-open .navbar-fixed-top,
+.modal-open .navbar-fixed-bottom {
+    margin-right: 0;
+}
