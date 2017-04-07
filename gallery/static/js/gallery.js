@@ -42,7 +42,7 @@ function afterUpload(file, response) {
     console.log("Response:");
     console.log(response);
     if (response['error'].length > 0) {
-        var message = "Error: Could not upload file" + ((response['error'].length > 1) ? 's' : '') + ":";
+        var message = " Error: Could not upload file" + ((response['error'].length > 1) ? 's' : '') + ":";
         for (var i = 0, len = response['error'].length; i < len; i++) {
             var file_name = response['error'][i];
             message += " " + file_name + (i == (len - 1) ? '': ',');
