@@ -9,15 +9,18 @@ Create Folder
 
 {% block body %}
 <div class="container">
-    <div class="header">
-        <h3 class="text-muted">Folder Creation</h3>
-    </div>
-    <hr/>
-    <div>
-        <div id="fileList"></div>
-        Parent Directory Id: <input type="number" name="gallery_dir_id" readonly/><br />
-        File Location: <input type="text" name="gallery_dir_name" /><br />
-        <input type="submit" value="Create Directory" class="span2" id="mkdir"><br />
+    <div class="row">
+        <div class="col-xs-12">
+            <h3>Create Folder</h3>
+            <h4 class="text-muted">Select a parent directory from the tree</h4>
+        </div>
+        <div class="col-xs-12">
+            <div id="fileList"></div>
+            <div class="form-group">
+                <label class="control-label" for="gallery_dir_name">Folder name:</label>
+                <input class="form-control" type="text" id="gallery_dir_name" name="gallery_dir_name" placeholder="Welcome Back, 2017-2018/Fall Camping, etc.">
+                <input id="mkdir" type="submit" value="Create Directory"><br />
+            </div>
         </div>
     </div>
 </div>

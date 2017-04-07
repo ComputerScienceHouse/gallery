@@ -127,3 +127,11 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element, ul.jqtree-tree li.jqtree-se
 .modal input {
     margin-bottom: 25px;
 }
+
+input#mkdir {
+    margin-top: 10px;
+}
+
+.fileList {
+    margin-bottom: 20px;
+}
