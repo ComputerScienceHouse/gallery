@@ -136,7 +136,7 @@ function deleteFile() {
     $('#delete button[id^="confirm"]').click(function(e) {
         e.preventDefault();
         var this_id = $('#delete button[id^="confirm"]').attr('id').substr($('#delete button[id^="confirm"]').attr('id').indexOf("-") + 1);
-        $.post("/api/file/delete/<DIR_ID>" + this_id);
+        $.post("/api/file/delete/" + this_id);
         location.reload();
     });
 }
