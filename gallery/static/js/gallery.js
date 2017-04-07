@@ -45,7 +45,7 @@ function afterUpload(file, response) {
         for (var i = 0, len = response['success'].length; i < len; i++) {
             var file_name = response['success'][i]['name'];
             var file_id = response['success'][i]['id'];
-            var field = "<img src='/api/file/get/" + file_id + "'>"
+            var field = "<img src='/api/thumbnail/get/" + file_id + "'>"
                         + "'<label class='control-label' for='desc-" + file_id + "'>"
                         + "Enter a description for file \"<strong>" + file_name + "</strong>\": "
                         + "<a href='/view/file/" + file_id + "'>(View file)</a></label>"
