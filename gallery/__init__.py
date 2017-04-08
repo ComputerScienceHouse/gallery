@@ -216,6 +216,7 @@ def refreshdb():
     files = get_dir_tree_dict()
     click.echo("Checking Dir for DB Entry")
     check_for_dir_db_entry(files, '', None)
+    refresh_thumbnail()
 
 def check_for_dir_db_entry(dictionary, path, parent_dir):
     uuid_thumbnail = "reedphoto.jpg"
@@ -318,8 +319,6 @@ def add_file(file_name, path, dir_id, description, owner):
     return file_model
 
 
-@app.route("/refresh_thumbnails")
-@auth.oidc_auth
 def refresh_thumbnail():
     def refresh_thumbnail_helper(dir_model):
         dir_children = [d for d in Directory.query.filter(Directory.parent == dir_model.id).all()]
@@ -342,7 +341,6 @@ def refresh_thumbnail():
         db.session.flush()
         db.session.commit()
         db.session.refresh(dir_model)
-    return redirect('/view/dir/3')
 
 @app.route("/api/file/delete/<int:file_id>", methods=['POST'])
 @auth.oidc_auth
