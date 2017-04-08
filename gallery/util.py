@@ -1,3 +1,4 @@
+from addict import Dict
 from flask import session
 from functools import wraps
 import hashlib

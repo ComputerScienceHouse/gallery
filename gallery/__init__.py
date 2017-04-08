@@ -9,6 +9,7 @@ from sys import stderr
 
 from alembic import command
 import filetype
+import click
 from csh_ldap import CSHLDAP
 from flask import Flask
 from flask import current_app
@@ -209,12 +210,12 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
 #
 #     return redirect(url_for("index"), 302)
 #
-@app.route("/refreshdb")
-@auth.oidc_auth
-def refresh_db():
+@app.cli.command()
+def refreshdb():
+    click.echo("Getting dir tree dict")
     files = get_dir_tree_dict()
+    click.echo("Checking Dir for DB Entry")
     check_for_dir_db_entry(files, '', None)
-    return redirect(url_for("index"), 302)
 
 def check_for_dir_db_entry(dictionary, path, parent_dir):
     uuid_thumbnail = "reedphoto.jpg"
@@ -260,6 +261,7 @@ def check_for_dir_db_entry(dictionary, path, parent_dir):
                                .filter(File.name == file_p).first()
         if file_model is None:
             add_file(file_p, path, dir_model.id, "", "root")
+            click.echo("adding file: " + file_p)
 
 def add_directory(parent_id, name, description, owner):
     uuid_thumbnail = "reedphoto.jpg"
