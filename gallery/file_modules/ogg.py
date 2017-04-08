@@ -11,7 +11,7 @@ class OggFile(FileModule):
 
     def __init__(self, file_path):
         FileModule.__init__(self, file_path)
-        self.ogg_type = "video/ogg"
+        self.mime_type = "video/ogg"
 
         self.generate_thumbnail()
 

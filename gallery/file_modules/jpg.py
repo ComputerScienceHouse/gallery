@@ -19,7 +19,10 @@ class JPEGFile(FileModule):
 
     def load_exif(self):
         print("LOAD EXIF")
-        self.exif_dict = piexif.load(self.file_path)
+        try:
+            self.exif_dict = piexif.load(self.file_path)
+        except Exception as e:
+            print(e)
 
 
     def generate_thumbnail(self):
