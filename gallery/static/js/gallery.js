@@ -36,7 +36,7 @@ function createDirectory() {
             success: afterMkdir
         });
     } else {
-        var warning = "<div class='alert alert-dismissible alert-danger' id='mkdir-alert'><button type='button' class='close' data-dismiss='alert'>&times;</button>Select a parent directory before creating folder.</div>";
+        var warning = "<div class='alert alert-dismissible alert-danger' id='mkdir-alert'><button type='button' class='close' data-dismiss='alert'>&times;</button><span class='glyphicon glyphicon-exclamation-sign'></span> Select a parent directory before creating folder.</div>";
         $('#mkdir').after(warning);
     }
 }
