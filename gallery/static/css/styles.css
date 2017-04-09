@@ -136,3 +136,9 @@ input#upload {
 .fileList {
     margin-bottom: 20px;
 }
+
+#upload-alert {
+    margin: 20px 0;
+    width: 100%;
+    max-width: 500px;
+}

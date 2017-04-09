@@ -79,7 +79,12 @@ Dropzone.autoDiscover = false;
 
         $('#upload').click(function(e){
             e.preventDefault();
-            myDropzone.processQueue();
+            if ($('input[name="gallery_dir_id"]').val().length > 0) {
+                myDropzone.processQueue();
+            } else {
+                var warning = "<div class='alert alert-dismissible alert-danger' id='upload-alert'><button type='button' class='close' data-dismiss='alert'>&times;</button>Select a parent directory before uploading.</div>";
+                $('#upload').after(warning);
+            }
         });
     });
 </script>
