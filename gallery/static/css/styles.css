@@ -137,7 +137,8 @@ input#upload {
     margin-bottom: 20px;
 }
 
-#upload-alert {
+#upload-alert,
+#mkdir-alert {
     margin: 20px 0;
     width: 100%;
     max-width: 500px;
