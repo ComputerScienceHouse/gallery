@@ -128,7 +128,8 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element, ul.jqtree-tree li.jqtree-se
     margin-bottom: 25px;
 }
 
-input#mkdir {
+input#mkdir,
+input#upload {
     margin-top: 10px;
 }
 

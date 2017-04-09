@@ -23,6 +23,7 @@ Upload
                     <div class="dz-message" data-dz-message><span>Click or drop images here to upload</span></div>
                 </div>
             </div>
+            <input class="btn btn-primary" id="upload" type="submit" value="Upload"><br />
         </div>
     </div>
 </div>
@@ -60,7 +61,7 @@ Dropzone.autoDiscover = false;
             url: '/upload',
             paramName: "gallery-upload",
             uploadMultiple: false,
-            autoProcessQueue: true,
+            autoProcessQueue: false,
             parallelUploads: 3,
             maxFilesize: 1000, // This is pretty large but it's okay
             accept: function(file, done) {
@@ -74,6 +75,11 @@ Dropzone.autoDiscover = false;
                 this.removeFile(file);
             },
             success: afterUpload
+        });
+
+        $('#upload').click(function(e){
+            e.preventDefault();
+            myDropzone.processQueue();
         });
     });
 </script>
