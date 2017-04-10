@@ -49,6 +49,7 @@ file_mimetype_relation = {
     "image/png": PNGFile,
     "image/gif": GIFFile,
     "image/bmp": BMPFile,
+    "image/x-ms-bmp": BMPFile,
     "image/x-windows-bmp": BMPFile,
     "image/tiff": TIFFFile,
     "image/x-tiff": TIFFFile,
