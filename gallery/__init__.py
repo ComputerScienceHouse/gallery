@@ -8,7 +8,6 @@ import subprocess
 from sys import stderr
 
 from alembic import command
-import filetype
 import click
 from csh_ldap import CSHLDAP
 from flask import Flask

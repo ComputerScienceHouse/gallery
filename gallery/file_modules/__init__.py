@@ -1,4 +1,4 @@
-import filetype
+import magic
 
 from gallery.util import convert_bytes_to_utf8
 
@@ -62,13 +62,7 @@ file_mimetype_relation = {
 # classism
 def parse_file_info(file_path):
     print("entering parse_file_info")
-    file_type = filetype.guess(file_path)
-    mime_type = None
-
-    if file_type is None:
-        mime_type = "text/plain"
-    else:
-        mime_type = file_type.mime
+    mime_type = magic.from_file(file_path, mime=True)
     print(mime_type)
     print(file_path)
     if mime_type in file_mimetype_relation:

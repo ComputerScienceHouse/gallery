@@ -5,7 +5,7 @@ addict
 flask_sqlalchemy
 flask_migrate
 psycopg2
-git+https://github.com/liam-middlebrook/filetype.py.git@master#egg=filetype
+python-magic
 piexif
 wand
 gunicorn
