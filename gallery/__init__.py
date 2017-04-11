@@ -553,8 +553,8 @@ def get_dir_tree(internal=False):
 @auth.oidc_auth
 def display_files(dir_id, internal=False):
     dir_id = int(dir_id)
-    file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).all()]
-    dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).all()]
+    file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).order_by(File.name).all()]
+    dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).order_by(Directory.name).all()]
     ret_dict = dir_list + file_list
     if internal:
         return ret_dict

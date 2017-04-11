@@ -48,7 +48,7 @@ View File
             </video>
 
             {% elif file.mimetype == "application/pdf" or file.mimetype == "text/plain" %}
-            <embed src="/api/file/get/{{file.id}}" width="100%" height="100%">
+            <embed src="/api/file/get/{{file.id}}">
             {% else %}
                 Text Data
             {% endif %}

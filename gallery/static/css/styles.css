@@ -143,3 +143,8 @@ input#upload {
     width: 100%;
     max-width: 500px;
 }
+
+embed {
+    width: 100%;
+    min-height: 600px;
+}
