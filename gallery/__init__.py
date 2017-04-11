@@ -406,13 +406,15 @@ def describe_file(file_id, auth_dict=None):
     if file_model is None:
         return "file not found", 404
 
+    caption = request.form.get('caption')
+
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
-            or auth_dict['uuid'] == file_model.author):
-        return "Permission denied", 403
+            or auth_dict['uuid'] == file_model.author) and len(file_model.caption) == 0:
+        caption = '"%s" -%s' (caption, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
 
     File.query.filter(File.id == file_id).update({
-        'caption': request.form.get('caption')
+        'caption': caption
     })
     db.session.flush()
     db.session.commit()
@@ -429,13 +431,15 @@ def describe_dir(dir_id, auth_dict=None):
     if dir_model is None:
         return "dir not found", 404
 
+    desc = request.form.get('description')
+
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
-            or auth_dict['uuid'] == dir_model.author):
-        return "Permission denied", 403
+            or auth_dict['uuid'] == dir_model.author) and len(dir_model.description) == 0:
+        desc = '"%s" -%s' (desc, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
 
     Directory.query.filter(Directory.id == dir_id).update({
-        'description': request.form.get('description')
+        'description': desc
     })
     db.session.flush()
     db.session.commit()
@@ -585,6 +589,7 @@ def render_dir(dir_id, auth_dict=None):
         path_stack.append(dir_model_breadcrumbs)
     path_stack.reverse()
     auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == dir_model.author)
+    auth_dict['can_desc'] = len(dir_model.description) == 0
     return render_template("view_dir.html",
                            children=children,
                            directory=dir_model,
@@ -613,6 +618,7 @@ def render_file(file_id, auth_dict=None):
         path_stack.append(dir_model)
     path_stack.reverse()
     auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == file_model.author)
+    auth_dict['can_desc'] = len(file_model.caption) == 0
     return render_template("view_file.html",
                            file_id=file_id,
                            file=file_model,
