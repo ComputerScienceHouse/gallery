@@ -1,13 +1,133 @@
-<!doctype html>
-<html>
-    <head>
-        <title>View file</title>
-    </head>
-    <body>
-        {% if display_parent %}
-            <a href="/view/dir/{{parent_id}}">Parent directory</a>
+{% extends "nav.html" %}
+{% block title %}
+View File
+{% endblock %}
+
+{% block body %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul class="breadcrumb">
+                {% for p in parents %}
+                    {% if loop.first %}
+                    <li><a href="/view/dir/{{ p.id }}">CSH Gallery</a></li>
+                    {% elif loop.last %}
+                    <li class="active">{{ p.name }}</li>
+                    {% else %}
+                    <li><a href="/view/dir/{{ p.id }}">{{ p.name }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% if display_description %}
+        <div class="col-xs-12">
+            <div class="well well-sm" id="description">{{ description }}</div>
+        </div>
         {% endif %}
-        <h1>View file {{ file_id }}:</h1>
-        <img src="/api/image/get/{{file_id}}">
-    </body>
-</html
+    </div>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1 col-sm-12 col-sm-offset-0">
+            {% if prev_file != -1 or next_file != -1 %}
+                <ul class="pager">
+                {% if prev_file != -1 %}
+                    <li class="previous"><a href="/view/file/{{prev_file}}">&larr; Previous File</a></li>
+                {% endif %}
+                {% if next_file != -1 %}
+                    <li class="next"><a href="/view/file/{{next_file}}">Next File &rarr;</a></li>
+                {% endif %}
+                </ul>
+            {% endif %}
+
+            {% if file.mimetype.split('/')[0] == "image" %}
+                <img src="/api/file/get/{{file.id}}">
+
+            {% elif file.mimetype.split('/')[0] == "video" %}
+            <video controls>
+                <source src="/api/file/get/{{file.id}}">
+            </video>
+
+            {% elif file.mimetype == "application/pdf" or file.mimetype == "text/plain" %}
+            <embed src="/api/file/get/{{file.id}}">
+            {% else %}
+                Text Data
+            {% endif %}
+
+            {% if prev_file != -1 or next_file != -1 %}
+                <ul class="pager">
+                {% if prev_file != -1 %}
+                    <li class="previous"><a href="/view/file/{{prev_file}}">&larr; Previous File</a></li>
+                {% endif %}
+                {% if next_file != -1 %}
+                    <li class="next"><a href="/view/file/{{next_file}}">Next File &rarr;</a></li>
+                {% endif %}
+                </ul>
+            {% endif %}
+
+            {% if auth_dict['can_desc'] %}
+                <a href="#!" class="btn btn-primary" onclick="editFileDescription()">Edit Description</a>
+
+                <div class="modal fade" id="edit-description" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">Edit description</h4>
+                            </div>
+                            <div class="modal-body text-left">
+                                <div class='form-group'>
+                                    <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.name }}</strong>:</label>
+                                    <input type="text" class="form-control" id="desc-{{ file.id }}">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if auth_dict['can_edit'] %}
+                <a href="#!" class="btn btn-danger" onclick="deleteFile()">Delete</a>
+
+                <div class="modal fade" id="edit-description" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">Edit description</h4>
+                            </div>
+                            <div class="modal-body text-left">
+                                <div class='form-group'>
+                                    <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.name }}</strong>:</label>
+                                    <input type="text" class="form-control" id="desc-{{ file.id }}">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="delete" role="dialog">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">Are you sure?</h4>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                                <button type="button" id="confirm-{{ file.id }}" class="btn btn-primary" data-dismiss="modal">Yes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<br />
+{% endblock %}

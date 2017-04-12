@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon">
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/csh-bootstrap.css">
+        {% block extraHead %}
+        {% endblock %}
+        <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
+        <title>{% block title %}{% endblock %}</title>
+    </head>
+    <body>
+        {% block nav %}
+        {% endblock %}
+        {% block body %}
+        {% endblock %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="/static/js/gallery.js"></script>
+        {% block extraFooter %}
+        {% endblock %}
+        <footer>
+            <a class="footer-version" href="https://github.com/liam-middlebrook/gallery/tree/{{config["GIT_REVISION"]}}">Gallery ({{config["GIT_REVISION"]}})</a>
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,150 @@
+body {
+    padding-top: 100px;
+}
+
+
+h1 {
+    font-size: 40px;
+    text-align: center;
+    margin: 0 0 20px 0;
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* view_dir.html */
+
+h2 {
+    font-size: 30px;
+    font-weight: 300;
+}
+
+.file img {
+  width: 88%;
+  margin: 6px 0;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.album-wrapper {
+  transform: rotate(-5deg);
+  display: inline-block;
+  width: 90%;
+  background: #666;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  border: 5px solid white;
+}
+
+.album {
+  transform: rotate(5deg);
+  display: block;
+  width: 100%;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  border: 5px solid white;
+}
+
+.album img {
+    width: 100%;
+}
+
+.panel {
+    text-align: center;
+}
+
+.panel-body {
+    padding: 25px 15px 15px 15px;
+}
+
+.panel p {
+    line-height: 1.4;
+    margin: 5px 0 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.panel p a {
+    font-weight: 500;
+}
+
+/* view_file.html */
+
+.col-md-10 {
+    text-align: center;
+}
+
+.col-md-10 img,
+.col-md-10 video {
+    width: 100%;
+    height: auto;
+}
+
+.col-md-10 a {
+    margin: 20px 0;
+}
+
+.dropzone {
+    border 2px dotted #6495ED;
+    display: block;
+}
+
+.modal-dialog {
+    position: static;
+}
+
+.well#description {
+    font-weight: bolder;
+}
+
+.pager {
+    margin: 0;
+}
+
+body.modal-open,
+.modal-open .navbar-fixed-top,
+.modal-open .navbar-fixed-bottom {
+    margin-right: 0;
+}
+
+.well #galleryUpload {
+    background: transparent;
+    border: none;
+}
+
+ul.jqtree-tree li.jqtree-selected > .jqtree-element, ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
+    background: transparent;
+    font-weight: bolder;
+    text-shadow: none;
+}
+
+.modal img {
+    width: 100%;
+    max-width: 128px;
+    display: block;
+}
+
+.modal input {
+    margin-bottom: 25px;
+}
+
+input#mkdir,
+input#upload {
+    margin-top: 10px;
+}
+
+.fileList {
+    margin-bottom: 20px;
+}
+
+#upload-alert,
+#mkdir-alert {
+    margin: 20px 0;
+    width: 100%;
+    max-width: 500px;
+}
+
+embed {
+    width: 100%;
+    min-height: 600px;
+}

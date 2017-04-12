@@ -1,22 +1,114 @@
-<!doctype html>
-<html>
-    <head>
-    </head>
-    <body>
-        {% if display_parent %}
-            <a href="/view/dir/{{ parent_id }}">Parent directory</a>
-        {% endif %}
-        <h1>View Directory</h1>
-        {% set directories = children['directories'] %}
-        {% set files = children['files'] %}
-        <h2>Subdirectories:</h2>
-        {% for directory in directories %}
-            <a href="/view/dir/{{ directory }}">{{ directory }}</a>
-        {% endfor %}
+{% extends "nav.html" %}
+{% block title %}
+View Directory
+{% endblock %}
 
-        <h2>Files:</h2>
-        {% for file in files %}
-            <a href="/view/file/{{ file }}"><img src="/api/thumbnail/get/{{ file }}"></a>
-        {% endfor %}
-    </body>
-</html>
+{% block body %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul class="breadcrumb">
+                {% for p in parents %}
+                    {% if loop.first %}
+                    <li><a href="/view/dir/{{ p.id }}">CSH Gallery</a></li>
+                    {% elif loop.last %}
+                    <li class="active">{{ p.name }}</li>
+                    {% else %}
+                    <li><a href="/view/dir/{{ p.id }}">{{ p.name }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% if display_description %}
+        <div class="col-xs-12">
+            <div class="well well-sm" id="description">{{ description }}</div>
+        </div>
+        {% endif %}
+    </div>
+{% if children|length >= 1 %}
+    <div class="row">
+    {% for child_type, child in children %}
+        <div class="col-md-3 col-sm-4 col-xs-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                {% if child_type == "Directory" %}
+                <div class="album-wrapper">
+                    <a href="/view/dir/{{ child.id }}">
+                        <img class="album" src="/api/thumbnail/get/dir/{{ child.id }}">
+                    </a>
+                </div>
+                <a href="/view/dir/{{ child.id }}">
+                    <p>{{ child.name }}</p>
+                </a>
+                <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
+                {% elif child_type == "File" %}
+                <a class="file" href="/view/file/{{ child.id }}">
+                    <img src="/api/thumbnail/get/{{ child.id }}">
+                    <p>{{ child.name }}</p>
+                </a>
+                <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col-sm-12 text-center">
+            <h2>This album is empty.</h2>
+        </div>
+    </div>
+{% endif %}
+{% if auth_dict['can_edit'] %}
+<div class="row">
+    <div class="col-xs-12 text-center">
+        {% if auth_dict['can_desc'] %}
+        <a href="#!" class="btn btn-primary" onclick="editDirDescription()">Edit Description</a>
+        {% endif %}
+        <a href="#!" class="btn btn-danger" onclick="deleteDir()">Delete</a>
+    </div>
+
+    {% if auth_dict['can_desc'] %}
+    <div class="modal fade" id="edit-description" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">Edit description</h4>
+                </div>
+                <div class="modal-body text-left">
+                    <div class='form-group'>
+                        <label class="control-label" for="desc-{{ directory.id }}">Enter a new description for directory <strong>{{ directory.name }}</strong>:</label>
+                        <input type="text" class="form-control" id="desc-{{ directory.id }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="modal fade" id="delete" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">Are you sure?</h4>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                    <button type="button" id="confirm-{{ directory.id }}" class="btn btn-primary" data-dismiss="modal">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+</div>
+
+<br />
+{% endblock %}

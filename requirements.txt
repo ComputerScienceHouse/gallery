@@ -5,6 +5,8 @@ addict
 flask_sqlalchemy
 flask_migrate
 psycopg2
-filetype
+python-magic
 piexif
 wand
+gunicorn
+moviepy
