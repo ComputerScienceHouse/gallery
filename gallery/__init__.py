@@ -66,6 +66,7 @@ from gallery.util import convert_bytes_to_utf8
 from gallery.util import gallery_auth
 
 from gallery.file_modules import parse_file_info
+from gallery.file_modules import supported_mimetypes
 from gallery.file_modules import FileModule
 
 import gallery.ldap as gallery_ldap
@@ -517,6 +518,11 @@ def get_file_prev_id(file_id, internal=False):
     if internal:
         return idx
     return jsonify({"index": idx})
+
+@app.route("/api/get_supported_mimetypes")
+@auth.oidc_auth
+def get_supported_mimetypes():
+    return jsonify({"mimetypes": supported_mimetypes()})
 
 @app.route("/api/get_dir_tree")
 @auth.oidc_auth

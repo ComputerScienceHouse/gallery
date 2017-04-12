@@ -70,3 +70,6 @@ def parse_file_info(file_path):
         return file_mimetype_relation[mime_type](file_path)
 
     return None
+
+def supported_mimetypes():
+    return [m for m in file_mimetype_relation.keys()]
