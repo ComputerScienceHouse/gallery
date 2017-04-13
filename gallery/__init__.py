@@ -70,6 +70,7 @@ from gallery.file_modules import supported_mimetypes
 from gallery.file_modules import FileModule
 
 import gallery.ldap as gallery_ldap
+from gallery.ldap import ldap_convert_uuid_to_displayname
 
 for func in inspect.getmembers(gallery_ldap):
     if func[0].startswith("ldap_"):
@@ -438,7 +439,7 @@ def describe_file(file_id, auth_dict=None):
             or auth_dict['is_rtp']
             or auth_dict['uuid'] == file_model.author):
         if len(file_model.caption) == 0:
-            caption = '"%s" -%s' (caption, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
+            caption = '"%s" -%s' % (caption, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
         else:
             return "Permission denied", 403
 
@@ -466,7 +467,7 @@ def describe_dir(dir_id, auth_dict=None):
             or auth_dict['is_rtp']
             or auth_dict['uuid'] == dir_model.author):
         if len(dir_model.description) == 0:
-            desc = '"%s" -%s' (desc, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
+            desc = '"%s" -%s' % (desc, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
         else:
             return "Permission denied", 403
 
