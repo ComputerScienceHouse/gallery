@@ -101,7 +101,7 @@ function populateDirTree() {
 function editFileDescription() {
     $('#edit-description').modal('show');
     $('#edit-description button').click(function() {
-        var this_id = $('#edit-description input[id^"desc"]').attr('id').substr($('#edit-description input[id^"desc"]').attr('id').indexOf("-") + 1);
+        var this_id = $('#edit-description input[id^="desc"]').attr('id').substr($('#edit-description input[id^="desc"]').attr('id').indexOf("-") + 1);
         if ($('#edit-description input[id="rename-' + this_id + '"]').length) {
             $.ajax({
                 type: "POST",
@@ -124,7 +124,7 @@ function editFileDescription() {
 function editDirDescription() {
     $('#edit-description').modal('show');
     $('#edit-description button').click(function() {
-        var this_id = $('#edit-description input[id^"desc"]').attr('id').substr($('#edit-description input[id^"desc"]').attr('id').indexOf("-") + 1);
+        var this_id = $('#edit-description input[id^="desc"]').attr('id').substr($('#edit-description input[id^="desc"]').attr('id').indexOf("-") + 1);
         if ($('#edit-description input[id="rename-' + this_id + '"]').length) {
             $.ajax({
                 type: "POST",
