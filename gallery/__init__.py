@@ -436,8 +436,11 @@ def describe_file(file_id, auth_dict=None):
 
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
-            or auth_dict['uuid'] == file_model.author) and len(file_model.caption) == 0:
-        caption = '"%s" -%s' (caption, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
+            or auth_dict['uuid'] == file_model.author):
+        if len(file_model.caption) == 0:
+            caption = '"%s" -%s' (caption, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
+        else:
+            return "Permission denied", 403
 
     File.query.filter(File.id == file_id).update({
         'caption': caption
@@ -461,8 +464,11 @@ def describe_dir(dir_id, auth_dict=None):
 
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
-            or auth_dict['uuid'] == dir_model.author) and len(dir_model.description) == 0:
-        desc = '"%s" -%s' (desc, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
+            or auth_dict['uuid'] == dir_model.author):
+        if len(dir_model.description) == 0:
+            desc = '"%s" -%s' (desc, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
+        else:
+            return "Permission denied", 403
 
     Directory.query.filter(Directory.id == dir_id).update({
         'description': desc
