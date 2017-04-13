@@ -280,31 +280,6 @@ def add_file(file_name, path, dir_id, description, owner):
 
     file_path = os.path.join('/', path, file_name)
 
-    #exif_dict = {'Exif':{}}
-    #file_type = "Text"
-    #if filetype.guess(file_path).mime == "image/x-canon-cr2":
-    #    # wand convert from cr2 to jpeg remove cr2 file
-    #    old_file_path = file_path
-    #    file_path = os.path.splitext(file_path)[0]
-    #    subprocess.check_output(['dcraw',
-    #                             '-w',
-    #                             old_file_path])
-    #    subprocess.check_output(['convert',
-    #                             file_path + ".ppm",
-    #                             file_path + ".jpg"])
-    #    # rm the old file
-    #    os.remove(old_file_path)
-    #    # rm the ppm transitional file
-    #    os.remove(file_path + ".ppm")
-    #    # final jpg
-    #    file_path = file_path + ".jpg"
-
-    #uuid_thumbnail = hash_file(file_path) + ".jpg"
-    #file_type = "Photo"
-
-    #elif is_video:
-    #    file_type = "Video"
-
     file_data = parse_file_info(file_path)
     if file_data is None:
         return None
