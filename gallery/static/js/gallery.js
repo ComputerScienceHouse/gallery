@@ -101,7 +101,16 @@ function populateDirTree() {
 function editFileDescription() {
     $('#edit-description').modal('show');
     $('#edit-description button').click(function() {
-        var this_id = $('#edit-description input').attr('id').substr($('#edit-description input').attr('id').indexOf("-") + 1);
+        var this_id = $('#edit-description input[id^"desc"]').attr('id').substr($('#edit-description input[id^"desc"]').attr('id').indexOf("-") + 1);
+        if ($('#edit-description input[id="rename-' + this_id + '"]').length) {
+            $.ajax({
+                type: "POST",
+                url: "/api/file/rename/" + this_id,
+                data: {
+                    title: $('input[id="rename-' + this_id + '"]').val()
+                }
+            });
+        }
         $.ajax({
             type: "POST",
             url: "/api/file/describe/" + this_id,
@@ -115,7 +124,16 @@ function editFileDescription() {
 function editDirDescription() {
     $('#edit-description').modal('show');
     $('#edit-description button').click(function() {
-        var this_id = $('#edit-description input').attr('id').substr($('#edit-description input').attr('id').indexOf("-") + 1);
+        var this_id = $('#edit-description input[id^"desc"]').attr('id').substr($('#edit-description input[id^"desc"]').attr('id').indexOf("-") + 1);
+        if ($('#edit-description input[id="rename-' + this_id + '"]').length) {
+            $.ajax({
+                type: "POST",
+                url: "/api/dir/rename/" + this_id,
+                data: {
+                    title: $('input[id="rename-' + this_id + '"]').val()
+                }
+            });
+        }
         $.ajax({
             type: "POST",
             url: "/api/dir/describe/" + this_id,
