@@ -80,8 +80,10 @@ View Directory
                 </div>
                 <div class="modal-body text-left">
                     <div class='form-group'>
+                        {% if auth_dict['can_edit'] %}
                         <label class="control-label" for="rename-{{ directory.id }}">Enter a new title for directory <strong>{{ directory.get_name() }}</strong>:</label>
                         <input type="text" class="form-control" id="rename-{{ directory.id }}" value="{{ directory.get_name() }}">
+                        {% endif %}
                         <label class="control-label" for="desc-{{ directory.id }}">Enter a new description for directory <strong>{{ directory.get_name() }}</strong>:</label>
                         <input type="text" class="form-control" id="desc-{{ directory.id }}" value="{{ directory.description }}">
                     </div>

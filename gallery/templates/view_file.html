@@ -76,10 +76,12 @@ View File
                             </div>
                             <div class="modal-body text-left">
                                 <div class='form-group'>
+                                    {% if auth_dict['can_edit'] %}
                                     <label class="control-label" for="rename-{{ file.id }}">Enter a new title for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="rename-{{ file.id }}" value="{{ file.get_name() }}">
+                                    {% endif %}
                                     <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.get_name() }}</strong>:</label>
-                                    <input type="text" class="form-control" id="desc-{{ file.id }}">
+                                    <input type="text" class="form-control" id="desc-{{ file.id }}" value="{{ file.caption }}">
                                 </div>
                             </div>
                             <div class="modal-footer">
