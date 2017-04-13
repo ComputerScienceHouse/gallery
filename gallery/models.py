@@ -31,6 +31,9 @@ class Directory(db.Model):
         self.thumbnail_uuid = thumbnail_uuid
         self.blocked_groups = blocked_groups
 
+    def get_name(self):
+        return self.title or self.name
+
 class File(db.Model):
     __tablename__ = 'files'
     id = Column(Integer, primary_key=True)
@@ -55,3 +58,6 @@ class File(db.Model):
         self.thumbnail_uuid = thumbnail_uuid
         self.mimetype = mimetype
         self.exif_data = exif_data
+
+    def get_name(self):
+        return self.title or self.name
