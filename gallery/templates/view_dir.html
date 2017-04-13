@@ -61,16 +61,16 @@ View Directory
         </div>
     </div>
 {% endif %}
-{% if auth_dict['can_edit'] %}
+{% if auth_dict['can_edit'] or auth_dict['can_desc'] %}
 <div class="row">
     <div class="col-xs-12 text-center">
-        {% if auth_dict['can_desc'] %}
         <a href="#!" class="btn btn-primary" onclick="editDirDescription()">Edit{{ '' if auth_dict['can_edit'] else ' Description' }}</a>
-        {% endif %}
+        {% if auth_dict['can_edit'] %}
         <a href="#!" class="btn btn-danger" onclick="deleteDir()">Delete</a>
+        {% endif %}
     </div>
+</div>
 
-    {% if auth_dict['can_desc'] %}
     <div class="modal fade" id="edit-description" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -92,8 +92,8 @@ View Directory
             </div>
         </div>
     </div>
-    {% endif %}
 
+    {% if auth_dict['can_edit'] %}
     <div class="modal fade" id="delete" role="dialog">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -108,7 +108,7 @@ View Directory
             </div>
         </div>
     </div>
-</div>
+    {% endif %}
 {% endif %}
 </div>
 

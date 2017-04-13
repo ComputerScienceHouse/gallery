@@ -64,7 +64,7 @@ View File
                 </ul>
             {% endif %}
 
-            {% if auth_dict['can_desc'] %}
+            {% if auth_dict['can_desc'] or auth_dict['can_edit'] %}
                 <a href="#!" class="btn btn-primary" onclick="editFileDescription()">Edit{{ '' if auth_dict['can_edit'] else ' Description' }}</a>
 
                 <div class="modal fade" id="edit-description" role="dialog">
