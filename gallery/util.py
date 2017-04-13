@@ -11,7 +11,9 @@ from gallery.models import Directory
 from gallery.models import File
 
 def get_dir_file_contents(dir_id):
-    return File.query.filter(File.parent == dir_id).order_by(File.name).all()
+    contents = [f for f in File.query.filter(File.parent == dir_id).all()]
+    contents.sort(key=lambda x: x[1].get_name())
+    return contents
 
 def get_full_dir_path(dir_id):
     path_stack = []

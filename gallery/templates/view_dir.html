@@ -13,9 +13,9 @@ View Directory
                     {% if loop.first %}
                     <li><a href="/view/dir/{{ p.id }}">CSH Gallery</a></li>
                     {% elif loop.last %}
-                    <li class="active">{{ p.name }}</li>
+                    <li class="active">{{ p.get_name() }}</li>
                     {% else %}
-                    <li><a href="/view/dir/{{ p.id }}">{{ p.name }}</a></li>
+                    <li><a href="/view/dir/{{ p.id }}">{{ p.get_name() }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -39,13 +39,13 @@ View Directory
                     </a>
                 </div>
                 <a href="/view/dir/{{ child.id }}">
-                    <p>{{ child.name }}</p>
+                    <p>{{ child.get_name() }}</p>
                 </a>
                 <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
                 {% elif child_type == "File" %}
                 <a class="file" href="/view/file/{{ child.id }}">
                     <img src="/api/thumbnail/get/{{ child.id }}">
-                    <p>{{ child.name }}</p>
+                    <p>{{ child.get_name() }}</p>
                 </a>
                 <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
                 {% endif %}
@@ -80,7 +80,7 @@ View Directory
                 </div>
                 <div class="modal-body text-left">
                     <div class='form-group'>
-                        <label class="control-label" for="desc-{{ directory.id }}">Enter a new description for directory <strong>{{ directory.name }}</strong>:</label>
+                        <label class="control-label" for="desc-{{ directory.id }}">Enter a new description for directory <strong>{{ directory.get_name() }}</strong>:</label>
                         <input type="text" class="form-control" id="desc-{{ directory.id }}">
                     </div>
                 </div>

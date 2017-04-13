@@ -13,9 +13,9 @@ View File
                     {% if loop.first %}
                     <li><a href="/view/dir/{{ p.id }}">CSH Gallery</a></li>
                     {% elif loop.last %}
-                    <li class="active">{{ p.name }}</li>
+                    <li class="active">{{ p.get_name() }}</li>
                     {% else %}
-                    <li><a href="/view/dir/{{ p.id }}">{{ p.name }}</a></li>
+                    <li><a href="/view/dir/{{ p.id }}">{{ p.get_name() }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -76,7 +76,7 @@ View File
                             </div>
                             <div class="modal-body text-left">
                                 <div class='form-group'>
-                                    <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.name }}</strong>:</label>
+                                    <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="desc-{{ file.id }}">
                                 </div>
                             </div>
@@ -99,7 +99,7 @@ View File
                             </div>
                             <div class="modal-body text-left">
                                 <div class='form-group'>
-                                    <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.name }}</strong>:</label>
+                                    <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="desc-{{ file.id }}">
                                 </div>
                             </div>

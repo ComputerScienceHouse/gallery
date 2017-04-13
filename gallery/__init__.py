@@ -507,7 +507,7 @@ def get_dir_tree(internal=False):
         children = []
         for child in dirs:
             children.append({
-                'name': child.name,
+                'name': child.get_name(),
                 'id': child.id,
                 'children': get_dir_children(child.id)
                 })
@@ -517,7 +517,7 @@ def get_dir_tree(internal=False):
 
     tree = {}
 
-    tree['name'] = root.name
+    tree['name'] = root.get_name()
     tree['id'] = root.id
     tree['children'] = get_dir_children(root.id)
 
@@ -534,8 +534,14 @@ def get_dir_tree(internal=False):
 @auth.oidc_auth
 def display_files(dir_id, internal=False):
     dir_id = int(dir_id)
-    file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).order_by(File.name).all()]
-    dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).order_by(Directory.name).all()]
+
+    file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).all()]
+    dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).all()]
+
+    # Sort by name/title
+    file_list.sort(key=lambda x: x[1].get_name())
+    dir_list.sort(key=lambda x: x[1].get_name())
+
     ret_dict = dir_list + file_list
     if internal:
         return ret_dict
@@ -554,10 +560,6 @@ def render_dir(dir_id, auth_dict=None):
     description = dir_model.description
     display_description = len(description) > 0
 
-
-    # Hardcode gallery name to not be root FIXME
-    if dir_id == 3:
-        dir_model.name = "CSH Gallery"
 
     display_parent = True
     if dir_model is None or dir_model.parent is None or dir_id == 3:
