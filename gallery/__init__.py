@@ -605,6 +605,24 @@ def display_files(dir_id, internal=False):
         return ret_dict
     return jsonify(ret_dict)
 
+@app.route("/api/directory/get_parent/<int:dir_id>", methods=['GET'])
+@auth.oidc_auth
+def get_dir_parent(dir_id):
+    dir_id = int(dir_id)
+    dir_model = Directory.query.filter(Directory.id == dir_id).first()
+    print("Dir name: " + dir_model.get_name())
+    print("Dir's Parent: " + str(dir_model.parent))
+    return dir_model.parent
+
+@app.route("/api/file/get_parent/<int:file_id>", methods=['GET'])
+@auth.oidc_auth
+def get_file_parent(file_id):
+    file_id = int(file_id)
+    file_model = File.query.filter(File.id == file_id).first()
+    print("File name: " + file_model.get_name())
+    print("File's Parent: " + str(file_model.parent))
+    return file_model.parent
+
 @app.route("/view/dir/<int:dir_id>")
 @auth.oidc_auth
 @gallery_auth
