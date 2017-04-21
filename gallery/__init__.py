@@ -568,6 +568,7 @@ def get_dir_tree(internal=False):
                 'id': child.id,
                 'children': get_dir_children(child.id)
                 })
+        children.sort(key=lambda x: x['name'])
         return children
 
     root = dir_model = Directory.query.filter(Directory.parent == None).first()
