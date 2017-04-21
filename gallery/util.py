@@ -19,7 +19,7 @@ def get_full_dir_path(dir_id):
     path_stack = []
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
     path_stack.append(dir_model.name)
-    while dir_model.parent != None:
+    while dir_model.parent is not None:
         dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
         path_stack.append(dir_model.name)
     path_stack.pop()
@@ -29,6 +29,7 @@ def get_full_dir_path(dir_id):
         path = os.path.join(path, path_stack.pop())
 
     return os.path.join('/', path)
+
 def get_dir_tree_dict():
     path = os.path.normpath("/gallery-data/root")
     file_tree = Dict()
