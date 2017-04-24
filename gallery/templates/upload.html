@@ -80,6 +80,7 @@ Dropzone.autoDiscover = false;
         $('#upload').click(function(e){
             e.preventDefault();
             if ($('input[name="gallery_dir_id"]').val().length > 0) {
+                myDropzone.options.autoProcessQueue = true;
                 myDropzone.processQueue();
             } else {
                 var warning = "<div class='alert alert-dismissible alert-danger' id='upload-alert'><button type='button' class='close' data-dismiss='alert'>&times;</button><span class='glyphicon glyphicon-exclamation-sign'></span> Select a parent directory before uploading.</div>";
