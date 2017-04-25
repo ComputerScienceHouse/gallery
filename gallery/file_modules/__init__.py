@@ -91,3 +91,6 @@ def parse_file_info(file_path):
 
 def supported_mimetypes():
     return [m for m in file_mimetype_relation.keys()]
+
+def generate_image_thumbnail(file_path, mime_type):
+    return file_mimetype_relation[mime_type](file_path).get_thumbnail()

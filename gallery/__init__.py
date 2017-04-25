@@ -66,6 +66,7 @@ from gallery.util import convert_bytes_to_utf8
 from gallery.util import gallery_auth
 
 from gallery.file_modules import parse_file_info
+from gallery.file_modules import generate_image_thumbnail
 from gallery.file_modules import supported_mimetypes
 from gallery.file_modules import FileModule
 
@@ -222,6 +223,11 @@ def refreshdb():
     check_for_dir_db_entry(files, '', None)
     refresh_thumbnail()
 
+@app.cli.command()
+def refresh_thumbnails():
+    click.echo("Refreshing thumbnails")
+    refresh_thumbnail()
+
 def check_for_dir_db_entry(dictionary, path, parent_dir):
     uuid_thumbnail = "reedphoto.jpg"
 
@@ -318,6 +324,15 @@ def refresh_thumbnail():
             return refresh_thumbnail_helper(d)
         # No thumbnail found
         return "reedphoto.jpg"
+
+    missing_thumbnails = File.query.filter(File.thumbnail_uuid == "reedphoto.jpg").all()
+    for file_model in missing_thumbnails:
+        file_path = os.path.join(get_full_dir_path(file_model.parent), file_model.name)
+        mime = file_model.mimetype
+        file_model.thumbnail_uuid = generate_image_thumbnail(file_path, mime)
+        db.session.flush()
+        db.session.commit()
+        db.session.refresh(file_model)
 
     missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == "reedphoto.jpg").all()
     for dir_model in missing_thumbnails:
