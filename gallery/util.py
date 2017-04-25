@@ -6,6 +6,7 @@ import os
 
 from gallery.ldap import ldap_is_eboard
 from gallery.ldap import ldap_is_rtp
+from gallery.ldap import ldap_convert_uuid_to_displayname
 
 from gallery.models import Directory
 from gallery.models import File
@@ -79,7 +80,7 @@ def gallery_auth(func):
     def wrapped_function(*args, **kwargs):
         uuid = str(session['userinfo'].get('sub', ''))
         uid = str(session['userinfo'].get('preferred_username', ''))
-        name = str(session['userinfo'].get('name', ''))
+        name = ldap_convert_uuid_to_displayname(uuid)
         is_eboard = ldap_is_eboard(uid)
         is_rtp = ldap_is_rtp(uid)
 
