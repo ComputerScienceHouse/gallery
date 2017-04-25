@@ -186,11 +186,14 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
             if directory == "":
                 continue
             parent_id = add_directory(parent_id, directory, "", owner)
-            upload_status['success'].append(
-                {
-                    "name": directory,
-                    "id": parent_id
-                })
+            if parent_id is None:
+                upload_status['error'].append(directory)
+            else:
+                upload_status['success'].append(
+                    {
+                        "name": directory,
+                        "id": parent_id
+                    })
 
     # Create return object
     upload_status['redirect'] = "/view/dir/" + str(parent_id)
@@ -266,6 +269,11 @@ def check_for_dir_db_entry(dictionary, path, parent_dir):
             click.echo("adding file: " + file_p)
 
 def add_directory(parent_id, name, description, owner):
+    dir_siblings = Directory.query.filter(Directory.parent == parent_id).all()
+    for sibling in dir_siblings:
+        if sibling.get_name() == name:
+            return None
+
     uuid_thumbnail = "reedphoto.jpg"
     dir_model = Directory(parent_id, name, description, owner,
                           uuid_thumbnail, "{\"g\":[]}")

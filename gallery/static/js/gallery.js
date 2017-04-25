@@ -1,4 +1,13 @@
 function afterMkdir(data) {
+    if (data['error'].length > 0) {
+        var message = " Error: Could not create director" + ((data['error'].length > 1) ? 'ies' : 'y') + ":";
+        for (var i = 0, len = data['error'].length; i < len; i++) {
+            var file_name = data['error'][i];
+            message += " " + file_name + (i == (len - 1) ? '': ',');
+        }
+        $('#descriptions .modal-body').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
+        $('#descriptions').modal('show');
+    }
     if (data['success'].length > 0) {
         for (var i = 0, len = data['success'].length; i < len; i++) {
             var dir_name = data['success'][i]['name'];
