@@ -158,18 +158,13 @@ function deleteDir() {
     $('#delete button[id^="confirm"]').click(function(e) {
         e.preventDefault();
         var this_id = $('#delete button[id^="confirm"]').attr('id').substr($('#delete button[id^="confirm"]').attr('id').indexOf("-") + 1);
-        var parent;
         $.ajax({
-            type: "GET",
-            async: false,
-            url: "/api/directory/get_parent/" + this_id,
-            success: function (data) {
-                console.log(data);
-                parent = data;
+            method: "POST",
+            url: "/api/dir/delete/" + this_id,
+            success: function() {
+                window.location.href = '/view/dir/' + parent;
             }
         });
-        $.post("/api/dir/delete/" + this_id);
-        window.location.href = '/view/dir/' + parent;
     });
 }
 
@@ -178,18 +173,13 @@ function deleteFile() {
     $('#delete button[id^="confirm"]').click(function(e) {
         e.preventDefault();
         var this_id = $('#delete button[id^="confirm"]').attr('id').substr($('#delete button[id^="confirm"]').attr('id').indexOf("-") + 1);
-        var parent;
         $.ajax({
-            type: "GET",
-            async: false,
-            url: "/api/file/get_parent/" + this_id,
-            success: function (data) {
-                console.log(data);
-                parent = data;
+            method: "POST",
+            url: "/api/file/delete/" + this_id,
+            success: function() {
+                window.location.href = '/view/dir/' + parent;
             }
         });
-        $.post("/api/file/delete/" + this_id);
-        window.location.href = '/view/dir/' + parent;
     });
 }
 

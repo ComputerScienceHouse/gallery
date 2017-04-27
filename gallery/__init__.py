@@ -675,6 +675,7 @@ def render_dir(dir_id, auth_dict=None):
     return render_template("view_dir.html",
                            children=children,
                            directory=dir_model,
+                           parent=dir_model.parent,
                            parents=path_stack[2:],
                            display_parent=display_parent,
                            description=description,
