@@ -253,3 +253,19 @@ function fileNavigation() {
         }
     });
 }
+
+function pausePlayVideo() {
+    $(document).keydown(function(e) {
+        if ($(e.target).is('input, textarea')) {
+            return;
+        }
+        if (e.which === 32) { // spacebar
+            var video = $('video')[0];
+            if (video.paused == true) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        }
+    });
+}
