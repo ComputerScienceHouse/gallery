@@ -268,6 +268,7 @@ function pausePlayVideo() {
         if (e.which === 32) { // spacebar
             var video = $('video');
             if (video.length > 0) {
+                e.preventDefault();
                 if (video[0].paused == true) {
                     video[0].play();
                 } else {
