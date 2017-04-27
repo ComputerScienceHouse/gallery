@@ -192,3 +192,64 @@ function deleteFile() {
         window.location.href = '/view/dir/' + parent;
     });
 }
+
+function albumNavigation() {
+    var children = $('.col-md-3');
+    var selected;
+    var i;
+    $(document).keydown(function(e) {
+        if ($(e.target).is('input, textarea')) {
+            return;
+        }
+        if (e.which === 37 || e.which === 72) { // left or h
+            if (selected) {
+                selected.removeClass('selected');
+                i--;
+                next = children.eq(i);
+                if (i < children.length && i > -1) {
+                    selected = next.addClass('selected');
+                } else {
+                    i = children.length - 1;
+                    selected = children.last().addClass('selected');
+                }
+            } else {
+                i = children.length - 1;
+                selected = children.last().addClass('selected');
+            }
+        } else if (e.which === 39 || e.which === 76) { // right or l
+            if (selected) {
+                selected.removeClass('selected');
+                i++;
+                next = children.eq(i);
+                if (i < children.length && i > -1) {
+                    selected = next.addClass('selected');
+                } else {
+                    i = 0;
+                    selected = children.eq(0).addClass('selected');
+                }
+            } else {
+                i = 0;
+                selected = children.eq(0).addClass('selected');
+            }
+        } else if (e.which === 13 || e.which === 32) { // enter or space
+            $(selected).find('a')[0].click();
+        } else if (e.which === 38 || e.which === 75) {
+            $("ul.breadcrumb li").not(".active").last().find('a')[0].click();
+        }
+    });
+}
+
+function fileNavigation() {
+    $(document).keydown(function(e) {
+        if ($(e.target).is('input, textarea')) {
+            return;
+        }
+        if (e.which === 37 || e.which === 72) { // left or h
+            $('.previous').find('a')[0].click();
+        } else if (e.which === 39 || e.which === 76) { // right or l
+            $('.next').find('a')[0].click();
+        } else if (e.which === 38 || e.which === 75) { // up or k
+            $("ul.breadcrumb li").not(".active").last().find('a')[0].click();
+        }
+    });
+}
