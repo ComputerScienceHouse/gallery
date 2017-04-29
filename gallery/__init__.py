@@ -19,6 +19,7 @@ from flask import url_for
 from flask import render_template
 from flask import session
 from flask import send_from_directory
+from flask import abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 import flask_migrate
@@ -656,6 +657,8 @@ def render_dir(dir_id, auth_dict=None):
 
     children = display_files(dir_id, internal=True)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
+    if dir_model is None:
+        abort(404)
     description = dir_model.description
     display_description = len(description) > 0
 
@@ -688,6 +691,8 @@ def render_dir(dir_id, auth_dict=None):
 def render_file(file_id, auth_dict=None):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
+    if file_model is None:
+        abort(404)
     description = file_model.caption
     display_description = len(description) > 0
     display_parent = True
