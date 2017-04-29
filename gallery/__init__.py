@@ -714,6 +714,27 @@ def render_file(file_id, auth_dict=None):
                            display_description=display_description,
                            auth_dict=auth_dict)
 
+@app.errorhandler(404)
+@app.errorhandler(500)
+@gallery_auth
+def route_errors(error, auth_dict=None):
+    if isinstance(error, int):
+        code = error
+    elif hasattr(error, 'code'):
+        code = error.code
+    else:
+        code = 500
+
+    if code == 404:
+        error_desc = "Page Not Found"
+    else:
+        error_desc = type(error).__name__
+
+    return render_template('errors.html',
+                            error=error_desc,
+                            error_code=code,
+                            auth_dict=auth_dict), int(code)
+
 @app.route("/logout")
 @auth.oidc_logout
 def logout():

@@ -155,3 +155,42 @@ embed {
     width: 100%;
     min-height: 600px;
 }
+
+/* errors.html */
+
+.error-page {
+    padding-top: 80px;
+    text-align: center;
+}
+
+.error-page .glyphicon,
+.error-page h1,
+.error-page h2,
+.error-page h3,
+.error-page p {
+    color: #878787;
+}
+
+.error-page img {
+    margin-bottom: 40px;
+    width: 200px;
+}
+
+.error-page h1 {
+    font-size: 50px;
+    font-weight: bolder;
+}
+
+.error-page h2 {
+    margin-bottom: 50px;
+    font-size: 30px;
+}
+
+.error-page h3 {
+    font-size: 25px;
+}
+
+.error-page p {
+    font-size: 15px;
+    font-weight: lighter;
+}
