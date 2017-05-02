@@ -21,6 +21,8 @@ from flask import session
 from flask import send_from_directory
 from flask import abort
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import func as sql_func
+from sqlalchemy.orm import load_only
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 import flask_migrate
 import requests
@@ -718,6 +720,12 @@ def render_file(file_id, auth_dict=None):
                            description=description,
                            display_description=display_description,
                            auth_dict=auth_dict)
+
+@app.route("/view/random_file")
+@auth.oidc_auth
+def get_random_file():
+    file_model = File.query.order_by(sql_func.random()).first()
+    return redirect("/view/file/" + str(file_model.id))
 
 @app.errorhandler(404)
 @app.errorhandler(500)
