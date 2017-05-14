@@ -63,18 +63,30 @@ Dropzone.autoDiscover = false;
             uploadMultiple: false,
             autoProcessQueue: false,
             parallelUploads: 3,
-            maxFilesize: 1000, // This is pretty large but it's okay
-            accept: function(file, done) {
-                done();
-            },
-            sending: function(file, xhr, formData) {
-                formData.append('parent_id',
-                    $('input[name="gallery_dir_id"]').val());
-            },
-            complete: function(file) {
-                this.removeFile(file);
-            },
-            success: afterUpload
+            success: afterUpload,
+            init: function() {
+                this.on('addedfile', function(file) {
+                    console.log(file.name + ": " + file.size);
+                    if (file.size > (1024 * 1024 * 1024)) {
+                        var warning = "<div class='alert alert-dismissible alert-danger' id='upload-alert'><button type='button' class='close' data-dismiss='alert'>&times;</button><span class='glyphicon glyphicon-exclamation-sign'></span> File \"<strong>" + file.name + "</strong>\" is too large, max filesize is 1GB.</div>";
+                        $('#upload').after(warning);
+                        this.removeFile(file);
+                    }
+                });
+
+                this.on('accept', function(file, done) {
+                    done();
+                });
+
+                this.on('sending', function(file, xhr, formData) {
+                    formData.append('parent_id',
+                        $('input[name="gallery_dir_id"]').val());
+                });
+
+                this.on('complete', function(file) {
+                    this.removeFile(file);
+                });
+            }
         });
 
         $('#upload').click(function(e){
