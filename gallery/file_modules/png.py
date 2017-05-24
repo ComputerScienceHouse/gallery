@@ -17,11 +17,12 @@ class PNGFile(FileModule):
         self.thumbnail_uuid = hash_file(self.file_path) + ".jpg"
 
         with Image(filename=self.file_path) as img:
-            with img.clone() as image:
-                size = image.width if image.width < image.height else image.height
-                image.crop(width=size, height=size, gravity='center')
-                image.resize(256, 256)
-                image.background_color = Color("#EEEEEE")
-                image.format = 'jpeg'
-                image.save(filename=os.path.join("/gallery-data/thumbnails",
+            with Image(width=img.width, height=img.height,
+                    background=Color("#EEEEEE")) as bg:
+                bg.composite(img, 0, 0)
+                size = img.width if img.width < img.height else img.height
+                bg.crop(width=size, height=size, gravity='center')
+                bg.resize(256, 256)
+                bg.format = 'jpeg'
+                bg.save(filename=os.path.join("/gallery-data/thumbnails",
                     self.thumbnail_uuid))

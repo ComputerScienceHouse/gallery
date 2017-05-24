@@ -11,7 +11,7 @@ h1 {
 
 footer {
     text-align: center;
-    margin-top: 20px;
+    margin: 20px 0;
 }
 
 /* view_dir.html */
@@ -25,6 +25,7 @@ h2 {
   width: 88%;
   margin: 6px 0;
   box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  transition: 0.3s box-shadow;
 }
 
 .album-wrapper {
@@ -34,6 +35,7 @@ h2 {
   background: #666;
   box-shadow: 0 0 10px rgba(0,0,0,0.3);
   border: 5px solid white;
+  transition: 0.3s box-shadow;
 }
 
 .album {
@@ -66,6 +68,11 @@ h2 {
 
 .panel p a {
     font-weight: 500;
+}
+
+.selected .album-wrapper,
+.selected a.file img {
+    box-shadow: 0 0 10px black;
 }
 
 /* view_file.html */
@@ -147,4 +154,43 @@ input#upload {
 embed {
     width: 100%;
     min-height: 600px;
+}
+
+/* errors.html */
+
+.error-page {
+    padding-top: 80px;
+    text-align: center;
+}
+
+.error-page .glyphicon,
+.error-page h1,
+.error-page h2,
+.error-page h3,
+.error-page p {
+    color: #878787;
+}
+
+.error-page img {
+    margin-bottom: 40px;
+    width: 200px;
+}
+
+.error-page h1 {
+    font-size: 50px;
+    font-weight: bolder;
+}
+
+.error-page h2 {
+    margin-bottom: 50px;
+    font-size: 30px;
+}
+
+.error-page h3 {
+    font-size: 25px;
+}
+
+.error-page p {
+    font-size: 15px;
+    font-weight: lighter;
 }

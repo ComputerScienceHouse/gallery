@@ -13,9 +13,9 @@ View File
                     {% if loop.first %}
                     <li><a href="/view/dir/{{ p.id }}">CSH Gallery</a></li>
                     {% elif loop.last %}
-                    <li class="active">{{ p.name }}</li>
+                    <li class="active">{{ p.get_name() }}</li>
                     {% else %}
-                    <li><a href="/view/dir/{{ p.id }}">{{ p.name }}</a></li>
+                    <li><a href="/view/dir/{{ p.id }}">{{ p.get_name() }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -64,20 +64,24 @@ View File
                 </ul>
             {% endif %}
 
-            {% if auth_dict['can_desc'] %}
-                <a href="#!" class="btn btn-primary" onclick="editFileDescription()">Edit Description</a>
+            {% if auth_dict['can_desc'] or auth_dict['can_edit'] %}
+                <a href="#!" class="btn btn-primary" onclick="editFileDescription()">Edit{{ '' if auth_dict['can_edit'] else ' Description' }}</a>
 
                 <div class="modal fade" id="edit-description" role="dialog">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                                <h4 class="modal-title">Edit description</h4>
+                                <h4 class="modal-title">Edit {{ '' if auth_dict['can_edit'] else ' description' }}</h4>
                             </div>
                             <div class="modal-body text-left">
                                 <div class='form-group'>
-                                    <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.name }}</strong>:</label>
-                                    <input type="text" class="form-control" id="desc-{{ file.id }}">
+                                    {% if auth_dict['can_edit'] %}
+                                    <label class="control-label" for="rename-{{ file.id }}">Enter a new title for file <strong>{{ file.get_name() }}</strong>:</label>
+                                    <input type="text" class="form-control" id="rename-{{ file.id }}" value="{{ file.get_name() }}">
+                                    {% endif %}
+                                    <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.get_name() }}</strong>:</label>
+                                    <input type="text" class="form-control" id="desc-{{ file.id }}" value="{{ file.caption }}">
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -89,26 +93,6 @@ View File
             {% endif %}
             {% if auth_dict['can_edit'] %}
                 <a href="#!" class="btn btn-danger" onclick="deleteFile()">Delete</a>
-
-                <div class="modal fade" id="edit-description" role="dialog">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                                <h4 class="modal-title">Edit description</h4>
-                            </div>
-                            <div class="modal-body text-left">
-                                <div class='form-group'>
-                                    <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.name }}</strong>:</label>
-                                    <input type="text" class="form-control" id="desc-{{ file.id }}">
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-dismiss="modal">Submit</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="modal fade" id="delete" role="dialog">
                     <div class="modal-dialog modal-sm">
@@ -130,4 +114,12 @@ View File
 </div>
 
 <br />
+{% endblock %}
+
+{% block extraFooter %}
+<script>
+    fileNavigation();
+    pausePlayVideo();
+    var parent = {{ parent }};
+</script>
 {% endblock %}

@@ -24,20 +24,6 @@ class CR2File(FileModule):
             print(e)
 
 
-    def generate_thumbnail(self):
-        print("GEN THUMB")
-        self.thumbnail_uuid = hash_file(self.file_path) + ".jpg"
-
-        with Image(filename=self.file_path) as img:
-            with img.clone() as image:
-                size = image.width if image.width < image.height else image.height
-                image.crop(width=size, height=size, gravity='center')
-                image.resize(256, 256)
-                image.background_color = Color("#EEEEEE")
-                image.format = 'jpeg'
-                image.save(filename=os.path.join("/gallery-data/thumbnails",
-                    self.thumbnail_uuid))
-
     def convert_to_jpg(self, _file_path):
         # wand convert from cr2 to jpeg remove cr2 file
         old_file_path = _file_path

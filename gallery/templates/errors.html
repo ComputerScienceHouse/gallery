@@ -1,0 +1,15 @@
+{% extends "nav.html" %}
+{% block title %}
+Error {{ error_code }}
+{% endblock %}
+
+{% block body %}
+<div class="container error-page align-center">
+    <div class="col-xs-12">
+        <img src="/static/images/material_attention.svg" alt="Attention!">
+        <h1>Oops!</h1>
+        <h2>Something has gone terribly wrong!</h2>
+        <h3>{{ error }}</h3>
+    </div>
+</div>
+{% endblock %}

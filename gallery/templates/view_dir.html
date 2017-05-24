@@ -13,9 +13,9 @@ View Directory
                     {% if loop.first %}
                     <li><a href="/view/dir/{{ p.id }}">CSH Gallery</a></li>
                     {% elif loop.last %}
-                    <li class="active">{{ p.name }}</li>
+                    <li class="active">{{ p.get_name() }}</li>
                     {% else %}
-                    <li><a href="/view/dir/{{ p.id }}">{{ p.name }}</a></li>
+                    <li><a href="/view/dir/{{ p.id }}">{{ p.get_name() }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -39,13 +39,13 @@ View Directory
                     </a>
                 </div>
                 <a href="/view/dir/{{ child.id }}">
-                    <p>{{ child.name }}</p>
+                    <p>{{ child.get_name() }}</p>
                 </a>
                 <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
                 {% elif child_type == "File" %}
                 <a class="file" href="/view/file/{{ child.id }}">
                     <img src="/api/thumbnail/get/{{ child.id }}">
-                    <p>{{ child.name }}</p>
+                    <p>{{ child.get_name() }}</p>
                 </a>
                 <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
                 {% endif %}
@@ -61,27 +61,31 @@ View Directory
         </div>
     </div>
 {% endif %}
-{% if auth_dict['can_edit'] %}
+{% if auth_dict['can_edit'] or auth_dict['can_desc'] %}
 <div class="row">
     <div class="col-xs-12 text-center">
-        {% if auth_dict['can_desc'] %}
-        <a href="#!" class="btn btn-primary" onclick="editDirDescription()">Edit Description</a>
-        {% endif %}
+        <a href="#!" class="btn btn-primary" onclick="editDirDescription()">Edit{{ '' if auth_dict['can_edit'] else ' Description' }}</a>
+        {% if auth_dict['can_edit'] %}
         <a href="#!" class="btn btn-danger" onclick="deleteDir()">Delete</a>
+        {% endif %}
     </div>
+</div>
 
-    {% if auth_dict['can_desc'] %}
     <div class="modal fade" id="edit-description" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h4 class="modal-title">Edit description</h4>
+                    <h4 class="modal-title">Edit{{ '' if auth_dict['can_edit'] else ' description' }}</h4>
                 </div>
                 <div class="modal-body text-left">
                     <div class='form-group'>
-                        <label class="control-label" for="desc-{{ directory.id }}">Enter a new description for directory <strong>{{ directory.name }}</strong>:</label>
-                        <input type="text" class="form-control" id="desc-{{ directory.id }}">
+                        {% if auth_dict['can_edit'] %}
+                        <label class="control-label" for="rename-{{ directory.id }}">Enter a new title for directory <strong>{{ directory.get_name() }}</strong>:</label>
+                        <input type="text" class="form-control" id="rename-{{ directory.id }}" value="{{ directory.get_name() }}">
+                        {% endif %}
+                        <label class="control-label" for="desc-{{ directory.id }}">Enter a new description for directory <strong>{{ directory.get_name() }}</strong>:</label>
+                        <input type="text" class="form-control" id="desc-{{ directory.id }}" value="{{ directory.description }}">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -90,8 +94,8 @@ View Directory
             </div>
         </div>
     </div>
-    {% endif %}
 
+    {% if auth_dict['can_edit'] %}
     <div class="modal fade" id="delete" role="dialog">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -106,9 +110,16 @@ View Directory
             </div>
         </div>
     </div>
-</div>
+    {% endif %}
 {% endif %}
 </div>
 
 <br />
+{% endblock %}
+
+{% block extraFooter %}
+<script>
+    albumNavigation();
+    var parent = {{ parent }};
+</script>
 {% endblock %}

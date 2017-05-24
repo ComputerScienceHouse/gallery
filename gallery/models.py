@@ -14,6 +14,7 @@ class Directory(db.Model):
     id = Column(Integer, primary_key=True)
     parent = Column(ForeignKey('directories.id'))
     name = Column(Text, nullable=False)
+    title = Column(Text)
     description = Column(Text, nullable=False)
     date_uploaded = Column(DateTime, nullable=False)
     author = Column(Text, nullable=False)
@@ -30,11 +31,15 @@ class Directory(db.Model):
         self.thumbnail_uuid = thumbnail_uuid
         self.blocked_groups = blocked_groups
 
+    def get_name(self):
+        return self.title or self.name
+
 class File(db.Model):
     __tablename__ = 'files'
     id = Column(Integer, primary_key=True)
     parent = Column(ForeignKey('directories.id'), nullable=False)
     name = Column(Text, nullable=False)
+    title = Column(Text)
     caption = Column(Text, nullable=False)
     date_uploaded = Column(DateTime, nullable=False)
     author = Column(Text, nullable=False)
@@ -53,3 +58,6 @@ class File(db.Model):
         self.thumbnail_uuid = thumbnail_uuid
         self.mimetype = mimetype
         self.exif_data = exif_data
+
+    def get_name(self):
+        return self.title or self.name

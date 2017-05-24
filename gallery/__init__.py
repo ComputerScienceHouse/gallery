@@ -19,7 +19,10 @@ from flask import url_for
 from flask import render_template
 from flask import session
 from flask import send_from_directory
+from flask import abort
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import func as sql_func
+from sqlalchemy.orm import load_only
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 import flask_migrate
 import requests
@@ -66,10 +69,12 @@ from gallery.util import convert_bytes_to_utf8
 from gallery.util import gallery_auth
 
 from gallery.file_modules import parse_file_info
+from gallery.file_modules import generate_image_thumbnail
 from gallery.file_modules import supported_mimetypes
 from gallery.file_modules import FileModule
 
 import gallery.ldap as gallery_ldap
+from gallery.ldap import ldap_convert_uuid_to_displayname
 
 for func in inspect.getmembers(gallery_ldap):
     if func[0].startswith("ldap_"):
@@ -185,11 +190,14 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
             if directory == "":
                 continue
             parent_id = add_directory(parent_id, directory, "", owner)
-            upload_status['success'].append(
-                {
-                    "name": directory,
-                    "id": parent_id
-                })
+            if parent_id is None:
+                upload_status['error'].append(directory)
+            else:
+                upload_status['success'].append(
+                    {
+                        "name": directory,
+                        "id": parent_id
+                    })
 
     # Create return object
     upload_status['redirect'] = "/view/dir/" + str(parent_id)
@@ -216,6 +224,11 @@ def refreshdb():
     files = get_dir_tree_dict()
     click.echo("Checking Dir for DB Entry")
     check_for_dir_db_entry(files, '', None)
+    refresh_thumbnail()
+
+@app.cli.command()
+def refresh_thumbnails():
+    click.echo("Refreshing thumbnails")
     refresh_thumbnail()
 
 def check_for_dir_db_entry(dictionary, path, parent_dir):
@@ -265,6 +278,11 @@ def check_for_dir_db_entry(dictionary, path, parent_dir):
             click.echo("adding file: " + file_p)
 
 def add_directory(parent_id, name, description, owner):
+    dir_siblings = Directory.query.filter(Directory.parent == parent_id).all()
+    for sibling in dir_siblings:
+        if sibling.get_name() == name:
+            return None
+
     uuid_thumbnail = "reedphoto.jpg"
     dir_model = Directory(parent_id, name, description, owner,
                           uuid_thumbnail, "{\"g\":[]}")
@@ -279,31 +297,6 @@ def add_file(file_name, path, dir_id, description, owner):
     uuid_thumbnail = "reedphoto.jpg"
 
     file_path = os.path.join('/', path, file_name)
-
-    #exif_dict = {'Exif':{}}
-    #file_type = "Text"
-    #if filetype.guess(file_path).mime == "image/x-canon-cr2":
-    #    # wand convert from cr2 to jpeg remove cr2 file
-    #    old_file_path = file_path
-    #    file_path = os.path.splitext(file_path)[0]
-    #    subprocess.check_output(['dcraw',
-    #                             '-w',
-    #                             old_file_path])
-    #    subprocess.check_output(['convert',
-    #                             file_path + ".ppm",
-    #                             file_path + ".jpg"])
-    #    # rm the old file
-    #    os.remove(old_file_path)
-    #    # rm the ppm transitional file
-    #    os.remove(file_path + ".ppm")
-    #    # final jpg
-    #    file_path = file_path + ".jpg"
-
-    #uuid_thumbnail = hash_file(file_path) + ".jpg"
-    #file_type = "Photo"
-
-    #elif is_video:
-    #    file_type = "Video"
 
     file_data = parse_file_info(file_path)
     if file_data is None:
@@ -334,6 +327,15 @@ def refresh_thumbnail():
             return refresh_thumbnail_helper(d)
         # No thumbnail found
         return "reedphoto.jpg"
+
+    missing_thumbnails = File.query.filter(File.thumbnail_uuid == "reedphoto.jpg").all()
+    for file_model in missing_thumbnails:
+        file_path = os.path.join(get_full_dir_path(file_model.parent), file_model.name)
+        mime = file_model.mimetype
+        file_model.thumbnail_uuid = generate_image_thumbnail(file_path, mime)
+        db.session.flush()
+        db.session.commit()
+        db.session.refresh(file_model)
 
     missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == "reedphoto.jpg").all()
     for dir_model in missing_thumbnails:
@@ -397,6 +399,56 @@ def delete_dir(dir_id, auth_dict=None):
 
     return "ok", 200
 
+@app.route("/api/file/rename/<int:file_id>", methods=['POST'])
+@auth.oidc_auth
+@gallery_auth
+def rename_file(file_id, auth_dict=None):
+    file_id = int(file_id)
+    file_model = File.query.filter(File.id == file_id).first()
+
+    if file_model is None:
+        return "file not found", 404
+
+    title = request.form.get('title')
+
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['uuid'] == file_model.author):
+        return "Permission denied", 403
+
+    File.query.filter(File.id == file_id).update({
+        'title': title
+    })
+    db.session.flush()
+    db.session.commit()
+
+    return "ok", 200
+
+@app.route("/api/dir/rename/<int:dir_id>", methods=['POST'])
+@auth.oidc_auth
+@gallery_auth
+def rename_dir(dir_id, auth_dict=None):
+    dir_id = int(dir_id)
+    dir_model = Directory.query.filter(Directory.id == dir_id).first()
+
+    if dir_model is None:
+        return "dir not found", 404
+
+    title = request.form.get('title')
+
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['uuid'] == dir_model.author):
+        return "Permission denied", 403
+
+    Directory.query.filter(Directory.id == dir_id).update({
+        'title': title
+    })
+    db.session.flush()
+    db.session.commit()
+
+    return "ok", 200
+
 @app.route("/api/file/describe/<int:file_id>", methods=['POST'])
 @auth.oidc_auth
 @gallery_auth
@@ -411,8 +463,11 @@ def describe_file(file_id, auth_dict=None):
 
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
-            or auth_dict['uuid'] == file_model.author) and len(file_model.caption) == 0:
-        caption = '"%s" -%s' (caption, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
+            or auth_dict['uuid'] == file_model.author):
+        if len(file_model.caption) == 0:
+            caption = '"%s" -%s' % (caption, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
+        else:
+            return "Permission denied", 403
 
     File.query.filter(File.id == file_id).update({
         'caption': caption
@@ -436,8 +491,11 @@ def describe_dir(dir_id, auth_dict=None):
 
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
-            or auth_dict['uuid'] == dir_model.author) and len(dir_model.description) == 0:
-        desc = '"%s" -%s' (desc, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
+            or auth_dict['uuid'] == dir_model.author):
+        if len(dir_model.description) == 0:
+            desc = '"%s" -%s' % (desc, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
+        else:
+            return "Permission denied", 403
 
     Directory.query.filter(Directory.id == dir_id).update({
         'description': desc
@@ -532,17 +590,18 @@ def get_dir_tree(internal=False):
         children = []
         for child in dirs:
             children.append({
-                'name': child.name,
+                'name': child.get_name(),
                 'id': child.id,
                 'children': get_dir_children(child.id)
                 })
+        children.sort(key=lambda x: x['name'])
         return children
 
     root = dir_model = Directory.query.filter(Directory.parent == None).first()
 
     tree = {}
 
-    tree['name'] = root.name
+    tree['name'] = root.get_name()
     tree['id'] = root.id
     tree['children'] = get_dir_children(root.id)
 
@@ -559,12 +618,36 @@ def get_dir_tree(internal=False):
 @auth.oidc_auth
 def display_files(dir_id, internal=False):
     dir_id = int(dir_id)
-    file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).order_by(File.name).all()]
-    dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).order_by(Directory.name).all()]
+
+    file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).all()]
+    dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).all()]
+
+    # Sort by name/title
+    file_list.sort(key=lambda x: x[1].get_name())
+    dir_list.sort(key=lambda x: x[1].get_name())
+
     ret_dict = dir_list + file_list
     if internal:
         return ret_dict
     return jsonify(ret_dict)
+
+@app.route("/api/directory/get_parent/<int:dir_id>", methods=['GET'])
+@auth.oidc_auth
+def get_dir_parent(dir_id):
+    dir_id = int(dir_id)
+    dir_model = Directory.query.filter(Directory.id == dir_id).first()
+    print("Dir name: " + dir_model.get_name())
+    print("Dir's Parent: " + str(dir_model.parent))
+    return dir_model.parent
+
+@app.route("/api/file/get_parent/<int:file_id>", methods=['GET'])
+@auth.oidc_auth
+def get_file_parent(file_id):
+    file_id = int(file_id)
+    file_model = File.query.filter(File.id == file_id).first()
+    print("File name: " + file_model.get_name())
+    print("File's Parent: " + str(file_model.parent))
+    return file_model.parent
 
 @app.route("/view/dir/<int:dir_id>")
 @auth.oidc_auth
@@ -576,13 +659,11 @@ def render_dir(dir_id, auth_dict=None):
 
     children = display_files(dir_id, internal=True)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
+    if dir_model is None:
+        abort(404)
     description = dir_model.description
     display_description = len(description) > 0
 
-
-    # Hardcode gallery name to not be root FIXME
-    if dir_id == 3:
-        dir_model.name = "CSH Gallery"
 
     display_parent = True
     if dir_model is None or dir_model.parent is None or dir_id == 3:
@@ -599,6 +680,7 @@ def render_dir(dir_id, auth_dict=None):
     return render_template("view_dir.html",
                            children=children,
                            directory=dir_model,
+                           parent=dir_model.parent,
                            parents=path_stack[2:],
                            display_parent=display_parent,
                            description=description,
@@ -611,6 +693,8 @@ def render_dir(dir_id, auth_dict=None):
 def render_file(file_id, auth_dict=None):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
+    if file_model is None:
+        abort(404)
     description = file_model.caption
     display_description = len(description) > 0
     display_parent = True
@@ -636,6 +720,33 @@ def render_file(file_id, auth_dict=None):
                            description=description,
                            display_description=display_description,
                            auth_dict=auth_dict)
+
+@app.route("/view/random_file")
+@auth.oidc_auth
+def get_random_file():
+    file_model = File.query.order_by(sql_func.random()).first()
+    return redirect("/view/file/" + str(file_model.id))
+
+@app.errorhandler(404)
+@app.errorhandler(500)
+@gallery_auth
+def route_errors(error, auth_dict=None):
+    if isinstance(error, int):
+        code = error
+    elif hasattr(error, 'code'):
+        code = error.code
+    else:
+        code = 500
+
+    if code == 404:
+        error_desc = "Page Not Found"
+    else:
+        error_desc = type(error).__name__
+
+    return render_template('errors.html',
+                            error=error_desc,
+                            error_code=code,
+                            auth_dict=auth_dict), int(code)
 
 @app.route("/logout")
 @auth.oidc_logout

@@ -1,4 +1,13 @@
 function afterMkdir(data) {
+    if (data['error'].length > 0) {
+        var message = " Error: Could not create director" + ((data['error'].length > 1) ? 'ies' : 'y') + ":";
+        for (var i = 0, len = data['error'].length; i < len; i++) {
+            var file_name = data['error'][i];
+            message += " " + file_name + (i == (len - 1) ? '': ',');
+        }
+        $('#descriptions .modal-body').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
+        $('#descriptions').modal('show');
+    }
     if (data['success'].length > 0) {
         for (var i = 0, len = data['success'].length; i < len; i++) {
             var dir_name = data['success'][i]['name'];
@@ -101,7 +110,16 @@ function populateDirTree() {
 function editFileDescription() {
     $('#edit-description').modal('show');
     $('#edit-description button').click(function() {
-        var this_id = $('#edit-description input').attr('id').substr($('#edit-description input').attr('id').indexOf("-") + 1);
+        var this_id = $('#edit-description input[id^="desc"]').attr('id').substr($('#edit-description input[id^="desc"]').attr('id').indexOf("-") + 1);
+        if ($('#edit-description input[id="rename-' + this_id + '"]').length) {
+            $.ajax({
+                type: "POST",
+                url: "/api/file/rename/" + this_id,
+                data: {
+                    title: $('input[id="rename-' + this_id + '"]').val()
+                }
+            });
+        }
         $.ajax({
             type: "POST",
             url: "/api/file/describe/" + this_id,
@@ -115,7 +133,16 @@ function editFileDescription() {
 function editDirDescription() {
     $('#edit-description').modal('show');
     $('#edit-description button').click(function() {
-        var this_id = $('#edit-description input').attr('id').substr($('#edit-description input').attr('id').indexOf("-") + 1);
+        var this_id = $('#edit-description input[id^="desc"]').attr('id').substr($('#edit-description input[id^="desc"]').attr('id').indexOf("-") + 1);
+        if ($('#edit-description input[id="rename-' + this_id + '"]').length) {
+            $.ajax({
+                type: "POST",
+                url: "/api/dir/rename/" + this_id,
+                data: {
+                    title: $('input[id="rename-' + this_id + '"]').val()
+                }
+            });
+        }
         $.ajax({
             type: "POST",
             url: "/api/dir/describe/" + this_id,
@@ -131,8 +158,13 @@ function deleteDir() {
     $('#delete button[id^="confirm"]').click(function(e) {
         e.preventDefault();
         var this_id = $('#delete button[id^="confirm"]').attr('id').substr($('#delete button[id^="confirm"]').attr('id').indexOf("-") + 1);
-        $.post("/api/dir/delete/" + this_id);
-        location.reload();
+        $.ajax({
+            method: "POST",
+            url: "/api/dir/delete/" + this_id,
+            success: function() {
+                window.location.href = '/view/dir/' + parent;
+            }
+        });
     });
 }
 
@@ -141,7 +173,98 @@ function deleteFile() {
     $('#delete button[id^="confirm"]').click(function(e) {
         e.preventDefault();
         var this_id = $('#delete button[id^="confirm"]').attr('id').substr($('#delete button[id^="confirm"]').attr('id').indexOf("-") + 1);
-        $.post("/api/file/delete/" + this_id);
-        location.reload();
+        $.ajax({
+            method: "POST",
+            url: "/api/file/delete/" + this_id,
+            success: function() {
+                window.location.href = '/view/dir/' + parent;
+            }
+        });
+    });
+}
+
+function albumNavigation() {
+    var children = $('.col-md-3');
+    var selected;
+    var i;
+    $(document).keydown(function(e) {
+        if ($(e.target).is('input, textarea')) {
+            return;
+        }
+        if (e.which === 37 || e.which === 72) { // left or h
+            if (selected) {
+                selected.removeClass('selected');
+                i--;
+                next = children.eq(i);
+                if (i < children.length && i > -1) {
+                    selected = next.addClass('selected');
+                } else {
+                    i = children.length - 1;
+                    selected = children.last().addClass('selected');
+                }
+            } else {
+                i = children.length - 1;
+                selected = children.last().addClass('selected');
+            }
+        } else if (e.which === 39 || e.which === 76) { // right or l
+            if (selected) {
+                selected.removeClass('selected');
+                i++;
+                next = children.eq(i);
+                if (i < children.length && i > -1) {
+                    selected = next.addClass('selected');
+                } else {
+                    i = 0;
+                    selected = children.eq(0).addClass('selected');
+                }
+            } else {
+                i = 0;
+                selected = children.eq(0).addClass('selected');
+            }
+        } else if (e.which === 13 || e.which === 32) { // enter or space
+            $(selected).find('a')[0].click();
+        } else if (e.which === 38 || e.which === 75) {
+            $("ul.breadcrumb li").not(".active").last().find('a')[0].click();
+        }
+    });
+}
+
+function fileNavigation() {
+    $(document).keydown(function(e) {
+        if ($(e.target).is('input, textarea')) {
+            return;
+        }
+        if (e.which === 37 || e.which === 72) { // left or h
+            if ($('.previous').find('a').length == 0) {
+                return;
+            }
+            $('.previous').find('a')[0].click();
+        } else if (e.which === 39 || e.which === 76) { // right or l
+            if ($('.next').find('a').length == 0) {
+                return;
+            }
+            $('.next').find('a')[0].click();
+        } else if (e.which === 38 || e.which === 75) { // up or k
+            $("ul.breadcrumb li").not(".active").last().find('a')[0].click();
+        }
+    });
+}
+
+function pausePlayVideo() {
+    $(document).keydown(function(e) {
+        if ($(e.target).is('input, textarea')) {
+            return;
+        }
+        if (e.which === 32) { // spacebar
+            var video = $('video');
+            if (video.length > 0) {
+                e.preventDefault();
+                if (video[0].paused == true) {
+                    video[0].play();
+                } else {
+                    video[0].pause();
+                }
+            }
+        }
     });
 }
