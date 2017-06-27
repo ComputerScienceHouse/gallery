@@ -624,7 +624,9 @@ def display_files(dir_id, internal=False):
 
     # Sort by name/title
     file_list.sort(key=lambda x: x[1].get_name())
+    file_list.sort(key=lambda x: x[1].date_uploaded)
     dir_list.sort(key=lambda x: x[1].get_name())
+    dir_list.sort(key=lambda x: x[1].date_uploaded)
 
     ret_dict = dir_list + file_list
     if internal:
