@@ -53,6 +53,8 @@ View File
                 Text Data
             {% endif %}
 
+            <p>Date Uploaded: {{ file.date() }}</p>
+
             {% if prev_file != -1 or next_file != -1 %}
                 <ul class="pager">
                 {% if prev_file != -1 %}

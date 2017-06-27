@@ -42,12 +42,14 @@ View Directory
                     <p>{{ child.get_name() }}</p>
                 </a>
                 <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
+                <p>Date Created: {{ child.date() }}</p>
                 {% elif child_type == "File" %}
                 <a class="file" href="/view/file/{{ child.id }}">
                     <img src="/api/thumbnail/get/{{ child.id }}">
                     <p>{{ child.get_name() }}</p>
                 </a>
                 <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
+                <p>Date Uploaded: {{ child.date() }}</p>
                 {% endif %}
                 </div>
             </div>
