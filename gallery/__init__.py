@@ -92,8 +92,20 @@ def index():
 @auth.oidc_auth
 @gallery_auth
 def view_upload(auth_dict=None):
+    dir_filter = re.compile(".*\/view\/dir\/(\d*)")
+    dir_search = dir_filter.search(request.referrer)
+    file_filter = re.compile(".*\/view\/file\/(\d*)")
+    file_search = file_filter.search(request.referrer)
+    if dir_search:
+        dir_id = int(dir_search.group(1))
+    elif file_search:
+        file_id = int(file_search.group(1))
+        dir_id = File.query.filter(File.id == file_id).first().parent
+    else:
+        return redirect("/")
     return render_template("upload.html",
-                            auth_dict=auth_dict)
+                            auth_dict=auth_dict,
+                            dir_id=dir_id)
 
 @app.route('/upload', methods=['POST'])
 @auth.oidc_auth
@@ -144,8 +156,20 @@ def upload_file(auth_dict=None):
 @auth.oidc_auth
 @gallery_auth
 def view_mkdir(auth_dict=None):
+    dir_filter = re.compile(".*\/view\/dir\/(\d*)")
+    dir_search = dir_filter.search(request.referrer)
+    file_filter = re.compile(".*\/view\/file\/(\d*)")
+    file_search = file_filter.search(request.referrer)
+    if dir_search:
+        dir_id = int(dir_search.group(1))
+    elif file_search:
+        file_id = int(file_search.group(1))
+        dir_id = File.query.filter(File.id == file_id).first().parent
+    else:
+        return redirect("/")
     return render_template("mkdir.html",
-                            auth_dict=auth_dict)
+                            auth_dict=auth_dict,
+                            dir_id=dir_id)
 
 @app.route('/jump_dir', methods=['GET'])
 @auth.oidc_auth
