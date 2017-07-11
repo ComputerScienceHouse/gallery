@@ -97,11 +97,29 @@ function populateDirTree() {
             autoOpen: 0
         });
         $('#fileList').bind(
-            'tree.click',
+            'tree.select',
             function(event) {
                 // The clicked node is 'event.node'
                 var node = event.node;
                 $('input[name="gallery_dir_id"]').val(node.id);
+            }
+        );
+    });
+}
+
+// Rebuild the directory tree
+function populateJumpDirTree() {
+    $.get("/api/get_dir_tree", function(data) {
+        $('#fileList').tree({
+            data: [data],
+            autoOpen: 0
+        });
+        $('#fileList').bind(
+            'tree.select',
+            function(event) {
+                // The clicked node is 'event.node'
+                var node = event.node;
+                window.location = "/view/dir/" + node.id;
             }
         );
     });

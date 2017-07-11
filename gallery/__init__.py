@@ -147,6 +147,13 @@ def view_mkdir(auth_dict=None):
     return render_template("mkdir.html",
                             auth_dict=auth_dict)
 
+@app.route('/jump_dir', methods=['GET'])
+@auth.oidc_auth
+@gallery_auth
+def view_jumpdir(auth_dict=None):
+    return render_template("jumpdir.html",
+                            auth_dict=auth_dict)
+
 @app.route('/api/mkdir', methods=['POST'])
 @auth.oidc_auth
 @gallery_auth
