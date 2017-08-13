@@ -27,7 +27,7 @@ View Directory
         {% endif %}
     </div>
 {% if children|length >= 1 %}
-    <div class="row">
+    <div class="row" id="child_list">
     {% for child_type, child in children %}
         <div class="col-md-3 col-sm-4 col-xs-6">
             <div class="panel panel-default">
@@ -121,7 +121,7 @@ View Directory
 
 {% block extraFooter %}
 <script>
-    albumNavigation();
+    var mode = "VIEW_DIR";
     var parent = {{ parent }};
 </script>
 {% endblock %}

@@ -201,99 +201,88 @@ function deleteFile() {
     });
 }
 
-function albumNavigation() {
-    var children = $('.col-md-3');
-    var selected;
-    var i;
-    $(document).keydown(function(e) {
-        if ($(e.target).is('input, textarea')) {
-            return;
+function kbGalleryVideoSelect(e) {
+    var video = $('video');
+    if (video.length > 0) {
+        e.preventDefault();
+        if (video[0].paused == true) {
+            video[0].play();
+        } else {
+            video[0].pause();
         }
-        if (checkKeyEvent(e, "GALLERY_PREVIOUS")) {
-            if (selected) {
-                selected.removeClass('selected');
-                i--;
-                next = children.eq(i);
-                if (i < children.length && i > -1) {
-                    selected = next.addClass('selected');
-                } else {
-                    i = children.length - 1;
-                    selected = children.last().addClass('selected');
-                }
-            } else {
-                i = children.length - 1;
-                selected = children.last().addClass('selected');
-            }
-        } else if (checkKeyEvent(e, "GALLERY_NEXT")) {
-            if (selected) {
-                selected.removeClass('selected');
-                i++;
-                next = children.eq(i);
-                if (i < children.length && i > -1) {
-                    selected = next.addClass('selected');
-                } else {
-                    i = 0;
-                    selected = children.eq(0).addClass('selected');
-                }
-            } else {
-                i = 0;
-                selected = children.eq(0).addClass('selected');
-            }
-        } else if (checkKeyEvent(e, "GALLERY_SELECT")) {
-            $(selected).find('a')[0].click();
-        } else if (checkKeyEvent(e, "GALLERY_PARENT")) {
-            $("ul.breadcrumb li").not(".active").last().find('a')[0].click();
-        }
-    });
+    }
 }
 
-function fileNavigation() {
-    $(document).keydown(function(e) {
-        if ($(e.target).is('input, textarea')) {
+function kbGallerySelect() {
+    $('#child_list .selected').find('a')[0].click();
+}
+function kbGalleryPrevious() {
+    if(mode == "VIEW_DIR") {
+        prev = $('#child_list .selected').prevAll()[0];
+        if(prev) {
+            $('#child_list .selected').removeClass('selected');
+            $(prev).addClass('selected');
+        } else if ($('#child_list .selected').length == 0) {
+            $('#child_list .col-md-3').last().addClass('selected');
+        }
+    }
+    if(mode == "VIEW_FILE") {
+        if ($('.previous').find('a').length == 0) {
             return;
         }
-        if (checkKeyEvent(e, "GALLERY_PREVIOUS")) {
-            if ($('.previous').find('a').length == 0) {
-                return;
-            }
-            $('.previous').find('a')[0].click();
-        } else if (checkKeyEvent(e, "GALLERY_NEXT")) {
-            if ($('.next').find('a').length == 0) {
-                return;
-            }
-            $('.next').find('a')[0].click();
-        } else if (checkKeyEvent(e, "GALLERY_PARENT")) {
-            $("ul.breadcrumb li").not(".active").last().find('a')[0].click();
-        }
-    });
+        $('.previous').find('a')[0].click();
+    }
 }
-
-function pausePlayVideo() {
-    $(document).keydown(function(e) {
-        if ($(e.target).is('input, textarea')) {
+function kbGalleryNext() {
+    if(mode == "VIEW_DIR") {
+        next = $('#child_list .selected').nextAll()[0];
+        if(next) {
+            $('#child_list .selected').removeClass('selected');
+            $(next).addClass('selected');
+        } else if ($('#child_list .selected').length == 0) {
+            $('#child_list .col-md-3').first().addClass('selected');
+        }
+    }
+    if(mode == "VIEW_FILE") {
+        if ($('.next').find('a').length == 0) {
             return;
         }
-        if (checkKeyEvent(e, "GALLERY_VIDEO_TOGGLE")) {
-            var video = $('video');
-            if (video.length > 0) {
-                e.preventDefault();
-                if (video[0].paused == true) {
-                    video[0].play();
-                } else {
-                    video[0].pause();
-                }
-            }
-        }
-    });
+        $('.next').find('a')[0].click();
+    }
+}
+function kbGalleryUp() {
+    $('ul.breadcrumb li').not('.active').last().find('a')[0].click();
+}
+function kbGalleryRandom() {
+    document.location = "/view/random_file";
+}
+function kbGalleryHelp() {
+    $('#help').modal('show');
+}
+function kbGalleryCreateDir() {
+    if(mode == "VIEW_DIR") {
+        document.location = "/create_folder";
+    }
+}
+function kbGalleryUpload() {
+    if(mode == "VIEW_DIR") {
+        document.location = "/upload";
+    }
+}
+function kbGalleryFastNavigation() {
+    document.location = "/jump_dir";
 }
 
-function checkKeyEvent(e, key_action) {
-    var action_keymap = {
-        GALLERY_VIDEO_TOGGLE: [32], // spacebar
-        GALLERY_PREVIOUS: [37, 72], // left or h
-        GALLERY_NEXT: [39, 76], // right or l
-        GALLERY_PARENT: [38, 75], // up or k
-        GALLERY_SELECT: [13, 32], // spacebar or enter
-    };
-    return action_keymap[key_action].indexOf(e.which) != -1;
-}
+Mousetrap.bind('space', kbGalleryVideoSelect);
+Mousetrap.bind('enter', kbGallerySelect);
+Mousetrap.bind('left', kbGalleryPrevious);
+Mousetrap.bind('h', kbGalleryPrevious);
+Mousetrap.bind('right', kbGalleryNext);
+Mousetrap.bind('l', kbGalleryNext);
+Mousetrap.bind('up', kbGalleryUp);
+Mousetrap.bind('k', kbGalleryUp);
+Mousetrap.bind('r', kbGalleryRandom);
+Mousetrap.bind('?', kbGalleryHelp);
+Mousetrap.bind('c', kbGalleryCreateDir);
+Mousetrap.bind('u', kbGalleryUpload);
+Mousetrap.bind('f', kbGalleryFastNavigation);
