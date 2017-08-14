@@ -75,6 +75,7 @@ from gallery.file_modules import FileModule
 
 import gallery.ldap as gallery_ldap
 from gallery.ldap import ldap_convert_uuid_to_displayname
+from gallery.ldap import ldap_get_members
 
 for func in inspect.getmembers(gallery_ldap):
     if func[0].startswith("ldap_"):
@@ -759,6 +760,11 @@ def render_file(file_id, auth_dict=None):
 def get_random_file():
     file_model = File.query.order_by(sql_func.random()).first()
     return redirect("/view/file/" + str(file_model.id))
+
+@app.route("/api/memberlist")
+@auth.oidc_auth
+def get_member_list():
+    return jsonify(ldap_get_members())
 
 @app.errorhandler(404)
 @app.errorhandler(500)
