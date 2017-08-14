@@ -69,3 +69,12 @@ class File(db.Model):
 
     def get_name(self):
         return self.title or self.name
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    file_id = Column(ForeignKey('files.id'), primary_key=True)
+    uuid = Column(Text, primary_key=True)
+
+    def __init__(self, file_id, uuid):
+        self.file_id = file_id
+        self.uuid = uuid

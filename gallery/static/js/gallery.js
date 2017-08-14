@@ -1,3 +1,22 @@
+$(document).ready(function() {
+  if ($('input[id^="tag-"]').length) {
+    $.get('/api/memberlist', function(data) {
+      $('input[id^="tag-"]').selectize({
+        persist: false,
+        openOnFocus: false,
+        closeAfterSelect: true,
+        plugins: ['remove_button'],
+        valueField: 'uuid',
+        labelField: 'name',
+        searchField: 'name',
+        selectOnTab: true,
+        options: data,
+        items: tags
+      });
+    });
+  }
+});
+
 function afterMkdir(data) {
     if (data['error'].length > 0) {
         var message = " Error: Could not create director" + ((data['error'].length > 1) ? 'ies' : 'y') + ":";
@@ -135,6 +154,16 @@ function editFileDescription() {
                 url: "/api/file/rename/" + this_id,
                 data: {
                     title: $('input[id="rename-' + this_id + '"]').val()
+                }
+            });
+        }
+        if ($('#edit-description input[id="tag-' + this_id + '"]').length) {
+            var members = JSON.stringify($('input[id="tag-' + this_id + '"]').val().split(','));
+            $.ajax({
+                type: "POST",
+                url: "/api/file/tag/" + this_id,
+                data: {
+                    members: members
                 }
             });
         }

@@ -60,6 +60,7 @@ ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
 # pylint: disable=C0413
 from gallery.models import Directory
 from gallery.models import File
+from gallery.models import Tag
 
 from gallery.util import allowed_file
 from gallery.util import get_dir_file_contents
@@ -537,6 +538,43 @@ def describe_dir(dir_id, auth_dict=None):
 
     return "ok", 200
 
+
+@app.route("/api/file/tag/<int:file_id>", methods=['POST'])
+@auth.oidc_auth
+@gallery_auth
+def tag_file(file_id, auth_dict=None):
+    file_id = int(file_id)
+    file_model = File.query.filter(File.id == file_id).first()
+
+    if file_model is None:
+        return "file not found", 404
+
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['uuid'] == file_model.author):
+            return "Permission denied", 403
+
+    current_tags = Tag.query.filter(Tag.file_id == file_id).all()
+    for tag in current_tags:
+        db.session.delete(tag)
+        db.session.flush()
+        db.session.commit()
+
+    uuids = request.form.get('members')
+    uuids = uuids.replace('[', '')
+    uuids = uuids.replace(']', '')
+    uuids = [uuid.replace('"', '') for uuid in uuids.split(',')]
+
+    for uuid in uuids:
+        tag_model = Tag(file_id, uuid)
+        db.session.add(tag_model)
+        db.session.flush()
+        db.session.commit()
+        db.session.refresh(tag_model)
+
+    return "ok", 200
+
+
 @app.route("/api/file/get/<int:file_id>")
 @auth.oidc_auth
 def display_file(file_id):
@@ -743,6 +781,7 @@ def render_file(file_id, auth_dict=None):
     path_stack.reverse()
     auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == file_model.author)
     auth_dict['can_desc'] = len(file_model.caption) == 0
+    tags = [tag.uuid for tag in Tag.query.filter(Tag.file_id == file_id).all()]
     return render_template("view_file.html",
                            file_id=file_id,
                            file=file_model,
@@ -753,6 +792,7 @@ def render_file(file_id, auth_dict=None):
                            display_parent=display_parent,
                            description=description,
                            display_description=display_description,
+                           tags=tags,
                            auth_dict=auth_dict)
 
 @app.route("/view/random_file")

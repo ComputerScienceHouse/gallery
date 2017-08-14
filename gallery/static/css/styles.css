@@ -104,6 +104,32 @@ h2 {
     font-weight: bolder;
 }
 
+#tags {
+    margin: 10px;
+}
+
+#tags ul {
+    list-style-type: none;
+    display: inline;
+    padding: 0;
+}
+
+#tags li {
+    display: inline-block;
+}
+
+.selectize-dropdown {
+  height: auto;
+}
+
+.selectize-input .remove {
+  margin: 0;
+}
+
+.selectize-control {
+  height: auto;
+}
+
 .pager {
     margin: 0;
 }

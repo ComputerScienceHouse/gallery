@@ -53,7 +53,17 @@ View File
                 Text Data
             {% endif %}
 
-            <p>Date Uploaded: {{ file.date() }}</p>
+            {% if tags|length > 0 %}
+            <div id="tags">
+              <strong>Tagged: </strong>
+              <ul>
+                {% for tag in tags %}
+                <li>{{ ldap_convert_uuid_to_displayname(tag) }}{% if not loop.last %}, {% endif %}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+            <p><strong>Date Uploaded:</strong> {{ file.date() }}</p>
 
             {% if prev_file != -1 or next_file != -1 %}
                 <ul class="pager">
@@ -81,6 +91,8 @@ View File
                                     {% if auth_dict['can_edit'] %}
                                     <label class="control-label" for="rename-{{ file.id }}">Enter a new title for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="rename-{{ file.id }}" value="{{ file.get_name() }}">
+                                    <label class="control-label" for="tag-{{ file.id }}">Tag CSH members in <strong>{{ file.get_name() }}</strong>:</label>
+                                    <input type="text" class="form-control" id="tag-{{ file.id }}">
                                     {% endif %}
                                     <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="desc-{{ file.id }}" value="{{ file.caption }}">
@@ -122,5 +134,9 @@ View File
 <script>
     var mode = "VIEW_FILE";
     var parent = {{ parent }};
+    var tags = [];
+    {% for tag in tags %}
+    tags.push("{{tag}}");
+    {% endfor %}
 </script>
 {% endblock %}
