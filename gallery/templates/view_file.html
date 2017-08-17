@@ -40,15 +40,15 @@ View File
             {% endif %}
 
             {% if file.mimetype.split('/')[0] == "image" %}
-                <img src="/api/file/get/{{file.id}}">
+                <img id="file-content" src="/api/file/get/{{file.id}}">
 
             {% elif file.mimetype.split('/')[0] == "video" %}
-            <video controls>
+            <video id="file-content" controls>
                 <source src="/api/file/get/{{file.id}}">
             </video>
 
             {% elif file.mimetype == "application/pdf" or file.mimetype == "text/plain" %}
-            <embed src="/api/file/get/{{file.id}}">
+            <embed id="file-content" src="/api/file/get/{{file.id}}">
             {% else %}
                 Text Data
             {% endif %}

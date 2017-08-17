@@ -393,6 +393,9 @@ def delete_file(file_id, auth_dict=None):
         return "Permission denied", 403
 
     file_path = os.path.join(get_full_dir_path(file_model.parent), file_model.name)
+    current_tags = Tag.query.filter(Tag.file_id == file_id).all()
+    for tag in current_tags:
+        db.session.delete(tag)
     db.session.delete(file_model)
     os.remove(file_path)
     db.session.flush()
@@ -560,17 +563,16 @@ def tag_file(file_id, auth_dict=None):
         db.session.flush()
         db.session.commit()
 
-    uuids = request.form.get('members')
-    uuids = uuids.replace('[', '')
-    uuids = uuids.replace(']', '')
-    uuids = [uuid.replace('"', '') for uuid in uuids.split(',')]
+    uuids = json.loads(request.form.get('members'))
 
     for uuid in uuids:
-        tag_model = Tag(file_id, uuid)
-        db.session.add(tag_model)
-        db.session.flush()
-        db.session.commit()
-        db.session.refresh(tag_model)
+        # Don't allow empty tag entries
+        if uuid != '':
+            tag_model = Tag(file_id, uuid)
+            db.session.add(tag_model)
+            db.session.flush()
+            db.session.commit()
+            db.session.refresh(tag_model)
 
     return "ok", 200
 

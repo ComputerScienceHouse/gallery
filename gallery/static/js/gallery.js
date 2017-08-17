@@ -243,7 +243,11 @@ function kbGalleryVideoSelect(e) {
 }
 
 function kbGallerySelect() {
-    $('#child_list .selected').find('a')[0].click();
+    var elem = $('#child_list .selected').find('a')[0];
+
+    if(elem) {
+        elem.click();
+    }
 }
 function kbGalleryPrevious() {
     if(mode == "VIEW_DIR") {
@@ -298,20 +302,58 @@ function kbGalleryUpload() {
         document.location = "/upload";
     }
 }
-function kbGalleryFastNavigation() {
+function kbGalleryFastNavigation(e) {
+    e.preventDefault();
     document.location = "/jump_dir";
+}
+
+function kbGalleryFullscreen() {
+    if(mode == "VIEW_FILE") {
+        setFullscreen($("#file-content").first()[0]);
+    }
+}
+
+function kbGalleryDelete() {
+    if(mode == "VIEW_DIR") {
+        deleteDir();
+    } else if(mode == "VIEW_FILE") {
+        deleteFile();
+    }
+}
+
+function kbGalleryEdit() {
+    if(mode == "VIEW_DIR") {
+        editDirDescription();
+    } else if(mode == "VIEW_FILE") {
+        editFileDescription();
+    }
 }
 
 Mousetrap.bind('space', kbGalleryVideoSelect);
 Mousetrap.bind('enter', kbGallerySelect);
-Mousetrap.bind('left', kbGalleryPrevious);
-Mousetrap.bind('h', kbGalleryPrevious);
-Mousetrap.bind('right', kbGalleryNext);
-Mousetrap.bind('l', kbGalleryNext);
-Mousetrap.bind('up', kbGalleryUp);
-Mousetrap.bind('k', kbGalleryUp);
+Mousetrap.bind(['h', 'left'], kbGalleryPrevious);
+Mousetrap.bind(['l', 'right'], kbGalleryNext);
+Mousetrap.bind(['k', 'up'],  kbGalleryUp);
 Mousetrap.bind('r', kbGalleryRandom);
 Mousetrap.bind('?', kbGalleryHelp);
 Mousetrap.bind('c', kbGalleryCreateDir);
 Mousetrap.bind('u', kbGalleryUpload);
-Mousetrap.bind('f', kbGalleryFastNavigation);
+Mousetrap.bind('f', kbGalleryFullscreen);
+Mousetrap.bind('d', kbGalleryDelete);
+Mousetrap.bind('e', kbGalleryEdit);
+Mousetrap.bind(['command+k', 'ctrl+k'], kbGalleryFastNavigation);
+
+function setFullscreen(elem) {
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    }
+    else {
+        console.log("No Fullscreen API Available")
+    }
+}
