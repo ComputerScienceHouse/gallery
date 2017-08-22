@@ -24,8 +24,8 @@ function afterMkdir(data) {
             var file_name = data['error'][i];
             message += " " + file_name + (i == (len - 1) ? '': ',');
         }
-        $('#descriptions .modal-body').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
-        $('#descriptions').modal('show');
+        $('#mkdir-descriptions .modal-body').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
+        $('#mkdir-descriptions').modal('show');
     }
     if (data['success'].length > 0) {
         for (var i = 0, len = data['success'].length; i < len; i++) {
@@ -35,9 +35,9 @@ function afterMkdir(data) {
                         + "Enter a description for folder \"<strong>" + dir_name + "</strong>\":"
                         + "<a href='/view/dir/" + dir_id + "'>(View folder)</a></label>"
                         + "<input type='text' class='form-control' id='desc-" + dir_id + "'>";
-            $('#descriptions .modal-body .form-group').append(field);
+            $('#mkdir-descriptions .modal-body .form-group').append(field);
         }
-        $('#descriptions input').focusout(function() {
+        $('#mkdir-descriptions input').focusout(function() {
             var this_id = $(this).attr('id').substr($(this).attr('id').indexOf("-") + 1)
             $.ajax({
                 type: "POST",
@@ -47,7 +47,7 @@ function afterMkdir(data) {
                 }
             });
         });
-        $('#descriptions').modal('show');
+        $('#mkdir-descriptions').modal('show');
     }
 }
 
@@ -80,8 +80,8 @@ function afterUpload(file, response) {
             var file_name = response['error'][i];
             message += " " + file_name + (i == (len - 1) ? '': ',');
         }
-        $('#descriptions .modal-body').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
-        $('#descriptions').modal('show');
+        $('#upload-descriptions .modal-body').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
+        $('#upload-descriptions').modal('show');
     }
     if (response['success'].length > 0) {
         for (var i = 0, len = response['success'].length; i < len; i++) {
@@ -92,9 +92,9 @@ function afterUpload(file, response) {
                         + "Enter a description for file \"<strong>" + file_name + "</strong>\": "
                         + "<a href='/view/file/" + file_id + "'>(View file)</a></label>"
                         + "<input type='text' class='form-control' id='desc-" + file_id + "'>";
-            $('#descriptions .modal-body .form-group').append(field);
+            $('#upload-descriptions .modal-body .form-group').append(field);
         }
-        $('#descriptions input').focusout(function() {
+        $('#upload-descriptions input').focusout(function() {
             var this_id = $(this).attr('id').substr($(this).attr('id').indexOf("-") + 1)
             $.ajax({
                 type: "POST",
@@ -104,7 +104,7 @@ function afterUpload(file, response) {
                 }
             });
         });
-        $('#descriptions').modal('show');
+        $('#upload-descriptions').modal('show');
     }
 }
 
@@ -294,12 +294,12 @@ function kbGalleryHelp() {
 }
 function kbGalleryCreateDir() {
     if(mode == "VIEW_DIR") {
-        document.location = "/create_folder";
+        $('#mkdir-modal').modal('show');
     }
 }
 function kbGalleryUpload() {
     if(mode == "VIEW_DIR") {
-        document.location = "/upload";
+        $('#upload-modal').modal('show');
     }
 }
 function kbGalleryFastNavigation(e) {

@@ -14,8 +14,8 @@
             <div class="navbar-collapse collapse" id="navbar">
                 <ul class="nav navbar-nav">
                 {% if self._TemplateReference__context.name=="view_dir.html" %}
-                    <li><a href="/upload">Upload</a></li>
-                    <li><a href="/create_folder">Create Folder</a></li>
+                    <li><a onclick="kbGalleryUpload();">Upload</a></li>
+                    <li><a onclick="kbGalleryCreateDir();">Create Folder</a></li>
                 {% endif %}
                     <li><a href="/view/random_file">Random File</a></li>
                     <li><a href="/jump_dir">Fast Navigation</a></li>
