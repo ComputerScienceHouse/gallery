@@ -14,14 +14,14 @@
             <div class="navbar-collapse collapse" id="navbar">
                 <ul class="nav navbar-nav">
                 {% if self._TemplateReference__context.name=="view_dir.html" %}
-                    <li><a onclick="kbGalleryUpload();">Upload</a></li>
-                    <li><a onclick="kbGalleryCreateDir();">Create Folder</a></li>
+                    <li><a href="#" onclick="kbGalleryUpload();">Upload</a></li>
+                    <li><a href="#" onclick="kbGalleryCreateDir();">Create Folder</a></li>
                 {% endif %}
                     <li><a href="/view/random_file">Random File</a></li>
                     <li><a href="/jump_dir">Fast Navigation</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a onclick="kbGalleryHelp();">Help</a></li>
+                    <li><a href="#" onclick="kbGalleryHelp();">Help</a></li>
                     <li class="dropdown navbar-user">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
                             <img src="https://profiles.csh.rit.edu/image/{{ auth_dict['uid'] }}">

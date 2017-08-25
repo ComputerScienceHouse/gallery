@@ -289,15 +289,18 @@ function kbGalleryUp() {
 function kbGalleryRandom() {
     document.location = "/view/random_file";
 }
-function kbGalleryHelp() {
+function kbGalleryHelp(e) {
+    e.preventDefault();
     $('#help').modal('show');
 }
-function kbGalleryCreateDir() {
+function kbGalleryCreateDir(e) {
+    e.preventDefault();
     if(mode == "VIEW_DIR") {
         $('#mkdir-modal').modal('show');
     }
 }
-function kbGalleryUpload() {
+function kbGalleryUpload(e) {
+    e.preventDefault();
     if(mode == "VIEW_DIR") {
         $('#upload-modal').modal('show');
     }
