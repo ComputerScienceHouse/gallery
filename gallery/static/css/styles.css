@@ -220,3 +220,7 @@ embed {
     font-size: 15px;
     font-weight: lighter;
 }
+
+.nav .glyphicon {
+    margin-right: 5px;
+}
