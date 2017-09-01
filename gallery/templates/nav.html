@@ -19,8 +19,8 @@
                         <span class="glyphicon glyphicon-plus-sign"></span> Add New
                         <span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
-                            <li><a href="#" onclick="kbGalleryUpload();"><span class="glyphicon glyphicon-cloud-upload"></span> File</a></li>
-                            <li><a href="#" onclick="kbGalleryCreateDir();"><span class="glyphicon glyphicon-folder-open"></span> Folder</a></li>
+                            <li><a href="#" onclick="kbGalleryUpload(event);"><span class="glyphicon glyphicon-cloud-upload"></span> File</a></li>
+                            <li><a href="#" onclick="kbGalleryCreateDir(event);"><span class="glyphicon glyphicon-folder-open"></span> Folder</a></li>
                         </ul>
                     </li>
                 {% endif %}
@@ -39,7 +39,7 @@
                             <li class="divider"></li>
                             <li><a href="https://members.csh.rit.edu/"><span class="glyphicon glyphicon-globe"></span> Members Portal</a></li>
                             <li><a href="https://github.com/liam-middlebrook/gallery/issues"><span class="glyphicon glyphicon-exclamation-sign"></span> Report an Issue</a></li>
-                            <li><a href="#" onclick="kbGalleryHelp();"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
+                            <li><a href="#" onclick="kbGalleryHelp(event);"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
                             <li><a href="{{ url_for('logout') }}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
                         </ul>
                     </li>
