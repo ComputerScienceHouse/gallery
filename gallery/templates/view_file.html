@@ -92,7 +92,7 @@ View File
                                     <label class="control-label" for="rename-{{ file.id }}">Enter a new title for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="rename-{{ file.id }}" value="{{ file.get_name() }}">
                                     <label class="control-label" for="tag-{{ file.id }}">Tag CSH members in <strong>{{ file.get_name() }}</strong>:</label>
-                                    <input type="text" class="form-control" id="tag-{{ file.id }}">
+                                    <input type="text" id="tag-{{ file.id }}">
                                     {% endif %}
                                     <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="desc-{{ file.id }}" value="{{ file.caption }}">
