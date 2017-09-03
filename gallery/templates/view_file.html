@@ -20,11 +20,6 @@ View File
                 {% endfor %}
             </ul>
         </div>
-        {% if display_description %}
-        <div class="col-xs-12">
-            <div class="well well-sm" id="description">{{ description }}</div>
-        </div>
-        {% endif %}
     </div>
     <div class="row">
         <div class="col-md-10 col-md-offset-1 col-sm-12 col-sm-offset-0">
@@ -51,6 +46,10 @@ View File
             <embed id="file-content" src="/api/file/get/{{file.id}}">
             {% else %}
                 Text Data
+            {% endif %}
+
+            {% if display_description %}
+            <p id="description"><strong>Description:</strong> {{ description }}</p>
             {% endif %}
 
             {% if tags|length > 0 %}

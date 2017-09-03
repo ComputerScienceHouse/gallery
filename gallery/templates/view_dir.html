@@ -23,11 +23,6 @@ View Directory
                 {% endfor %}
             </ul>
         </div>
-        {% if display_description %}
-        <div class="col-xs-12">
-            <div class="well well-sm" id="description">{{ description }}</div>
-        </div>
-        {% endif %}
     </div>
 {% if children|length >= 1 %}
     <div class="row" id="child_list">
@@ -59,10 +54,17 @@ View Directory
         </div>
     {% endfor %}
     </div>
+
+    {% if display_description %}
+    <p id="description"><strong>Description:</strong> {{ description }}</p>
+    {% endif %}
 {% else %}
     <div class="row">
         <div class="col-sm-12 text-center">
             <h2>This album is empty.</h2>
+            {% if display_description %}
+            <p id="description"><strong>Description:</strong> {{ description }}</p>
+            {% endif %}
         </div>
     </div>
 {% endif %}

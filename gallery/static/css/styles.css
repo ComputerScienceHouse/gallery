@@ -104,8 +104,10 @@ h2 {
     font-weight: bolder;
 }
 
-#tags {
+#tags,
+#description {
     margin: 10px;
+    text-align: center;
 }
 
 #tags ul {
