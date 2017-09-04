@@ -249,14 +249,32 @@ function kbGallerySelect() {
         elem.click();
     }
 }
+
+function kbGalleryScrollToElem(elem) {
+    var elemTop = elem.offset().top;
+    var elemBottom = elemTop + elem.outerHeight();
+    var pageTop = $(window).scrollTop();
+    var pageBottom = pageTop + $(window).height();
+
+    if (!(pageBottom > elemTop && pageTop < elemBottom && elemBottom < pageBottom)) {
+        $("html, body").animate({
+                scrollTop: elemTop - 20
+            },
+            500
+        );
+    }
+}
+
 function kbGalleryPrevious() {
     if(mode == "VIEW_DIR") {
         prev = $('#child_list .selected').prevAll()[0];
         if(prev) {
             $('#child_list .selected').removeClass('selected');
             $(prev).addClass('selected');
+            kbGalleryScrollToElem($(prev));
         } else if ($('#child_list .selected').length == 0) {
             $('#child_list .col-md-3').last().addClass('selected');
+            kbGalleryScrollToElem($('#child_list .col-md-3').last());
         }
     }
     if(mode == "VIEW_FILE") {
@@ -272,8 +290,10 @@ function kbGalleryNext() {
         if(next) {
             $('#child_list .selected').removeClass('selected');
             $(next).addClass('selected');
+            kbGalleryScrollToElem($(next));
         } else if ($('#child_list .selected').length == 0) {
             $('#child_list .col-md-3').first().addClass('selected');
+            kbGalleryScrollToElem($('#child_list .col-md-3').first());
         }
     }
     if(mode == "VIEW_FILE") {
