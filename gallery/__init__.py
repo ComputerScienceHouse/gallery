@@ -496,6 +496,8 @@ def describe_file(file_id, auth_dict=None):
         return "file not found", 404
 
     caption = request.form.get('caption')
+    if caption is None or caption == "":
+        return "please enter a caption", 400
 
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
