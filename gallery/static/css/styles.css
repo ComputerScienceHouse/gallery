@@ -165,7 +165,8 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element, ul.jqtree-tree li.jqtree-se
 
 input#mkdir,
 input#upload {
-    margin-top: 10px;
+    display: inline;
+    margin-top: 20px;
 }
 
 .fileList {

@@ -24,8 +24,7 @@ function afterMkdir(data) {
             var file_name = data['error'][i];
             message += " " + file_name + (i == (len - 1) ? '': ',');
         }
-        $('#mkdir-descriptions .modal-body').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
-        $('#mkdir-descriptions').modal('show');
+        $('#mkdir-modal .description-fields .form-group').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
     }
     if (data['success'].length > 0) {
         for (var i = 0, len = data['success'].length; i < len; i++) {
@@ -35,9 +34,12 @@ function afterMkdir(data) {
                         + "Enter a description for folder \"<strong>" + dir_name + "</strong>\":"
                         + "<a href='/view/dir/" + dir_id + "'>(View folder)</a></label>"
                         + "<input type='text' class='form-control' id='desc-" + dir_id + "'>";
-            $('#mkdir-descriptions .modal-body .form-group').append(field);
+            $('#mkdir-modal .description-fields .form-group').append(field);
+            if (!$('#mkdir-modal .modal-footer .btn-default').length) {
+                $('#mkdir-modal .modal-footer').append('<button class="btn btn-default" data-dismiss="modal" type="submit" >Submit</button>');
+            }
         }
-        $('#mkdir-descriptions input').focusout(function() {
+        $('#mkdir-modal .description-fields .form-group input').focusout(function() {
             var this_id = $(this).attr('id').substr($(this).attr('id').indexOf("-") + 1)
             $.ajax({
                 type: "POST",
@@ -47,7 +49,6 @@ function afterMkdir(data) {
                 }
             });
         });
-        $('#mkdir-descriptions').modal('show');
     }
 }
 
@@ -80,8 +81,7 @@ function afterUpload(file, response) {
             var file_name = response['error'][i];
             message += " " + file_name + (i == (len - 1) ? '': ',');
         }
-        $('#upload-descriptions .modal-body').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
-        $('#upload-descriptions').modal('show');
+        $('#upload-modal .description-fields .form-group').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
     }
     if (response['success'].length > 0) {
         for (var i = 0, len = response['success'].length; i < len; i++) {
@@ -92,9 +92,12 @@ function afterUpload(file, response) {
                         + "Enter a description for file \"<strong>" + file_name + "</strong>\": "
                         + "<a href='/view/file/" + file_id + "'>(View file)</a></label>"
                         + "<input type='text' class='form-control' id='desc-" + file_id + "'>";
-            $('#upload-descriptions .modal-body .form-group').append(field);
+            $('#upload-modal .description-fields .form-group').append(field);
+            if (!$('#upload-modal .modal-footer .btn-default').length) {
+                $('#upload-modal .modal-footer').append('<button class="btn btn-default" data-dismiss="modal" type="submit" >Submit</button>');
+            }
         }
-        $('#upload-descriptions input').focusout(function() {
+        $('#upload-modal .description-fields input').focusout(function() {
             var this_id = $(this).attr('id').substr($(this).attr('id').indexOf("-") + 1)
             $.ajax({
                 type: "POST",
@@ -104,7 +107,6 @@ function afterUpload(file, response) {
                 }
             });
         });
-        $('#upload-descriptions').modal('show');
     }
 }
 
