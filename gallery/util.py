@@ -14,6 +14,7 @@ from gallery.models import File
 def get_dir_file_contents(dir_id):
     contents = [f for f in File.query.filter(File.parent == dir_id).all()]
     contents.sort(key=lambda x: x.get_name())
+    contents.sort(key=lambda x: x.date_uploaded)
     return contents
 
 def get_full_dir_path(dir_id):

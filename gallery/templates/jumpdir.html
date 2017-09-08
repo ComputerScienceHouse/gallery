@@ -1,0 +1,34 @@
+{% extends "nav.html" %}
+{% block title %}
+Jump to Folder
+{% endblock %}
+
+{% block extraHead %}
+<link href="https://mbraak.github.io/jqTree/jqtree.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <h3>Jump to Folder</h3>
+            <h4 class="text-muted">Select a directory from the tree</h4>
+        </div>
+        <div class="col-xs-12">
+            <div id="fileList"></div>
+            <div class="form-group">
+                <input type="number" name="gallery_dir_id" readonly hidden/>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extraFooter %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqtree/1.3.5/tree.jquery.min.js"></script>
+<script>
+    $(function() {
+        populateJumpDirTree();
+    });
+</script>
+{% endblock %}

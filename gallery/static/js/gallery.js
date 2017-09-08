@@ -1,3 +1,22 @@
+$(document).ready(function() {
+  if ($('input[id^="tag-"]').length) {
+    $.get('/api/memberlist', function(data) {
+      $('input[id^="tag-"]').selectize({
+        persist: false,
+        openOnFocus: false,
+        closeAfterSelect: true,
+        plugins: ['remove_button'],
+        valueField: 'uuid',
+        labelField: 'name',
+        searchField: 'name',
+        selectOnTab: true,
+        options: data,
+        items: tags
+      });
+    });
+  }
+});
+
 function afterMkdir(data) {
     if (data['error'].length > 0) {
         var message = " Error: Could not create director" + ((data['error'].length > 1) ? 'ies' : 'y') + ":";
@@ -5,8 +24,7 @@ function afterMkdir(data) {
             var file_name = data['error'][i];
             message += " " + file_name + (i == (len - 1) ? '': ',');
         }
-        $('#descriptions .modal-body').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
-        $('#descriptions').modal('show');
+        $('#mkdir-modal .description-fields .form-group').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
     }
     if (data['success'].length > 0) {
         for (var i = 0, len = data['success'].length; i < len; i++) {
@@ -16,9 +34,13 @@ function afterMkdir(data) {
                         + "Enter a description for folder \"<strong>" + dir_name + "</strong>\":"
                         + "<a href='/view/dir/" + dir_id + "'>(View folder)</a></label>"
                         + "<input type='text' class='form-control' id='desc-" + dir_id + "'>";
-            $('#descriptions .modal-body .form-group').append(field);
+            $('#mkdir-modal .description-fields .form-group').append(field);
+            if (!$('#mkdir-modal .modal-footer .btn-default').length) {
+                $('#mkdir-modal .modal-footer').append('<button class="btn btn-default" data-dismiss="modal" type="submit" >Submit</button>');
+            }
         }
-        $('#descriptions input').focusout(function() {
+        $('#mkdir-modal #gallery_dir_name').val("");
+        $('#mkdir-modal .description-fields .form-group input').focusout(function() {
             var this_id = $(this).attr('id').substr($(this).attr('id').indexOf("-") + 1)
             $.ajax({
                 type: "POST",
@@ -28,7 +50,6 @@ function afterMkdir(data) {
                 }
             });
         });
-        $('#descriptions').modal('show');
     }
 }
 
@@ -61,8 +82,7 @@ function afterUpload(file, response) {
             var file_name = response['error'][i];
             message += " " + file_name + (i == (len - 1) ? '': ',');
         }
-        $('#descriptions .modal-body').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
-        $('#descriptions').modal('show');
+        $('#upload-modal .description-fields .form-group').append("<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign'></span>" + message + ".</div>");
     }
     if (response['success'].length > 0) {
         for (var i = 0, len = response['success'].length; i < len; i++) {
@@ -73,9 +93,12 @@ function afterUpload(file, response) {
                         + "Enter a description for file \"<strong>" + file_name + "</strong>\": "
                         + "<a href='/view/file/" + file_id + "'>(View file)</a></label>"
                         + "<input type='text' class='form-control' id='desc-" + file_id + "'>";
-            $('#descriptions .modal-body .form-group').append(field);
+            $('#upload-modal .description-fields .form-group').append(field);
+            if (!$('#upload-modal .modal-footer .btn-default').length) {
+                $('#upload-modal .modal-footer').append('<button class="btn btn-default" data-dismiss="modal" type="submit" >Submit</button>');
+            }
         }
-        $('#descriptions input').focusout(function() {
+        $('#upload-modal .description-fields input').focusout(function() {
             var this_id = $(this).attr('id').substr($(this).attr('id').indexOf("-") + 1)
             $.ajax({
                 type: "POST",
@@ -85,7 +108,6 @@ function afterUpload(file, response) {
                 }
             });
         });
-        $('#descriptions').modal('show');
     }
 }
 
@@ -97,11 +119,29 @@ function populateDirTree() {
             autoOpen: 0
         });
         $('#fileList').bind(
-            'tree.click',
+            'tree.select',
             function(event) {
                 // The clicked node is 'event.node'
                 var node = event.node;
                 $('input[name="gallery_dir_id"]').val(node.id);
+            }
+        );
+    });
+}
+
+// Rebuild the directory tree
+function populateJumpDirTree() {
+    $.get("/api/get_dir_tree", function(data) {
+        $('#fileList').tree({
+            data: [data],
+            autoOpen: 0
+        });
+        $('#fileList').bind(
+            'tree.select',
+            function(event) {
+                // The clicked node is 'event.node'
+                var node = event.node;
+                window.location = "/view/dir/" + node.id;
             }
         );
     });
@@ -117,6 +157,16 @@ function editFileDescription() {
                 url: "/api/file/rename/" + this_id,
                 data: {
                     title: $('input[id="rename-' + this_id + '"]').val()
+                }
+            });
+        }
+        if ($('#edit-description input[id="tag-' + this_id + '"]').length) {
+            var members = JSON.stringify($('input[id="tag-' + this_id + '"]').val().split(','));
+            $.ajax({
+                type: "POST",
+                url: "/api/file/tag/" + this_id,
+                data: {
+                    members: members
                 }
             });
         }
@@ -183,88 +233,153 @@ function deleteFile() {
     });
 }
 
-function albumNavigation() {
-    var children = $('.col-md-3');
-    var selected;
-    var i;
-    $(document).keydown(function(e) {
-        if ($(e.target).is('input, textarea')) {
-            return;
+function kbGalleryVideoSelect(e) {
+    var video = $('video');
+    if (video.length > 0) {
+        e.preventDefault();
+        if (video[0].paused == true) {
+            video[0].play();
+        } else {
+            video[0].pause();
         }
-        if (e.which === 37 || e.which === 72) { // left or h
-            if (selected) {
-                selected.removeClass('selected');
-                i--;
-                next = children.eq(i);
-                if (i < children.length && i > -1) {
-                    selected = next.addClass('selected');
-                } else {
-                    i = children.length - 1;
-                    selected = children.last().addClass('selected');
-                }
-            } else {
-                i = children.length - 1;
-                selected = children.last().addClass('selected');
-            }
-        } else if (e.which === 39 || e.which === 76) { // right or l
-            if (selected) {
-                selected.removeClass('selected');
-                i++;
-                next = children.eq(i);
-                if (i < children.length && i > -1) {
-                    selected = next.addClass('selected');
-                } else {
-                    i = 0;
-                    selected = children.eq(0).addClass('selected');
-                }
-            } else {
-                i = 0;
-                selected = children.eq(0).addClass('selected');
-            }
-        } else if (e.which === 13 || e.which === 32) { // enter or space
-            $(selected).find('a')[0].click();
-        } else if (e.which === 38 || e.which === 75) {
-            $("ul.breadcrumb li").not(".active").last().find('a')[0].click();
-        }
-    });
+    }
 }
 
-function fileNavigation() {
-    $(document).keydown(function(e) {
-        if ($(e.target).is('input, textarea')) {
-            return;
-        }
-        if (e.which === 37 || e.which === 72) { // left or h
-            if ($('.previous').find('a').length == 0) {
-                return;
-            }
-            $('.previous').find('a')[0].click();
-        } else if (e.which === 39 || e.which === 76) { // right or l
-            if ($('.next').find('a').length == 0) {
-                return;
-            }
-            $('.next').find('a')[0].click();
-        } else if (e.which === 38 || e.which === 75) { // up or k
-            $("ul.breadcrumb li").not(".active").last().find('a')[0].click();
-        }
-    });
+function kbGallerySelect() {
+    var elem = $('#child_list .selected').find('a')[0];
+
+    if(elem) {
+        elem.click();
+    }
 }
 
-function pausePlayVideo() {
-    $(document).keydown(function(e) {
-        if ($(e.target).is('input, textarea')) {
+function kbGalleryScrollToElem(elem) {
+    var elemTop = elem.offset().top;
+    var elemBottom = elemTop + elem.outerHeight();
+    var pageTop = $(window).scrollTop();
+    var pageBottom = pageTop + $(window).height();
+
+    if (!(pageBottom > elemTop && pageTop < elemBottom && elemBottom < pageBottom)) {
+        $("html, body").animate({
+                scrollTop: elemTop - 20
+            },
+            500
+        );
+    }
+}
+
+function kbGalleryPrevious() {
+    if(mode == "VIEW_DIR") {
+        prev = $('#child_list .selected').prevAll()[0];
+        if(prev) {
+            $('#child_list .selected').removeClass('selected');
+            $(prev).addClass('selected');
+            kbGalleryScrollToElem($(prev));
+        } else if ($('#child_list .selected').length == 0) {
+            $('#child_list .col-md-3').last().addClass('selected');
+            kbGalleryScrollToElem($('#child_list .col-md-3').last());
+        }
+    }
+    if(mode == "VIEW_FILE") {
+        if ($('.previous').find('a').length == 0) {
             return;
         }
-        if (e.which === 32) { // spacebar
-            var video = $('video');
-            if (video.length > 0) {
-                e.preventDefault();
-                if (video[0].paused == true) {
-                    video[0].play();
-                } else {
-                    video[0].pause();
-                }
-            }
+        $('.previous').find('a')[0].click();
+    }
+}
+function kbGalleryNext() {
+    if(mode == "VIEW_DIR") {
+        next = $('#child_list .selected').nextAll()[0];
+        if(next) {
+            $('#child_list .selected').removeClass('selected');
+            $(next).addClass('selected');
+            kbGalleryScrollToElem($(next));
+        } else if ($('#child_list .selected').length == 0) {
+            $('#child_list .col-md-3').first().addClass('selected');
+            kbGalleryScrollToElem($('#child_list .col-md-3').first());
         }
-    });
+    }
+    if(mode == "VIEW_FILE") {
+        if ($('.next').find('a').length == 0) {
+            return;
+        }
+        $('.next').find('a')[0].click();
+    }
+}
+function kbGalleryUp() {
+    $('ul.breadcrumb li').not('.active').last().find('a')[0].click();
+}
+function kbGalleryRandom() {
+    document.location = "/view/random_file";
+}
+function kbGalleryHelp(e) {
+    e.preventDefault();
+    $('#help').modal('show');
+}
+function kbGalleryCreateDir(e) {
+    e.preventDefault();
+    if(mode == "VIEW_DIR") {
+        $('#mkdir-modal').modal('show');
+    }
+}
+function kbGalleryUpload(e) {
+    e.preventDefault();
+    if(mode == "VIEW_DIR") {
+        $('#upload-modal').modal('show');
+    }
+}
+function kbGalleryFastNavigation(e) {
+    e.preventDefault();
+    document.location = "/jump_dir";
+}
+
+function kbGalleryFullscreen() {
+    if(mode == "VIEW_FILE") {
+        setFullscreen($("#file-content").first()[0]);
+    }
+}
+
+function kbGalleryDelete() {
+    if(mode == "VIEW_DIR") {
+        deleteDir();
+    } else if(mode == "VIEW_FILE") {
+        deleteFile();
+    }
+}
+
+function kbGalleryEdit() {
+    if(mode == "VIEW_DIR") {
+        editDirDescription();
+    } else if(mode == "VIEW_FILE") {
+        editFileDescription();
+    }
+}
+
+Mousetrap.bind('space', kbGalleryVideoSelect);
+Mousetrap.bind('enter', kbGallerySelect);
+Mousetrap.bind(['h', 'left'], kbGalleryPrevious);
+Mousetrap.bind(['l', 'right'], kbGalleryNext);
+Mousetrap.bind(['k', 'up'],  kbGalleryUp);
+Mousetrap.bind('r', kbGalleryRandom);
+Mousetrap.bind('?', kbGalleryHelp);
+Mousetrap.bind('c', kbGalleryCreateDir);
+Mousetrap.bind('u', kbGalleryUpload);
+Mousetrap.bind('f', kbGalleryFullscreen);
+Mousetrap.bind('d', kbGalleryDelete);
+Mousetrap.bind('e', kbGalleryEdit);
+Mousetrap.bind(['command+k', 'ctrl+k'], kbGalleryFastNavigation);
+
+function setFullscreen(elem) {
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    }
+    else {
+        console.log("No Fullscreen API Available")
+    }
 }

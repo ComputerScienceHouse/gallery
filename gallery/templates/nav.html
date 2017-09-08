@@ -13,9 +13,19 @@
             </div>
             <div class="navbar-collapse collapse" id="navbar">
                 <ul class="nav navbar-nav">
-                    <li><a href="/upload">Upload</a></li>
-                    <li><a href="/create_folder">Create Folder</a></li>
-                    <li><a href="/view/random_file">Random File</a></li>
+                    <li><a href="/view/random_file"><span class="glyphicon glyphicon-random"></span> Random File</a></li>
+                    <li><a href="/jump_dir"><span class="glyphicon glyphicon-list"></span> Fast Navigation</a></li>
+                    {% if self._TemplateReference__context.name=="view_dir.html" %}
+                        <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                            <span class="glyphicon glyphicon-plus-sign"></span> Create
+                            <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#" onclick="kbGalleryUpload(event);"><span class="glyphicon glyphicon-cloud-upload"></span> File</a></li>
+                                <li><a href="#" onclick="kbGalleryCreateDir(event);"><span class="glyphicon glyphicon-folder-open"></span> Folder</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown navbar-user">
@@ -29,6 +39,7 @@
                             <li class="divider"></li>
                             <li><a href="https://members.csh.rit.edu/"><span class="glyphicon glyphicon-globe"></span> Members Portal</a></li>
                             <li><a href="https://github.com/liam-middlebrook/gallery/issues"><span class="glyphicon glyphicon-exclamation-sign"></span> Report an Issue</a></li>
+                            <li><a href="#" onclick="kbGalleryHelp(event);"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
                             <li><a href="{{ url_for('logout') }}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
                         </ul>
                     </li>

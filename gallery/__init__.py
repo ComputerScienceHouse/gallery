@@ -60,6 +60,7 @@ ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
 # pylint: disable=C0413
 from gallery.models import Directory
 from gallery.models import File
+from gallery.models import Tag
 
 from gallery.util import allowed_file
 from gallery.util import get_dir_file_contents
@@ -75,6 +76,7 @@ from gallery.file_modules import FileModule
 
 import gallery.ldap as gallery_ldap
 from gallery.ldap import ldap_convert_uuid_to_displayname
+from gallery.ldap import ldap_get_members
 
 for func in inspect.getmembers(gallery_ldap):
     if func[0].startswith("ldap_"):
@@ -92,8 +94,20 @@ def index():
 @auth.oidc_auth
 @gallery_auth
 def view_upload(auth_dict=None):
+    dir_filter = re.compile(".*\/view\/dir\/(\d*)")
+    dir_search = dir_filter.search(request.referrer)
+    file_filter = re.compile(".*\/view\/file\/(\d*)")
+    file_search = file_filter.search(request.referrer)
+    if dir_search:
+        dir_id = int(dir_search.group(1))
+    elif file_search:
+        file_id = int(file_search.group(1))
+        dir_id = File.query.filter(File.id == file_id).first().parent
+    else:
+        return redirect("/")
     return render_template("upload.html",
-                            auth_dict=auth_dict)
+                            auth_dict=auth_dict,
+                            dir_id=dir_id)
 
 @app.route('/upload', methods=['POST'])
 @auth.oidc_auth
@@ -144,7 +158,26 @@ def upload_file(auth_dict=None):
 @auth.oidc_auth
 @gallery_auth
 def view_mkdir(auth_dict=None):
+    dir_filter = re.compile(".*\/view\/dir\/(\d*)")
+    dir_search = dir_filter.search(request.referrer)
+    file_filter = re.compile(".*\/view\/file\/(\d*)")
+    file_search = file_filter.search(request.referrer)
+    if dir_search:
+        dir_id = int(dir_search.group(1))
+    elif file_search:
+        file_id = int(file_search.group(1))
+        dir_id = File.query.filter(File.id == file_id).first().parent
+    else:
+        return redirect("/")
     return render_template("mkdir.html",
+                            auth_dict=auth_dict,
+                            dir_id=dir_id)
+
+@app.route('/jump_dir', methods=['GET'])
+@auth.oidc_auth
+@gallery_auth
+def view_jumpdir(auth_dict=None):
+    return render_template("jumpdir.html",
                             auth_dict=auth_dict)
 
 @app.route('/api/mkdir', methods=['POST'])
@@ -360,6 +393,9 @@ def delete_file(file_id, auth_dict=None):
         return "Permission denied", 403
 
     file_path = os.path.join(get_full_dir_path(file_model.parent), file_model.name)
+    current_tags = Tag.query.filter(Tag.file_id == file_id).all()
+    for tag in current_tags:
+        db.session.delete(tag)
     db.session.delete(file_model)
     os.remove(file_path)
     db.session.flush()
@@ -460,6 +496,8 @@ def describe_file(file_id, auth_dict=None):
         return "file not found", 404
 
     caption = request.form.get('caption')
+    if caption is None or caption == "":
+        return "please enter a caption", 400
 
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
@@ -504,6 +542,42 @@ def describe_dir(dir_id, auth_dict=None):
     db.session.commit()
 
     return "ok", 200
+
+
+@app.route("/api/file/tag/<int:file_id>", methods=['POST'])
+@auth.oidc_auth
+@gallery_auth
+def tag_file(file_id, auth_dict=None):
+    file_id = int(file_id)
+    file_model = File.query.filter(File.id == file_id).first()
+
+    if file_model is None:
+        return "file not found", 404
+
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['uuid'] == file_model.author):
+            return "Permission denied", 403
+
+    current_tags = Tag.query.filter(Tag.file_id == file_id).all()
+    for tag in current_tags:
+        db.session.delete(tag)
+        db.session.flush()
+        db.session.commit()
+
+    uuids = json.loads(request.form.get('members'))
+
+    for uuid in uuids:
+        # Don't allow empty tag entries
+        if uuid != '':
+            tag_model = Tag(file_id, uuid)
+            db.session.add(tag_model)
+            db.session.flush()
+            db.session.commit()
+            db.session.refresh(tag_model)
+
+    return "ok", 200
+
 
 @app.route("/api/file/get/<int:file_id>")
 @auth.oidc_auth
@@ -624,7 +698,9 @@ def display_files(dir_id, internal=False):
 
     # Sort by name/title
     file_list.sort(key=lambda x: x[1].get_name())
+    file_list.sort(key=lambda x: x[1].date_uploaded)
     dir_list.sort(key=lambda x: x[1].get_name())
+    dir_list.sort(key=lambda x: x[1].date_uploaded)
 
     ret_dict = dir_list + file_list
     if internal:
@@ -709,6 +785,7 @@ def render_file(file_id, auth_dict=None):
     path_stack.reverse()
     auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == file_model.author)
     auth_dict['can_desc'] = len(file_model.caption) == 0
+    tags = [tag.uuid for tag in Tag.query.filter(Tag.file_id == file_id).all()]
     return render_template("view_file.html",
                            file_id=file_id,
                            file=file_model,
@@ -719,6 +796,7 @@ def render_file(file_id, auth_dict=None):
                            display_parent=display_parent,
                            description=description,
                            display_description=display_description,
+                           tags=tags,
                            auth_dict=auth_dict)
 
 @app.route("/view/random_file")
@@ -726,6 +804,11 @@ def render_file(file_id, auth_dict=None):
 def get_random_file():
     file_model = File.query.order_by(sql_func.random()).first()
     return redirect("/view/file/" + str(file_model.id))
+
+@app.route("/api/memberlist")
+@auth.oidc_auth
+def get_member_list():
+    return jsonify(ldap_get_members())
 
 @app.errorhandler(404)
 @app.errorhandler(500)

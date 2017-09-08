@@ -20,11 +20,6 @@ View File
                 {% endfor %}
             </ul>
         </div>
-        {% if display_description %}
-        <div class="col-xs-12">
-            <div class="well well-sm" id="description">{{ description }}</div>
-        </div>
-        {% endif %}
     </div>
     <div class="row">
         <div class="col-md-10 col-md-offset-1 col-sm-12 col-sm-offset-0">
@@ -40,18 +35,34 @@ View File
             {% endif %}
 
             {% if file.mimetype.split('/')[0] == "image" %}
-                <img src="/api/file/get/{{file.id}}">
+                <img id="file-content" src="/api/file/get/{{file.id}}">
 
             {% elif file.mimetype.split('/')[0] == "video" %}
-            <video controls>
+            <video id="file-content" controls>
                 <source src="/api/file/get/{{file.id}}">
             </video>
 
             {% elif file.mimetype == "application/pdf" or file.mimetype == "text/plain" %}
-            <embed src="/api/file/get/{{file.id}}">
+            <embed id="file-content" src="/api/file/get/{{file.id}}">
             {% else %}
                 Text Data
             {% endif %}
+
+            {% if display_description %}
+            <p id="description"><strong>Description:</strong> {{ description }}</p>
+            {% endif %}
+
+            {% if tags|length > 0 %}
+            <div id="tags">
+              <strong>Tagged: </strong>
+              <ul>
+                {% for tag in tags %}
+                <li>{{ ldap_convert_uuid_to_displayname(tag) }}{% if not loop.last %}, {% endif %}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+            <p><strong>Date Uploaded:</strong> {{ file.date() }}</p>
 
             {% if prev_file != -1 or next_file != -1 %}
                 <ul class="pager">
@@ -79,6 +90,8 @@ View File
                                     {% if auth_dict['can_edit'] %}
                                     <label class="control-label" for="rename-{{ file.id }}">Enter a new title for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="rename-{{ file.id }}" value="{{ file.get_name() }}">
+                                    <label class="control-label" for="tag-{{ file.id }}">Tag CSH members in <strong>{{ file.get_name() }}</strong>:</label>
+                                    <input type="text" id="tag-{{ file.id }}">
                                     {% endif %}
                                     <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="desc-{{ file.id }}" value="{{ file.caption }}">
@@ -118,8 +131,11 @@ View File
 
 {% block extraFooter %}
 <script>
-    fileNavigation();
-    pausePlayVideo();
+    var mode = "VIEW_FILE";
     var parent = {{ parent }};
+    var tags = [];
+    {% for tag in tags %}
+    tags.push("{{tag}}");
+    {% endfor %}
 </script>
 {% endblock %}

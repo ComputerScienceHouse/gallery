@@ -104,6 +104,34 @@ h2 {
     font-weight: bolder;
 }
 
+#tags,
+#description {
+    margin: 10px;
+    text-align: center;
+}
+
+#tags ul {
+    list-style-type: none;
+    display: inline;
+    padding: 0;
+}
+
+#tags li {
+    display: inline-block;
+}
+
+.selectize-dropdown {
+  height: auto;
+}
+
+.selectize-input .remove {
+  margin: 0;
+}
+
+.selectize-control {
+  height: auto;
+}
+
 .pager {
     margin: 0;
 }
@@ -137,7 +165,8 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element, ul.jqtree-tree li.jqtree-se
 
 input#mkdir,
 input#upload {
-    margin-top: 10px;
+    display: inline;
+    margin-top: 20px;
 }
 
 .fileList {
@@ -193,4 +222,8 @@ embed {
 .error-page p {
     font-size: 15px;
     font-weight: lighter;
+}
+
+.nav .glyphicon {
+    margin-right: 5px;
 }

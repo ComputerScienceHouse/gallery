@@ -3,6 +3,9 @@
 View Directory
 {% endblock %}
 
+{% block extraHead %}
+<link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+{% endblock %}
 {% block body %}
 
 <div class="container">
@@ -20,14 +23,9 @@ View Directory
                 {% endfor %}
             </ul>
         </div>
-        {% if display_description %}
-        <div class="col-xs-12">
-            <div class="well well-sm" id="description">{{ description }}</div>
-        </div>
-        {% endif %}
     </div>
 {% if children|length >= 1 %}
-    <div class="row">
+    <div class="row" id="child_list">
     {% for child_type, child in children %}
         <div class="col-md-3 col-sm-4 col-xs-6">
             <div class="panel panel-default">
@@ -42,22 +40,31 @@ View Directory
                     <p>{{ child.get_name() }}</p>
                 </a>
                 <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
+                <p>Date Created: {{ child.date() }}</p>
                 {% elif child_type == "File" %}
                 <a class="file" href="/view/file/{{ child.id }}">
                     <img src="/api/thumbnail/get/{{ child.id }}">
                     <p>{{ child.get_name() }}</p>
                 </a>
                 <p>Owner: {{ ldap_convert_uuid_to_displayname(child.author) }}</p>
+                <p>Date Uploaded: {{ child.date() }}</p>
                 {% endif %}
                 </div>
             </div>
         </div>
     {% endfor %}
     </div>
+
+    {% if display_description %}
+    <p id="description"><strong>Description:</strong> {{ description }}</p>
+    {% endif %}
 {% else %}
     <div class="row">
         <div class="col-sm-12 text-center">
             <h2>This album is empty.</h2>
+            {% if display_description %}
+            <p id="description"><strong>Description:</strong> {{ description }}</p>
+            {% endif %}
         </div>
     </div>
 {% endif %}
@@ -113,13 +120,110 @@ View Directory
     {% endif %}
 {% endif %}
 </div>
+<div class="modal fade" id="mkdir-modal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">Create Directory</h4>
+            </div>
+            <div class="modal-body text-left">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="number" name="gallery_dir_id" value="{{directory.id}}" readonly hidden/>
+                        <label class="control-label" for="gallery_dir_name">Folder name:</label>
+                        <input class="form-control" type="text" id="gallery_dir_name" name="gallery_dir_name" placeholder="Welcome Back, 2017-2018/Fall Camping, etc.">
+                        <span class="input-group-btn">
+                            <input class="btn btn-primary" id="mkdir" type="submit" value="Create"><br />
+                        </span>
+                    </div>
+                </div>
 
+                <div class="description-fields">
+                    <div class='form-group'>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="upload-modal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">Upload</h4>
+            </div>
+            <div class="modal-body text-left">
+                <div class="well well-sm">
+                    <div id="galleryUpload" class="dropzone">
+                        <div class="dz-message" data-dz-message><span>Click or drop images here to upload</span></div>
+                    </div>
+                </div>
+                <div class="description-fields">
+                    <div class='form-group'>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input class="btn btn-primary" id="upload" type="submit" value="Upload">
+            </div>
+        </div>
+    </div>
+</div>
 <br />
 {% endblock %}
 
 {% block extraFooter %}
+<script src="https://rawgit.com/enyo/dropzone/master/dist/dropzone.js"></script>
 <script>
-    albumNavigation();
+    var mode = "VIEW_DIR";
     var parent = {{ parent }};
+</script>
+<script>
+Dropzone.autoDiscover = false;
+
+    $(function() {
+
+        var myDropzone = new Dropzone('div#galleryUpload', {
+            url: '/upload',
+            paramName: "gallery-upload",
+            uploadMultiple: false,
+            autoProcessQueue: false,
+            parallelUploads: 3,
+            success: afterUpload,
+            init: function() {
+                this.on('addedfile', function(file) {
+                    console.log(file.name + ": " + file.size);
+                    if (file.size > (1024 * 1024 * 1024)) {
+                        var warning = "<div class='alert alert-dismissible alert-danger' id='upload-alert'><button type='button' class='close' data-dismiss='alert'>&times;</button><span class='glyphicon glyphicon-exclamation-sign'></span> File \"<strong>" + file.name + "</strong>\" is too large, max filesize is 1GB.</div>";
+                        $('#upload').after(warning);
+                        this.removeFile(file);
+                    }
+                });
+
+                this.on('accept', function(file, done) {
+                    done();
+                });
+
+                this.on('sending', function(file, xhr, formData) {
+                    formData.append('parent_id', "{{directory.id}}");
+                });
+
+                this.on('complete', function(file) {
+                    this.removeFile(file);
+                });
+            }
+        });
+
+        $('#upload').click(function(e){
+            e.preventDefault();
+            myDropzone.options.autoProcessQueue = true;
+            myDropzone.processQueue();
+        });
+        $('#mkdir').click(createDirectory);
+    });
 </script>
 {% endblock %}

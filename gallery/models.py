@@ -9,6 +9,8 @@ from sqlalchemy import Text
 
 from gallery import db
 
+strfformat = "%Y-%m-%d"
+
 class Directory(db.Model):
     __tablename__ = 'directories'
     id = Column(Integer, primary_key=True)
@@ -30,6 +32,9 @@ class Directory(db.Model):
         self.author = author
         self.thumbnail_uuid = thumbnail_uuid
         self.blocked_groups = blocked_groups
+
+    def date(self):
+        return self.date_uploaded.strftime(strfformat)
 
     def get_name(self):
         return self.title or self.name
@@ -59,5 +64,17 @@ class File(db.Model):
         self.mimetype = mimetype
         self.exif_data = exif_data
 
+    def date(self):
+        return self.date_uploaded.strftime(strfformat)
+
     def get_name(self):
         return self.title or self.name
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    file_id = Column(ForeignKey('files.id'), primary_key=True)
+    uuid = Column(Text, primary_key=True)
+
+    def __init__(self, file_id, uuid):
+        self.file_id = file_id
+        self.uuid = uuid
