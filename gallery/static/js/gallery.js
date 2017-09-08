@@ -39,6 +39,7 @@ function afterMkdir(data) {
                 $('#mkdir-modal .modal-footer').append('<button class="btn btn-default" data-dismiss="modal" type="submit" >Submit</button>');
             }
         }
+        $('#mkdir-modal #gallery_dir_name').val("");
         $('#mkdir-modal .description-fields .form-group input').focusout(function() {
             var this_id = $(this).attr('id').substr($(this).attr('id').indexOf("-") + 1)
             $.ajax({
