@@ -68,6 +68,7 @@ from gallery.util import get_dir_tree_dict
 from gallery.util import get_full_dir_path
 from gallery.util import convert_bytes_to_utf8
 from gallery.util import gallery_auth
+from gallery.util import get_files_tagged
 
 from gallery.file_modules import parse_file_info
 from gallery.file_modules import generate_image_thumbnail
@@ -804,6 +805,19 @@ def render_file(file_id, auth_dict=None):
 def get_random_file():
     file_model = File.query.order_by(sql_func.random()).first()
     return redirect("/view/file/" + str(file_model.id))
+
+
+@app.route("/view/filtered")
+@auth.oidc_auth
+@gallery_auth
+def view_filtered():
+    uuids = request.args.get('uuids').split('+')
+    files = get_files_tagged(uuids)
+    return render_template("view_dir.html",
+                           files=files,
+                           uuids=uuids,
+                           auth_dict=auth_dict)
+
 
 @app.route("/api/memberlist")
 @auth.oidc_auth

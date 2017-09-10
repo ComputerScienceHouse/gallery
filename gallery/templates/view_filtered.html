@@ -1,0 +1,46 @@
+{% extends "nav.html" %}
+{% block title %}
+View Directory
+{% endblock %}
+
+{% block extraHead %}
+<link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+{% endblock %}
+{% block body %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <h4>Files of
+                {% for uuid in uuids %}
+                {{ ldap_convert_uuid_to_displayname(uuid) }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+        </div>
+    </div>
+{% if files|length >= 1 %}
+    <div class="row" id="child_list">
+    {% for file in file %}
+        <div class="col-md-3 col-sm-4 col-xs-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                <a class="file" href="/view/file/{{ file.id }}">
+                    <img src="/api/thumbnail/get/{{ file.id }}">
+                    <p>{{ file.get_name() }}</p>
+                </a>
+                <p>Owner: {{ ldap_convert_uuid_to_displayname(file.author) }}</p>
+                <p>Date Uploaded: {{ file.date() }}</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+
+{% else %}
+    <div class="row">
+        <div class="col-sm-12 text-center">
+            <h2>This search has no results.</h2>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}
