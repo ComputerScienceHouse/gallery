@@ -197,8 +197,10 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
     # gallery-data/root
     file_path = os.path.join(path, request.form.get('dir_name'))
     _, count = re.subn(r'[^a-zA-Z0-9 \/\-\_\']', '', file_path)
-    if not file_path.startswith("/gallery-data/root") or count != 0:
-        return "invalid path" + file_path, 400
+    if not file_path.startswith("/gallery-data/root"):
+        return "invalid path: " + file_path, 400
+    if count != 0:
+        return "invalid directory name: " + file_path, 400
 
     # mkdir -p that shit
     if not os.path.exists(file_path):
