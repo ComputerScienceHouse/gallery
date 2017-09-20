@@ -813,7 +813,7 @@ def get_random_file():
 def view_filtered():
     uuids = request.args.get('uuids').split('+')
     files = get_files_tagged(uuids)
-    return render_template("view_dir.html",
+    return render_template("view_filtered.html",
                            files=files,
                            uuids=uuids,
                            auth_dict=auth_dict)
