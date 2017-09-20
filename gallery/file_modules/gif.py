@@ -5,6 +5,8 @@ from wand.image import Image
 from gallery.file_modules import FileModule
 from gallery.util import hash_file
 
+MAX_FILE_SIZE = 5000000
+
 
 class GIFFile(FileModule):
     def __init__(self, file_path):
@@ -22,3 +24,7 @@ class GIFFile(FileModule):
             img.resize(256, 256)
             img.format = 'gif'
             img.save(filename=os.path.join("/gallery-data/thumbnails", self.thumbnail_uuid))
+
+        # If the file size is over 5mb, save jpeg thumbnail instead
+        if os.path.getsize(os.path.join("/gallery-data/thumbnails", self.thumbnail_uuid)) > MAX_FILE_SIZE:
+            super()
