@@ -50,7 +50,7 @@ def get_files_tagged(uuids):
     for uuid in uuids:
         if tags:
             tags = Tag.query.filter(
-                Tag.file_id.in_(files)
+                Tag.file_id.in_(files),
                 Tag.uuid == uuid
             )
         else:
