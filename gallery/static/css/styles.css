@@ -81,6 +81,13 @@ h2 {
     text-align: center;
 }
 
+/* Only supported in FF and iOS Safari currently
+ * http://caniuse.com/#feat=css-image-orientation
+ */
+.col-md-10 img {
+    image-orientation: from-image;
+}
+
 .col-md-10 img,
 .col-md-10 video {
     width: 100%;
