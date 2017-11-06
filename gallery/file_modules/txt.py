@@ -8,8 +8,8 @@ from gallery.util import hash_file
 
 class TXTFile(FileModule):
 
-    def __init__(self, file_path):
-        FileModule.__init__(self, file_path)
+    def __init__(self, file_path, dir_path):
+        FileModule.__init__(self, file_path, dir_path)
         self.mime_type = "text/plain"
 
         self.generate_thumbnail()
@@ -24,5 +24,5 @@ class TXTFile(FileModule):
                     text = text[0:512]
                 font = Font(path="Arial",size=20,color=Color('#333333'))
                 bg.caption(text=text,left=10,top=10,font=font)
-                bg.save(filename=os.path.join("/gallery-data/thumbnails",
+                bg.save(filename=os.path.join(self.dir_path,
                         self.thumbnail_uuid))

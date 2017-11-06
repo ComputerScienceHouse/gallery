@@ -25,3 +25,7 @@ SQLALCHEMY_DATABASE_URI = os.environ.get(
     'GALLERY_DATABASE_URI',
     'sqlite:///{}'.format(os.path.join(os.getcwd(), 'data.db')))
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+S3_ACCESS_ID = os.environ.get('GALLERY_S3_ACCESS_ID','')
+S3_SECRET_KEY = os.environ.get('GALLERY_S3_SECRET_KEY','')
+S3_BUCKET_ID = os.environ.get('GALLERY_S3_BUCKET_ID','')

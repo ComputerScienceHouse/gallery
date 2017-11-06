@@ -9,8 +9,8 @@ MAX_FILE_SIZE = 5000000
 
 
 class GIFFile(FileModule):
-    def __init__(self, file_path):
-        FileModule.__init__(self, file_path)
+    def __init__(self, file_path, dir_path):
+        FileModule.__init__(self, file_path, dir_path)
         self.mime_type = "image/gif"
 
         self.generate_thumbnail()
@@ -23,8 +23,8 @@ class GIFFile(FileModule):
             img.crop(width=size, height=size, gravity='center')
             img.resize(256, 256)
             img.format = 'gif'
-            img.save(filename=os.path.join("/gallery-data/thumbnails", self.thumbnail_uuid))
+            img.save(filename=os.path.join(self.dir_path, self.thumbnail_uuid))
 
         # If the file size is over 5mb, save jpeg thumbnail instead
-        if os.path.getsize(os.path.join("/gallery-data/thumbnails", self.thumbnail_uuid)) > MAX_FILE_SIZE:
+        if os.path.getsize(os.path.join(self.dir_path, self.thumbnail_uuid)) > MAX_FILE_SIZE:
             super()

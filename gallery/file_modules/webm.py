@@ -9,8 +9,8 @@ from gallery.util import hash_file
 
 class WebMFile(FileModule):
 
-    def __init__(self, file_path):
-        FileModule.__init__(self, file_path)
+    def __init__(self, file_path, dir_path):
+        FileModule.__init__(self, file_path, dir_path)
         self.mime_type = "video/webm"
 
         self.generate_thumbnail()
@@ -18,7 +18,7 @@ class WebMFile(FileModule):
 
     def generate_thumbnail(self):
         self.thumbnail_uuid = hash_file(self.file_path) + ".jpg"
-        thumbnail_loc = os.path.join("/gallery-data/thumbnails", self.thumbnail_uuid)
+        thumbnail_loc = os.path.join(self.dir_path, self.thumbnail_uuid)
 
         clip = VideoFileClip(self.file_path)
         time_mark = clip.duration * 0.05

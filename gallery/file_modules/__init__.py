@@ -8,15 +8,17 @@ from gallery.util import convert_bytes_to_utf8
 
 class FileModule:
     file_path = None
+    dir_path = None
     exif_dict = {'Exif': {}}
     mime_type = None
-    thumbnail_uuid = "reedphoto.jpg"
+    thumbnail_uuid = "reedphoto"
     file_name = None
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, dir_path):
         print("BASE CONSTRUCTOR")
         self.file_path = file_path
         self.file_name = file_path.split('/')[-1]
+        self.dir_path = dir_path
 
 
     def get_exif(self):
@@ -34,7 +36,7 @@ class FileModule:
         return self.file_name
 
     def generate_thumbnail(self):
-        self.thumbnail_uuid = hash_file(self.file_path) + ".jpg"
+        self.thumbnail_uuid = hash_file(self.file_path)
 
         with Image(filename=self.file_path) as img:
             with Image(width=img.width, height=img.height,
@@ -44,7 +46,7 @@ class FileModule:
                 bg.crop(width=size, height=size, gravity='center')
                 bg.resize(256, 256)
                 bg.format = 'jpeg'
-                bg.save(filename=os.path.join("/gallery-data/thumbnails",
+                bg.save(filename=os.path.join(self.dir_path,
                     self.thumbnail_uuid))
 
 
@@ -79,18 +81,18 @@ file_mimetype_relation = {
 }
 
 # classism
-def parse_file_info(file_path):
+def parse_file_info(file_path, dir_path):
     print("entering parse_file_info")
     mime_type = magic.from_file(file_path, mime=True)
     print(mime_type)
     print(file_path)
     if mime_type in file_mimetype_relation:
-        return file_mimetype_relation[mime_type](file_path)
+        return file_mimetype_relation[mime_type](file_path, dir_path)
 
     return None
 
 def supported_mimetypes():
     return [m for m in file_mimetype_relation.keys()]
 
-def generate_image_thumbnail(file_path, mime_type):
-    return file_mimetype_relation[mime_type](file_path).get_thumbnail()
+def generate_image_thumbnail(file_path, dir_path, mime_type):
+    return file_mimetype_relation[mime_type](file_path, dir_path).get_thumbnail()
