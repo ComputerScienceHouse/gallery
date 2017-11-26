@@ -8,9 +8,9 @@ from gallery.util import hash_file
 
 class JPEGFile(FileModule):
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, dir_path):
         print("JPEG CONSTRUCTOR")
-        FileModule.__init__(self, file_path)
+        FileModule.__init__(self, file_path, dir_path)
         self.mime_type = "image/jpeg"
 
         self.load_exif()

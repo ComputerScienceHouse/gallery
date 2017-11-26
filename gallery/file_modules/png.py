@@ -7,8 +7,8 @@ from gallery.util import hash_file
 
 class PNGFile(FileModule):
 
-    def __init__(self, file_path):
-        FileModule.__init__(self, file_path)
+    def __init__(self, file_path, dir_path):
+        FileModule.__init__(self, file_path, dir_path)
         self.mime_type = "image/png"
 
         self.generate_thumbnail()
@@ -24,5 +24,5 @@ class PNGFile(FileModule):
                 bg.crop(width=size, height=size, gravity='center')
                 bg.resize(256, 256)
                 bg.format = 'jpeg'
-                bg.save(filename=os.path.join("/gallery-data/thumbnails",
+                bg.save(filename=os.path.join(self.dir_path,
                     self.thumbnail_uuid))

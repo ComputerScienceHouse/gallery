@@ -5,6 +5,7 @@ from sqlalchemy import Integer
 from sqlalchemy import Enum
 from sqlalchemy import ForeignKey
 from sqlalchemy import DateTime
+from sqlalchemy import String
 from sqlalchemy import Text
 
 from gallery import db
@@ -51,10 +52,11 @@ class File(db.Model):
     thumbnail_uuid = Column(Text, nullable=False)
     mimetype = Column(Text, nullable=False)
     exif_data = Column(Text, nullable=False)
+    s3_id = Column(String(32)) # MD5 sums are always 32 chars long
 
     def __init__(self, parent, name, caption,
                  author, thumbnail_uuid,
-                 mimetype, exif_data):
+                 mimetype, exif_data, s3_id):
         self.parent = parent
         self.name = name
         self.caption = caption
@@ -63,6 +65,7 @@ class File(db.Model):
         self.thumbnail_uuid = thumbnail_uuid
         self.mimetype = mimetype
         self.exif_data = exif_data
+        self.s3_id = s3_id
 
     def date(self):
         return self.date_uploaded.strftime(strfformat)

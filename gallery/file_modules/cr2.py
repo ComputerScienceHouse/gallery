@@ -9,8 +9,8 @@ from gallery.util import hash_file
 
 class CR2File(FileModule):
 
-    def __init__(self, file_path):
-        FileModule.__init__(self, self.convert_to_jpg(file_path))
+    def __init__(self, file_path, dir_path):
+        FileModule.__init__(self, self.convert_to_jpg(file_path), dir_path)
         self.mime_type = "image/x-canon-cr2"
         self.load_exif()
         self.generate_thumbnail()

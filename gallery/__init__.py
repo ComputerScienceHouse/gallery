@@ -4,7 +4,9 @@ import os
 import zipfile
 import re
 import subprocess
+import tempfile
 
+from datetime import timedelta
 from sys import stderr
 
 from alembic import command
@@ -24,6 +26,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func as sql_func
 from sqlalchemy.orm import load_only
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
+from gallery.s3 import S3
 import flask_migrate
 import requests
 from werkzeug import secure_filename
@@ -53,9 +56,13 @@ auth = OIDCAuthentication(app,
                           issuer=app.config['OIDC_ISSUER'],
                           client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
 
-
 ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
                app.config['LDAP_BIND_PW'])
+
+s3 = S3('s3.csh.rit.edu',
+           access_key=app.config['S3_ACCESS_ID'],
+           secret_key=app.config['S3_SECRET_KEY'],
+           secure=True)
 
 # pylint: disable=C0413
 from gallery.models import Directory
@@ -68,6 +75,7 @@ from gallery.util import get_dir_tree_dict
 from gallery.util import get_full_dir_path
 from gallery.util import convert_bytes_to_utf8
 from gallery.util import gallery_auth
+from gallery.util import get_files_tagged
 
 from gallery.file_modules import parse_file_info
 from gallery.file_modules import generate_image_thumbnail
@@ -128,19 +136,40 @@ def upload_file(auth_dict=None):
     upload_status['success'] = []
     upload_status['redirect'] = "/view/dir/" + str(parent)
 
-    dir_path = get_full_dir_path(parent)
     for upload in uploaded_files:
         filename = secure_filename(upload.filename)
         file_model = File.query.filter(File.parent == parent) \
                                .filter(File.name == filename).first()
         if file_model is None:
+            dir_path = tempfile.mkdtemp()
             filepath = os.path.join(dir_path, filename)
             upload.save(filepath)
 
             file_model = add_file(filename, dir_path, parent, "", owner)
+
+            # Upload File
+            file_stat = os.stat(filepath)
+            with open(filepath, "rb") as f_hnd:
+                s3.put_object(app.config['S3_BUCKET_ID'],
+                              "files/" + file_model.s3_id,
+                              f_hnd,
+                              file_stat.st_size)
+            os.remove(filepath)
+
+            # Upload Thumbnail
+            filepath = os.path.join(dir_path, file_model.thumbnail_uuid)
+            file_stat = os.stat(filepath)
+            with open(filepath, "rb") as f_hnd:
+                s3.put_object(app.config['S3_BUCKET_ID'],
+                              "thumbnails/" + file_model.s3_id,
+                              f_hnd,
+                              file_stat.st_size)
+            os.remove(filepath)
+            os.rmdir(dir_path)
             if file_model is None:
                 upload_status['error'].append(filename)
                 continue
+
             upload_status['success'].append(
                 {
                     "name": file_model.name,
@@ -265,7 +294,7 @@ def refresh_thumbnails():
     refresh_thumbnail()
 
 def check_for_dir_db_entry(dictionary, path, parent_dir):
-    uuid_thumbnail = "reedphoto.jpg"
+    uuid_thumbnail = "reedphoto"
 
     # check db for this path with parents shiggg
     dir_name = path.split('/')[-1]
@@ -316,7 +345,7 @@ def add_directory(parent_id, name, description, owner):
         if sibling.get_name() == name:
             return None
 
-    uuid_thumbnail = "reedphoto.jpg"
+    uuid_thumbnail = "reedphoto"
     dir_model = Directory(parent_id, name, description, owner,
                           uuid_thumbnail, "{\"g\":[]}")
     db.session.add(dir_model)
@@ -327,50 +356,107 @@ def add_directory(parent_id, name, description, owner):
     return dir_model.id
 
 def add_file(file_name, path, dir_id, description, owner):
-    uuid_thumbnail = "reedphoto.jpg"
+    uuid_thumbnail = "reedphoto"
 
     file_path = os.path.join('/', path, file_name)
 
-    file_data = parse_file_info(file_path)
+    file_data = parse_file_info(file_path, path)
     if file_data is None:
         return None
 
     file_model = File(dir_id, file_data.get_name(), description, owner,
                       file_data.get_thumbnail(), file_data.get_type(),
-                      json.dumps(file_data.get_exif()))
+                      json.dumps(file_data.get_exif()),
+                      file_data.get_thumbnail().split(".")[0])
     db.session.add(file_model)
     db.session.flush()
     db.session.commit()
     db.session.refresh(file_model)
     return file_model
 
+@app.cli.command()
+def convert_to_s3():
+    dir_id = os.getenv("GALLERY_DIR_ID", -1)
+    def _convert_to_s3(dir_id):
+        thumbnail_uuid = Directory.query.filter(Directory.id == dir_id).first().thumbnail_uuid
+        Directory.query.filter(Directory.id == dir_id).update({
+            's3_id': thumbnail_uuid.split('.')[0]
+        })
+        db.session.flush()
+        db.session.commit()
+        files = File.query.filter(File.parent == dir_id).filter(File.s3_id == None).all()
+        for file_model in files:
+            file_model.s3_id = file_model.thumbnail_uuid.split(".")[0]
+
+            dir_path = get_full_dir_path(file_model.parent)
+            file_path = os.path.join(dir_path, file_model.name)
+            thumb_path = os.path.join("/gallery-data/thumbnails", file_model.thumbnail_uuid)
+
+            print(dir_path)
+            print(file_path)
+            print(thumb_path)
+
+            file_stat = os.stat(file_path)
+            print(file_stat)
+            with open(file_path, "rb") as f_hnd:
+                s3.put_object(app.config['S3_BUCKET_ID'],
+                              "files/" + file_model.s3_id,
+                              f_hnd,
+                              file_stat.st_size)
+
+            thumb_stat = os.stat(thumb_path)
+            print(thumb_stat)
+            with open(thumb_path, "rb") as f_hnd:
+                s3.put_object(app.config['S3_BUCKET_ID'],
+                              "thumbnails/" + file_model.s3_id,
+                              f_hnd,
+                              thumb_stat.st_size)
+
+            os.remove(file_path)
+            os.remove(thumb_path)
+
+            File.query.filter(File.id == file_model.id).update({
+                's3_id': file_model.s3_id
+            })
+            db.session.flush()
+            db.session.commit()
+        dir_children = [d for d in Directory.query.filter(Directory.parent == dir_id).all()]
+        for d in dir_children:
+            _convert_to_s3(dir_id=d.id)
+
+        # We're done here
+        if os.path.exists(get_full_dir_path(dir_id)):
+            os.rmdir(get_full_dir_path(dir_id))
+
+    _convert_to_s3(dir_id)
 
 def refresh_thumbnail():
     def refresh_thumbnail_helper(dir_model):
         dir_children = [d for d in Directory.query.filter(Directory.parent == dir_model.id).all()]
         file_children = [f for f in File.query.filter(File.parent == dir_model.id).all()]
         for file in file_children:
-            if file.thumbnail_uuid != "reedphoto.jpg":
+            if file.thumbnail_uuid != "reedphoto":
                 return file.thumbnail_uuid
         for d in dir_children:
-            if d.thumbnail_uuid != "reedphoto.jpg":
+            if d.thumbnail_uuid != "reedphoto":
                 return d.thumbnail_uuid
         # WE HAVE TO GO DEEPER (inception noise)
         for d in dir_children:
             return refresh_thumbnail_helper(d)
         # No thumbnail found
-        return "reedphoto.jpg"
+        return "reedphoto"
 
-    missing_thumbnails = File.query.filter(File.thumbnail_uuid == "reedphoto.jpg").all()
+    missing_thumbnails = File.query.filter(File.thumbnail_uuid == "reedphoto").all()
     for file_model in missing_thumbnails:
-        file_path = os.path.join(get_full_dir_path(file_model.parent), file_model.name)
+        dir_path = get_full_dir_path(file_model.parent)
+        file_path = os.path.join(dir_path, file_model.name)
         mime = file_model.mimetype
-        file_model.thumbnail_uuid = generate_image_thumbnail(file_path, mime)
+        file_model.thumbnail_uuid = generate_image_thumbnail(file_path, dir_path, mime)
         db.session.flush()
         db.session.commit()
         db.session.refresh(file_model)
 
-    missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == "reedphoto.jpg").all()
+    missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == "reedphoto").all()
     for dir_model in missing_thumbnails:
         dir_model.thumbnail_uuid = refresh_thumbnail_helper(dir_model)
         db.session.flush()
@@ -392,12 +478,24 @@ def delete_file(file_id, auth_dict=None):
             or auth_dict['uuid'] == file_model.author):
         return "Permission denied", 403
 
-    file_path = os.path.join(get_full_dir_path(file_model.parent), file_model.name)
+    if file_model.s3_id is None:
+        file_path = os.path.join(get_full_dir_path(file_model.parent), file_model.name)
+        os.remove(file_path)
+    else:
+        if File.query.filter(
+            File.id != file_model.id
+                    ).filter(
+            File.s3_id == file_model.s3_id
+                    ).first() is None:
+            s3.remove_object(app.config['S3_BUCKET_ID'],
+                             "files/" + file_model.s3_id)
+            s3.remove_object(app.config['S3_BUCKET_ID'],
+                             "thumbnails/" + file_model.s3_id)
+
     current_tags = Tag.query.filter(Tag.file_id == file_id).all()
     for tag in current_tags:
         db.session.delete(tag)
     db.session.delete(file_model)
-    os.remove(file_path)
     db.session.flush()
     db.session.commit()
 
@@ -427,9 +525,11 @@ def delete_dir(dir_id, auth_dict=None):
 
     for child_file in files:
         delete_file(child_file.id)
-    dir_path = get_full_dir_path(dir_model.id)
+
+    if len(dir_model.thumbnail_uuid.split('.')) > 1:
+        dir_path = get_full_dir_path(dir_model.id)
+        os.rmdir(dir_path)
     db.session.delete(dir_model)
-    os.rmdir(dir_path)
     db.session.flush()
     db.session.commit()
 
@@ -589,12 +689,18 @@ def display_file(file_id):
     if file_model is None:
         return "file not found", 404
 
-    dir_model = Directory.query.filter(Directory.id == file_model.parent).first()
+    if file_model.s3_id is None:
+        dir_model = Directory.query.filter(Directory.id == file_model.parent).first()
 
-    path = get_full_dir_path(dir_model.id)
+        path = get_full_dir_path(dir_model.id)
 
-    return send_from_directory(path, file_model.name,
-                               mimetype=file_model.mimetype)
+        return send_from_directory(path, file_model.name,
+                                   mimetype=file_model.mimetype)
+    else:
+        presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
+                                                "files/" + file_model.s3_id,
+                                                expires=timedelta(minutes=5))
+        return redirect(presigned_url)
 
 @app.route("/api/thumbnail/get/<int:file_id>")
 @auth.oidc_auth
@@ -602,10 +708,16 @@ def display_thumbnail(file_id):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
 
-    if file_model is None:
-        return send_from_directory('/gallery-data/thumbnails', 'reedphoto.jpg')
+    if file_model.s3_id is None:
+        if file_model is None:
+            return send_from_directory('/gallery-data/thumbnails', 'reedphoto')
 
-    return send_from_directory('/gallery-data/thumbnails', file_model.thumbnail_uuid)
+        return send_from_directory('/gallery-data/thumbnails', file_model.thumbnail_uuid)
+    else:
+        presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
+                                                "thumbnails/" + file_model.s3_id,
+                                                expires=timedelta(minutes=5))
+        return redirect(presigned_url)
 
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
 @auth.oidc_auth
@@ -613,8 +725,15 @@ def display_dir_thumbnail(dir_id):
     dir_id = int(dir_id)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
-    return send_from_directory('/gallery-data/thumbnails', dir_model.thumbnail_uuid)
+    # let's make this a bit more nuanced for the transition
+    if len(dir_model.thumbnail_uuid.split('.')) > 1:
+        return send_from_directory('/gallery-data/thumbnails', file_model.thumbnail_uuid)
 
+    presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
+                                            "thumbnails/" +
+                                            dir_model.thumbnail_uuid,
+                                            expires=timedelta(minutes=5))
+    return redirect(presigned_url)
 @app.route("/api/file/next/<int:file_id>")
 @auth.oidc_auth
 def get_file_next_id(file_id, internal=False):
@@ -804,6 +923,19 @@ def render_file(file_id, auth_dict=None):
 def get_random_file():
     file_model = File.query.order_by(sql_func.random()).first()
     return redirect("/view/file/" + str(file_model.id))
+
+
+@app.route("/view/filtered")
+@auth.oidc_auth
+@gallery_auth
+def view_filtered():
+    uuids = request.args.get('uuids').split('+')
+    files = get_files_tagged(uuids)
+    return render_template("view_filtered.html",
+                           files=files,
+                           uuids=uuids,
+                           auth_dict=auth_dict)
+
 
 @app.route("/api/memberlist")
 @auth.oidc_auth

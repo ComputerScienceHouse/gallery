@@ -45,6 +45,19 @@ def get_dir_tree_dict():
 
     return file_tree
 
+
+def get_files_tagged(uuids):
+    for uuid in uuids:
+        if tags:
+            tags = Tag.query.filter(
+                Tag.file_id.in_(files),
+                Tag.uuid == uuid
+            )
+        else:
+            tags = Tag.query.filter(Tag.uuid == uuid)
+    return tags
+
+
 def convert_bytes_to_utf8(dic):
     for key in dic:
         if isinstance(key, bytes):

@@ -10,3 +10,4 @@ piexif
 wand
 gunicorn
 moviepy
+boto
