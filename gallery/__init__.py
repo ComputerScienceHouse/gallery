@@ -380,7 +380,7 @@ def convert_to_s3():
     def _convert_to_s3(dir_id):
         thumbnail_uuid = Directory.query.filter(Directory.id == dir_id).first().thumbnail_uuid
         Directory.query.filter(Directory.id == dir_id).update({
-            's3_id': thumbnail_uuid.split('.')[0]
+            'thumbnail_uuid': thumbnail_uuid.split('.')[0]
         })
         db.session.flush()
         db.session.commit()
@@ -727,7 +727,7 @@ def display_dir_thumbnail(dir_id):
 
     # let's make this a bit more nuanced for the transition
     if len(dir_model.thumbnail_uuid.split('.')) > 1:
-        return send_from_directory('/gallery-data/thumbnails', file_model.thumbnail_uuid)
+        return send_from_directory('/gallery-data/thumbnails', dir_model.thumbnail_uuid)
 
     presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
                                             "thumbnails/" +
