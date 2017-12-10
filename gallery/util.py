@@ -76,19 +76,6 @@ def convert_bytes_to_utf8(dic):
             dic[key] = v
     return dic
 
-def allowed_file(filename):
-    return '.' in filename and filename.lower().rsplit('.', 1)[1] in \
-            [
-                    'txt',
-                    'png',
-                    'jpg',
-                    'jpeg',
-                    'mpg',
-                    'mp4',
-                    'avi',
-                    'cr2'
-            ]
-
 def gallery_auth(func):
     @wraps(func)
     def wrapped_function(*args, **kwargs):

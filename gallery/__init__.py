@@ -69,7 +69,6 @@ from gallery.models import Directory
 from gallery.models import File
 from gallery.models import Tag
 
-from gallery.util import allowed_file
 from gallery.util import get_dir_file_contents
 from gallery.util import get_dir_tree_dict
 from gallery.util import get_full_dir_path
@@ -265,79 +264,10 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
     upload_status['redirect'] = "/view/dir/" + str(parent_id)
     return jsonify(upload_status)
 
-# @route("/preload")
-# @auth.oidc_auth
-# def preload_images():
-#     if not os.path.exists("/gallery-data"):
-#         os.makedirs("/gallery-data")
-#
-#     r = requests.get("https://csh.rit.edu/~loothelion/test.zip")
-#     with open("test.zip", "wb") as archive:
-#         archive.write(r.content)
-#
-#     with zipfile.ZipFile("test.zip", "r") as zip_file:
-#         zip_file.extractall("/gallery-data/")
-#
-#     return redirect(url_for("index"), 302)
-#
-@app.cli.command()
-def refreshdb():
-    click.echo("Getting dir tree dict")
-    files = get_dir_tree_dict()
-    click.echo("Checking Dir for DB Entry")
-    check_for_dir_db_entry(files, '', None)
-    refresh_thumbnail()
-
 @app.cli.command()
 def refresh_thumbnails():
     click.echo("Refreshing thumbnails")
     refresh_thumbnail()
-
-def check_for_dir_db_entry(dictionary, path, parent_dir):
-    uuid_thumbnail = "reedphoto"
-
-    # check db for this path with parents shiggg
-    dir_name = path.split('/')[-1]
-    if dir_name == "":
-        dir_name = "root"
-    dir_model = None
-    if parent_dir:
-        dir_model = Directory.query.filter(Directory.name == dir_name) \
-                                   .filter(Directory.parent == parent_dir.id).first()
-    else:
-        dir_model = Directory.query.filter(Directory.parent == None).first()
-
-    if dir_model is None:
-        # fuck go back this directory doesn't exist as a model
-        # we gotta add this shit
-        if parent_dir:
-            dir_model = Directory(parent_dir.id, dir_name, "", "root",
-                                  uuid_thumbnail, "{\"g\":[]}")
-        else:
-            dir_model = Directory(None, dir_name, "", "root",
-                                  uuid_thumbnail, "{\"g\":[]}")
-        db.session.add(dir_model)
-        db.session.flush()
-        db.session.commit()
-        db.session.refresh(dir_model)
-
-    # get directory class as dir_model
-    for dir_p in dictionary:
-        # Don't traverse local files
-        if dir_p == '.':
-            continue
-        check_for_dir_db_entry(
-            dictionary[dir_p],
-            os.path.join(path, dir_p),
-            dir_model)
-
-    for file_p in dictionary['.']:
-        # check db for this file path
-        file_model = File.query.filter(File.parent == dir_model.id) \
-                               .filter(File.name == file_p).first()
-        if file_model is None:
-            add_file(file_p, path, dir_model.id, "", "root")
-            click.echo("adding file: " + file_p)
 
 def add_directory(parent_id, name, description, owner):
     dir_siblings = Directory.query.filter(Directory.parent == parent_id).all()
@@ -373,62 +303,6 @@ def add_file(file_name, path, dir_id, description, owner):
     db.session.commit()
     db.session.refresh(file_model)
     return file_model
-
-@app.cli.command()
-def convert_to_s3():
-    dir_id = os.getenv("GALLERY_DIR_ID", -1)
-    def _convert_to_s3(dir_id):
-        thumbnail_uuid = Directory.query.filter(Directory.id == dir_id).first().thumbnail_uuid
-        Directory.query.filter(Directory.id == dir_id).update({
-            'thumbnail_uuid': thumbnail_uuid.split('.')[0]
-        })
-        db.session.flush()
-        db.session.commit()
-        files = File.query.filter(File.parent == dir_id).filter(File.s3_id == None).all()
-        for file_model in files:
-            file_model.s3_id = file_model.thumbnail_uuid.split(".")[0]
-
-            dir_path = get_full_dir_path(file_model.parent)
-            file_path = os.path.join(dir_path, file_model.name)
-            thumb_path = os.path.join("/gallery-data/thumbnails", file_model.thumbnail_uuid)
-
-            print(dir_path)
-            print(file_path)
-            print(thumb_path)
-
-            file_stat = os.stat(file_path)
-            print(file_stat)
-            with open(file_path, "rb") as f_hnd:
-                s3.put_object(app.config['S3_BUCKET_ID'],
-                              "files/" + file_model.s3_id,
-                              f_hnd,
-                              file_stat.st_size)
-
-            thumb_stat = os.stat(thumb_path)
-            print(thumb_stat)
-            with open(thumb_path, "rb") as f_hnd:
-                s3.put_object(app.config['S3_BUCKET_ID'],
-                              "thumbnails/" + file_model.s3_id,
-                              f_hnd,
-                              thumb_stat.st_size)
-
-            os.remove(file_path)
-            os.remove(thumb_path)
-
-            File.query.filter(File.id == file_model.id).update({
-                's3_id': file_model.s3_id
-            })
-            db.session.flush()
-            db.session.commit()
-        dir_children = [d for d in Directory.query.filter(Directory.parent == dir_id).all()]
-        for d in dir_children:
-            _convert_to_s3(dir_id=d.id)
-
-        # We're done here
-        if os.path.exists(get_full_dir_path(dir_id)):
-            os.rmdir(get_full_dir_path(dir_id))
-
-    _convert_to_s3(dir_id)
 
 def refresh_thumbnail():
     def refresh_thumbnail_helper(dir_model):
