@@ -352,19 +352,15 @@ def delete_file(file_id, auth_dict=None):
             or auth_dict['uuid'] == file_model.author):
         return "Permission denied", 403
 
-    if file_model.s3_id is None:
-        file_path = os.path.join(get_full_dir_path(file_model.parent), file_model.name)
-        os.remove(file_path)
-    else:
-        if File.query.filter(
-            File.id != file_model.id
-                    ).filter(
-            File.s3_id == file_model.s3_id
-                    ).first() is None:
-            s3.remove_object(app.config['S3_BUCKET_ID'],
-                             "files/" + file_model.s3_id)
-            s3.remove_object(app.config['S3_BUCKET_ID'],
-                             "thumbnails/" + file_model.s3_id)
+    if File.query.filter(
+        File.id != file_model.id
+                ).filter(
+        File.s3_id == file_model.s3_id
+                ).first() is None:
+        s3.remove_object(app.config['S3_BUCKET_ID'],
+                         "files/" + file_model.s3_id)
+        s3.remove_object(app.config['S3_BUCKET_ID'],
+                         "thumbnails/" + file_model.s3_id)
 
     current_tags = Tag.query.filter(Tag.file_id == file_id).all()
     for tag in current_tags:
@@ -563,18 +559,10 @@ def display_file(file_id):
     if file_model is None:
         return "file not found", 404
 
-    if file_model.s3_id is None:
-        dir_model = Directory.query.filter(Directory.id == file_model.parent).first()
-
-        path = get_full_dir_path(dir_model.id)
-
-        return send_from_directory(path, file_model.name,
-                                   mimetype=file_model.mimetype)
-    else:
-        presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
-                                                "files/" + file_model.s3_id,
-                                                expires=timedelta(minutes=5))
-        return redirect(presigned_url)
+    presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
+                                            "files/" + file_model.s3_id,
+                                            expires=timedelta(minutes=5))
+    return redirect(presigned_url)
 
 @app.route("/api/thumbnail/get/<int:file_id>")
 @auth.oidc_auth
@@ -582,16 +570,10 @@ def display_thumbnail(file_id):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
 
-    if file_model.s3_id is None:
-        if file_model is None:
-            return send_from_directory('/gallery-data/thumbnails', 'reedphoto')
-
-        return send_from_directory('/gallery-data/thumbnails', file_model.thumbnail_uuid)
-    else:
-        presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
-                                                "thumbnails/" + file_model.s3_id,
-                                                expires=timedelta(minutes=5))
-        return redirect(presigned_url)
+    presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
+                                            "thumbnails/" + file_model.s3_id,
+                                            expires=timedelta(minutes=5))
+    return redirect(presigned_url)
 
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
 @auth.oidc_auth
