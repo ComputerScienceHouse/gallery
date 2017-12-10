@@ -227,10 +227,6 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
     if not file_path.startswith("/gallery-data/root") or count != 0:
         return "invalid path" + file_path, 400
 
-    # mkdir -p that shit
-    if not os.path.exists(file_path):
-        os.makedirs(file_path)
-
     # strip out new dir names now filtered by regex!
     if file_path.startswith(path):
         file_path = file_path[(len(path)):]
