@@ -197,7 +197,7 @@ Dropzone.autoDiscover = false;
             init: function() {
                 this.on('addedfile', function(file) {
                     console.log(file.name + ": " + file.size);
-                    if (file.size > (1024 * 1024 * 1024)) {
+                    if (file.size > (1073741824)) {
                         var warning = "<div class='alert alert-dismissible alert-danger' id='upload-alert'><button type='button' class='close' data-dismiss='alert'>&times;</button><span class='glyphicon glyphicon-exclamation-sign'></span> File \"<strong>" + file.name + "</strong>\" is too large, max filesize is 1GB.</div>";
                         $('#upload').after(warning);
                         this.removeFile(file);
