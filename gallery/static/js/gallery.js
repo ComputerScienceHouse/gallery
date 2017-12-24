@@ -233,6 +233,40 @@ function deleteFile() {
     });
 }
 
+function moveFile() {
+    $('#move').modal('show');
+    $('#move button[id^="move"]').click(function(e) {
+        e.preventDefault();
+        var this_id = $('#move button[id^="move"]').attr('id').substr($('#move button[id^="move"]').attr('id').indexOf("-") + 1);
+        if ($('#move input[name="gallery_dir_id"]').length) {
+            $.ajax({
+                type: "POST",
+                url: "/api/file/move/" + this_id,
+                data: {
+                    parent: $('#move input[name="gallery_dir_id"]').val()
+                }
+            });
+        }
+    });
+}
+
+function moveDir() {
+    $('#move').modal('show');
+    $('#move button[id^="move"]').click(function(e) {
+        e.preventDefault();
+        var this_id = $('#move button[id^="move"]').attr('id').substr($('#move button[id^="move"]').attr('id').indexOf("-") + 1);
+        if ($('#move input[name="gallery_dir_id"]').length) {
+            $.ajax({
+                type: "POST",
+                url: "/api/dir/move/" + this_id,
+                data: {
+                    parent: $('#move input[name="gallery_dir_id"]').val()
+                }
+            });
+        }
+    });
+}
+
 function kbGalleryVideoSelect(e) {
     var video = $('video');
     if (video.length > 0) {

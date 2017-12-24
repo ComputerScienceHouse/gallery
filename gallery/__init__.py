@@ -401,6 +401,56 @@ def delete_dir(dir_id, auth_dict=None):
 
     return "ok", 200
 
+@app.route("/api/file/move/<int:file_id>", methods=['POST'])
+@auth.oidc_auth
+@gallery_auth
+def move_file(file_id, auth_dict=None):
+    file_id = int(file_id)
+    file_model = File.query.filter(File.id == file_id).first()
+
+    if file_model is None:
+        return "file not found", 404
+
+    parent = request.form.get('parent')
+
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['uuid'] == file_model.author):
+        return "Permission denied", 403
+
+    File.query.filter(File.id == file_id).update({
+        'parent': parent
+    })
+    db.session.flush()
+    db.session.commit()
+
+    return "ok", 200
+
+@app.route("/api/dir/move/<int:dir_id>", methods=['POST'])
+@auth.oidc_auth
+@gallery_auth
+def move_dir(dir_id, auth_dict=None):
+    dir_id = int(dir_id)
+    dir_model = Directory.query.filter(Directory.id == dir_id).first()
+
+    if dir_model is None:
+        return "dir not found", 404
+
+    parent = request.form.get('parent')
+
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['uuid'] == dir_model.author):
+        return "Permission denied", 403
+
+    Directory.query.filter(Directory.id == dir_id).update({
+        'parent': parent
+    })
+    db.session.flush()
+    db.session.commit()
+
+    return "ok", 200
+
 @app.route("/api/file/rename/<int:file_id>", methods=['POST'])
 @auth.oidc_auth
 @gallery_auth
