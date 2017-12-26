@@ -177,6 +177,7 @@ function editFileDescription() {
                 caption: $('input[id="desc-' + this_id + '"]').val()
             }
         });
+        location.reload();
     });
 }
 
@@ -200,6 +201,7 @@ function editDirDescription() {
                 description: $('input[id="desc-' + this_id + '"]').val()
             }
         });
+        location.reload();
     });
 }
 
@@ -246,6 +248,7 @@ function moveFile() {
                     parent: $('#move input[name="gallery_dir_id"]').val()
                 }
             });
+            location.reload();
         }
     });
 }
@@ -263,6 +266,7 @@ function moveDir() {
                     parent: $('#move input[name="gallery_dir_id"]').val()
                 }
             });
+            location.reload();
         }
     });
 }
