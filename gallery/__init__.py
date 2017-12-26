@@ -463,11 +463,6 @@ def rename_file(file_id, auth_dict=None):
 
     title = request.form.get('title')
 
-    if not (auth_dict['is_eboard']
-            or auth_dict['is_rtp']
-            or auth_dict['uuid'] == file_model.author):
-        return "Permission denied", 403
-
     File.query.filter(File.id == file_id).update({
         'title': title
     })
@@ -487,11 +482,6 @@ def rename_dir(dir_id, auth_dict=None):
         return "dir not found", 404
 
     title = request.form.get('title')
-
-    if not (auth_dict['is_eboard']
-            or auth_dict['is_rtp']
-            or auth_dict['uuid'] == dir_model.author):
-        return "Permission denied", 403
 
     Directory.query.filter(Directory.id == dir_id).update({
         'title': title
@@ -515,14 +505,6 @@ def describe_file(file_id, auth_dict=None):
     if caption is None or caption == "":
         return "please enter a caption", 400
 
-    if not (auth_dict['is_eboard']
-            or auth_dict['is_rtp']
-            or auth_dict['uuid'] == file_model.author):
-        if len(file_model.caption) == 0:
-            caption = '"%s" -%s' % (caption, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
-        else:
-            return "Permission denied", 403
-
     File.query.filter(File.id == file_id).update({
         'caption': caption
     })
@@ -543,14 +525,6 @@ def describe_dir(dir_id, auth_dict=None):
 
     desc = request.form.get('description')
 
-    if not (auth_dict['is_eboard']
-            or auth_dict['is_rtp']
-            or auth_dict['uuid'] == dir_model.author):
-        if len(dir_model.description) == 0:
-            desc = '"%s" -%s' % (desc, ldap_convert_uuid_to_displayname(auth_dict['uuid']))
-        else:
-            return "Permission denied", 403
-
     Directory.query.filter(Directory.id == dir_id).update({
         'description': desc
     })
@@ -569,11 +543,6 @@ def tag_file(file_id, auth_dict=None):
 
     if file_model is None:
         return "file not found", 404
-
-    if not (auth_dict['is_eboard']
-            or auth_dict['is_rtp']
-            or auth_dict['uuid'] == file_model.author):
-            return "Permission denied", 403
 
     current_tags = Tag.query.filter(Tag.file_id == file_id).all()
     for tag in current_tags:
@@ -773,7 +742,6 @@ def render_dir(dir_id, auth_dict=None):
         path_stack.append(dir_model_breadcrumbs)
     path_stack.reverse()
     auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == dir_model.author)
-    auth_dict['can_desc'] = len(dir_model.description) == 0
     return render_template("view_dir.html",
                            children=children,
                            directory=dir_model,
@@ -805,7 +773,6 @@ def render_file(file_id, auth_dict=None):
         path_stack.append(dir_model)
     path_stack.reverse()
     auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == file_model.author)
-    auth_dict['can_desc'] = len(file_model.caption) == 0
     tags = [tag.uuid for tag in Tag.query.filter(Tag.file_id == file_id).all()]
     return render_template("view_file.html",
                            file_id=file_id,

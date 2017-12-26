@@ -69,10 +69,9 @@ View Directory
         </div>
     </div>
 {% endif %}
-{% if auth_dict['can_edit'] or auth_dict['can_desc'] %}
 <div class="row">
     <div class="col-xs-12 text-center">
-        <a href="#!" class="btn btn-primary" onclick="editDirDescription()">Edit{{ '' if auth_dict['can_edit'] else ' Description' }}</a>
+        <a href="#!" class="btn btn-primary" onclick="editDirDescription()">Edit</a>
         {% if auth_dict['can_edit'] %}
         <a href="#!" class="btn btn-warning" onclick="moveDir()">Move</a>
         <a href="#!" class="btn btn-danger" onclick="deleteDir()">Delete</a>
@@ -85,14 +84,12 @@ View Directory
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h4 class="modal-title">Edit{{ '' if auth_dict['can_edit'] else ' description' }}</h4>
+                    <h4 class="modal-title">Edit</h4>
                 </div>
                 <div class="modal-body text-left">
                     <div class='form-group'>
-                        {% if auth_dict['can_edit'] %}
                         <label class="control-label" for="rename-{{ directory.id }}">Enter a new title for directory <strong>{{ directory.get_name() }}</strong>:</label>
                         <input type="text" class="form-control" id="rename-{{ directory.id }}" value="{{ directory.get_name() }}">
-                        {% endif %}
                         <label class="control-label" for="desc-{{ directory.id }}">Enter a new description for directory <strong>{{ directory.get_name() }}</strong>:</label>
                         <input type="text" class="form-control" id="desc-{{ directory.id }}" value="{{ directory.description }}">
                     </div>
@@ -139,7 +136,6 @@ View Directory
         </div>
     </div>
     {% endif %}
-{% endif %}
 </div>
 <div class="modal fade" id="mkdir-modal" role="dialog">
     <div class="modal-dialog">
