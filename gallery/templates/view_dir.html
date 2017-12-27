@@ -215,6 +215,7 @@ Dropzone.autoDiscover = false;
             autoProcessQueue: false,
             parallelUploads: 3,
             success: afterUpload,
+            maxFilesize: 1024,
             init: function() {
                 this.on('addedfile', function(file) {
                     console.log(file.name + ": " + file.size);
