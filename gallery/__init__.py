@@ -797,7 +797,7 @@ def get_random_file():
 @app.route("/view/filtered")
 @auth.oidc_auth
 @gallery_auth
-def view_filtered():
+def view_filtered(auth_dict=None):
     uuids = request.args.get('uuids').split('+')
     files = get_files_tagged(uuids)
     return render_template("view_filtered.html",
