@@ -11,6 +11,8 @@ from gallery.ldap import ldap_convert_uuid_to_displayname
 from gallery.models import Directory
 from gallery.models import File
 
+DEFAULT_THUMBNAIL_NAME = 'reedphoto'
+
 def get_dir_file_contents(dir_id):
     contents = [f for f in File.query.filter(File.parent == dir_id).all()]
     contents.sort(key=lambda x: x.get_name())

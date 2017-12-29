@@ -69,6 +69,7 @@ from gallery.models import Directory
 from gallery.models import File
 from gallery.models import Tag
 
+from gallery.util import DEFAULT_THUMBNAIL_NAME
 from gallery.util import get_dir_file_contents
 from gallery.util import get_dir_tree_dict
 from gallery.util import get_full_dir_path
@@ -271,7 +272,7 @@ def add_directory(parent_id, name, description, owner):
         if sibling.get_name() == name:
             return None
 
-    uuid_thumbnail = "reedphoto"
+    uuid_thumbnail = DEFAULT_THUMBNAIL_NAME
     dir_model = Directory(parent_id, name, description, owner,
                           uuid_thumbnail, "{\"g\":[]}")
     db.session.add(dir_model)
@@ -282,7 +283,7 @@ def add_directory(parent_id, name, description, owner):
     return dir_model.id
 
 def add_file(file_name, path, dir_id, description, owner):
-    uuid_thumbnail = "reedphoto"
+    uuid_thumbnail = DEFAULT_THUMBNAIL_NAME
 
     file_path = os.path.join('/', path, file_name)
 
@@ -305,18 +306,18 @@ def refresh_thumbnail():
         dir_children = [d for d in Directory.query.filter(Directory.parent == dir_model.id).all()]
         file_children = [f for f in File.query.filter(File.parent == dir_model.id).all()]
         for file in file_children:
-            if file.thumbnail_uuid != "reedphoto":
+            if file.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME:
                 return file.thumbnail_uuid
         for d in dir_children:
-            if d.thumbnail_uuid != "reedphoto":
+            if d.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME:
                 return d.thumbnail_uuid
         # WE HAVE TO GO DEEPER (inception noise)
         for d in dir_children:
             return refresh_thumbnail_helper(d)
         # No thumbnail found
-        return "reedphoto"
+        return DEFAULT_THUMBNAIL_NAME
 
-    missing_thumbnails = File.query.filter(File.thumbnail_uuid == "reedphoto").all()
+    missing_thumbnails = File.query.filter(File.thumbnail_uuid == DEFAULT_THUMBNAIL_NAME).all()
     for file_model in missing_thumbnails:
         dir_path = get_full_dir_path(file_model.parent)
         file_path = os.path.join(dir_path, file_model.name)
@@ -326,7 +327,7 @@ def refresh_thumbnail():
         db.session.commit()
         db.session.refresh(file_model)
 
-    missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == "reedphoto").all()
+    missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == DEFAULT_THUMBNAIL_NAME).all()
     for dir_model in missing_thumbnails:
         dir_model.thumbnail_uuid = refresh_thumbnail_helper(dir_model)
         db.session.flush()

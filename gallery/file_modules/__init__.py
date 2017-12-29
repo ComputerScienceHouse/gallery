@@ -3,6 +3,7 @@ import os
 from wand.image import Image
 from wand.color import Color
 
+from gallery.util import DEFAULT_THUMBNAIL_NAME
 from gallery.util import hash_file
 from gallery.util import convert_bytes_to_utf8
 
@@ -11,7 +12,7 @@ class FileModule:
     dir_path = None
     exif_dict = {'Exif': {}}
     mime_type = None
-    thumbnail_uuid = "reedphoto"
+    thumbnail_uuid = DEFAULT_THUMBNAIL_NAME
     file_name = None
 
     def __init__(self, file_path, dir_path):
