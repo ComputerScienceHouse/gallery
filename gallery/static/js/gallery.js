@@ -55,13 +55,13 @@ function afterMkdir(data) {
 
 // Create a new directory
 function createDirectory() {
-    if ($('input[name="gallery_dir_id"]').val().length > 0) {
+    if ($('input[name="gallery_mkdir_id"]').val().length > 0) {
         $.ajax({
             type: "POST",
             url: "/api/mkdir",
             data: {
                 dir_name: $('input[name="gallery_dir_name"]').val(),
-                parent_id: $('input[name="gallery_dir_id"]').val()
+                parent_id: $('input[name="gallery_mkdir_id"]').val()
             },
             success: afterMkdir
         });
