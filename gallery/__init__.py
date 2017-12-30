@@ -93,6 +93,34 @@ for func in inspect.getmembers(gallery_ldap):
         if inspect.isfunction(unwrapped):
             app.add_template_global(inspect.unwrap(unwrapped), name=func[0])
 
+# Ensure that we have a root directory
+# XXX there's definitely a better way to do this, I don't have access to the
+# docs right now since I'm on a plane, but I'd wager the SQLAlchemy has a way to
+# get the number of rows in a table without retrieving them (especially since
+# Postgres definitely support this)
+if len([d for d in Directory.query.all()]) == 0:
+    root_dir = Directory(None, "Gallery!",
+                         "A Multimedia Gallery Written in Python with Flask!",
+                         "root", DEFAULT_THUMBNAIL_NAME, "{\"g\":[]}")
+    db.session.add(root_dir)
+    db.session.flush()
+    db.session.commit()
+
+    # Upload the default thumbnail photo to S3 if it's not already up there
+    # XXX it's probably a good idea to move this outside of the root directory
+    # creation check. That way if a deployment is given incorrect S3 credentials
+    # when the root directory is created we can still recover from the case
+    # where there is not default thumbnail
+    default_thumbnail_path = "thumbnails/" + DEFAULT_THUMBNAIL_NAME + ".jpg"
+    file_stat = os.stat(default_thumbnail_path)
+
+    with open(default_thumbnail_path, "rb") as f_hnd:
+        s3.put_object(app.config['S3_BUCKET_ID'],
+                      "files/" + DEFAULT_THUMBNAIL_NAME,
+                      f_hnd,
+                      file_stat.st_size)
+
+
 @app.route("/")
 @auth.oidc_auth
 def index():
