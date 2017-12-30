@@ -12,6 +12,7 @@ from gallery.models import Directory
 from gallery.models import File
 
 DEFAULT_THUMBNAIL_NAME = 'reedphoto'
+ROOT_DIR_ID = 1
 
 def get_dir_file_contents(dir_id):
     contents = [f for f in File.query.filter(File.parent == dir_id).all()]

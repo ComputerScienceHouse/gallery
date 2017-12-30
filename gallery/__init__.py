@@ -70,6 +70,7 @@ from gallery.models import File
 from gallery.models import Tag
 
 from gallery.util import DEFAULT_THUMBNAIL_NAME
+from gallery.util import ROOT_DIR_ID
 from gallery.util import get_dir_file_contents
 from gallery.util import get_dir_tree_dict
 from gallery.util import get_full_dir_path
@@ -377,7 +378,7 @@ def delete_dir(dir_id, auth_dict=None):
 
     if dir_model is None:
         return "dir not found", 404
-    if dir_model.id <= 3:
+    if dir_model.id <= ROOT_DIR_ID:
         return "Permission denied", 403
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
@@ -670,14 +671,11 @@ def get_dir_tree(internal=False):
     tree['id'] = root.id
     tree['children'] = get_dir_children(root.id)
 
-    # Hardcode gallery name to not be root FIXME
-    tree['children'][0]['children'][0]['name'] = "CSH Gallery"
-
     # return after gallery-data
     if internal:
-        return tree['children'][0]['children'][0]
+        return tree
     else:
-        return jsonify(tree['children'][0]['children'][0])
+        return jsonify(tree)
 
 @app.route("/api/directory/get/<int:dir_id>")
 @auth.oidc_auth
@@ -721,8 +719,8 @@ def get_file_parent(file_id):
 @gallery_auth
 def render_dir(dir_id, auth_dict=None):
     dir_id = int(dir_id)
-    if dir_id < 3:
-        return redirect('/view/dir/3')
+    if dir_id < ROOT_DIR_ID:
+        return redirect('/view/dir/'+ str(ROOT_DIR_ID))
 
     children = display_files(dir_id, internal=True)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
@@ -733,7 +731,7 @@ def render_dir(dir_id, auth_dict=None):
 
 
     display_parent = True
-    if dir_model is None or dir_model.parent is None or dir_id == 3:
+    if dir_model is None or dir_model.parent is None or dir_id == ROOT_DIR_ID:
         display_parent = False
     path_stack = []
     dir_model_breadcrumbs = dir_model
@@ -747,7 +745,7 @@ def render_dir(dir_id, auth_dict=None):
                            children=children,
                            directory=dir_model,
                            parent=dir_model.parent,
-                           parents=path_stack[2:],
+                           parents=path_stack,
                            display_parent=display_parent,
                            description=description,
                            display_description=display_description,
@@ -779,7 +777,7 @@ def render_file(file_id, auth_dict=None):
                            file_id=file_id,
                            file=file_model,
                            parent=file_model.parent,
-                           parents=path_stack[2:],
+                           parents=path_stack,
                            next_file=get_file_next_id(file_id, internal=True),
                            prev_file=get_file_prev_id(file_id, internal=True),
                            display_parent=display_parent,
