@@ -72,7 +72,6 @@ from gallery.models import Tag
 from gallery.util import DEFAULT_THUMBNAIL_NAME
 from gallery.util import ROOT_DIR_ID
 from gallery.util import get_dir_file_contents
-from gallery.util import get_dir_tree_dict
 from gallery.util import get_full_dir_path
 from gallery.util import convert_bytes_to_utf8
 from gallery.util import gallery_auth
@@ -250,17 +249,7 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
 
     path = get_full_dir_path(parent_id)
 
-    # at this point path is something like
-    # gallery-data/root
     file_path = os.path.join(path, request.form.get('dir_name'))
-    _, count = re.subn(r'[^a-zA-Z0-9 \/\-\_]', '', file_path)
-    if not file_path.startswith("/gallery-data/root") or count != 0:
-        return "invalid path" + file_path, 400
-
-    # strip out new dir names now filtered by regex!
-    if file_path.startswith(path):
-        file_path = file_path[(len(path)):]
-
 
     upload_status = {}
     upload_status['error'] = []
