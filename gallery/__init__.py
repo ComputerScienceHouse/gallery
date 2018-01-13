@@ -72,7 +72,6 @@ from gallery.models import Tag
 from gallery.util import DEFAULT_THUMBNAIL_NAME
 from gallery.util import ROOT_DIR_ID
 from gallery.util import get_dir_file_contents
-from gallery.util import get_dir_tree_dict
 from gallery.util import get_full_dir_path
 from gallery.util import convert_bytes_to_utf8
 from gallery.util import gallery_auth

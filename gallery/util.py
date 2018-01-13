@@ -35,20 +35,6 @@ def get_full_dir_path(dir_id):
 
     return os.path.join('/', path)
 
-def get_dir_tree_dict():
-    path = os.path.normpath("/gallery-data/root")
-    file_tree = Dict()
-    for root, _, files in os.walk(path, topdown=True):
-        path = root.split('/')
-        path.pop(0)
-        file_tree_fd = file_tree
-        for part in path:
-            file_tree_fd = file_tree_fd[part]
-        file_tree_fd['.'] = files
-
-    return file_tree
-
-
 def get_files_tagged(uuids):
     for uuid in uuids:
         if tags:
