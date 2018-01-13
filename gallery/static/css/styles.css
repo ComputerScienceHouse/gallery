@@ -176,8 +176,8 @@ input#upload {
     margin-top: 20px;
 }
 
-.fileList {
-    margin-bottom: 20px;
+#fileList {
+    text-align: left;
 }
 
 #upload-alert,

@@ -3,6 +3,10 @@
 View File
 {% endblock %}
 
+{% block extraHead %}
+<link href="https://mbraak.github.io/jqTree/jqtree.css" rel="stylesheet">
+{% endblock %}
+
 {% block body %}
 
 <div class="container">
@@ -75,24 +79,21 @@ View File
                 </ul>
             {% endif %}
 
-            {% if auth_dict['can_desc'] or auth_dict['can_edit'] %}
-                <a href="#!" class="btn btn-primary" onclick="editFileDescription()">Edit{{ '' if auth_dict['can_edit'] else ' Description' }}</a>
+                <a href="#!" class="btn btn-primary" onclick="editFileDescription()">Edit</a>
 
                 <div class="modal fade" id="edit-description" role="dialog">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                                <h4 class="modal-title">Edit {{ '' if auth_dict['can_edit'] else ' description' }}</h4>
+                                <h4 class="modal-title">Edit</h4>
                             </div>
                             <div class="modal-body text-left">
                                 <div class='form-group'>
-                                    {% if auth_dict['can_edit'] %}
                                     <label class="control-label" for="rename-{{ file.id }}">Enter a new title for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="rename-{{ file.id }}" value="{{ file.get_name() }}">
                                     <label class="control-label" for="tag-{{ file.id }}">Tag CSH members in <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" id="tag-{{ file.id }}">
-                                    {% endif %}
                                     <label class="control-label" for="desc-{{ file.id }}">Enter a new description for file <strong>{{ file.get_name() }}</strong>:</label>
                                     <input type="text" class="form-control" id="desc-{{ file.id }}" value="{{ file.caption }}">
                                 </div>
@@ -103,8 +104,28 @@ View File
                         </div>
                     </div>
                 </div>
-            {% endif %}
             {% if auth_dict['can_edit'] %}
+                <a href="#!" class="btn btn-warning" onclick="moveFile()">Move</a>
+
+                <div class="modal fade" id="move" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">Select a new parent folder:</h4>
+                                <div id="fileList"></div>
+                                <div class="form-group">
+                                    <input type="number" name="gallery_dir_id" readonly hidden/>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" id="move-{{ file.id }}" class="btn btn-primary" data-dismiss="modal">Move</button>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="#!" class="btn btn-danger" onclick="deleteFile()">Delete</a>
 
                 <div class="modal fade" id="delete" role="dialog">
@@ -130,7 +151,11 @@ View File
 {% endblock %}
 
 {% block extraFooter %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqtree/1.3.5/tree.jquery.min.js"></script>
 <script>
+    $(function() {
+        populateDirTree();
+    });
     var mode = "VIEW_FILE";
     var parent = {{ parent }};
     var tags = [];

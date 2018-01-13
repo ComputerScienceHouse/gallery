@@ -11,6 +11,9 @@ from gallery.ldap import ldap_convert_uuid_to_displayname
 from gallery.models import Directory
 from gallery.models import File
 
+DEFAULT_THUMBNAIL_NAME = 'reedphoto'
+ROOT_DIR_ID = 1
+
 def get_dir_file_contents(dir_id):
     contents = [f for f in File.query.filter(File.parent == dir_id).all()]
     contents.sort(key=lambda x: x.get_name())
@@ -75,19 +78,6 @@ def convert_bytes_to_utf8(dic):
                 print(e)
             dic[key] = v
     return dic
-
-def allowed_file(filename):
-    return '.' in filename and filename.lower().rsplit('.', 1)[1] in \
-            [
-                    'txt',
-                    'png',
-                    'jpg',
-                    'jpeg',
-                    'mpg',
-                    'mp4',
-                    'avi',
-                    'cr2'
-            ]
 
 def gallery_auth(func):
     @wraps(func)

@@ -55,13 +55,13 @@ function afterMkdir(data) {
 
 // Create a new directory
 function createDirectory() {
-    if ($('input[name="gallery_dir_id"]').val().length > 0) {
+    if ($('input[name="gallery_mkdir_id"]').val().length > 0) {
         $.ajax({
             type: "POST",
             url: "/api/mkdir",
             data: {
                 dir_name: $('input[name="gallery_dir_name"]').val(),
-                parent_id: $('input[name="gallery_dir_id"]').val()
+                parent_id: $('input[name="gallery_mkdir_id"]').val()
             },
             success: afterMkdir
         });
@@ -177,6 +177,7 @@ function editFileDescription() {
                 caption: $('input[id="desc-' + this_id + '"]').val()
             }
         });
+        location.reload();
     });
 }
 
@@ -200,6 +201,7 @@ function editDirDescription() {
                 description: $('input[id="desc-' + this_id + '"]').val()
             }
         });
+        location.reload();
     });
 }
 
@@ -230,6 +232,42 @@ function deleteFile() {
                 window.location.href = '/view/dir/' + parent;
             }
         });
+    });
+}
+
+function moveFile() {
+    $('#move').modal('show');
+    $('#move button[id^="move"]').click(function(e) {
+        e.preventDefault();
+        var this_id = $('#move button[id^="move"]').attr('id').substr($('#move button[id^="move"]').attr('id').indexOf("-") + 1);
+        if ($('#move input[name="gallery_dir_id"]').length) {
+            $.ajax({
+                type: "POST",
+                url: "/api/file/move/" + this_id,
+                data: {
+                    parent: $('#move input[name="gallery_dir_id"]').val()
+                }
+            });
+            location.reload();
+        }
+    });
+}
+
+function moveDir() {
+    $('#move').modal('show');
+    $('#move button[id^="move"]').click(function(e) {
+        e.preventDefault();
+        var this_id = $('#move button[id^="move"]').attr('id').substr($('#move button[id^="move"]').attr('id').indexOf("-") + 1);
+        if ($('#move input[name="gallery_dir_id"]').length) {
+            $.ajax({
+                type: "POST",
+                url: "/api/dir/move/" + this_id,
+                data: {
+                    parent: $('#move input[name="gallery_dir_id"]').val()
+                }
+            });
+            location.reload();
+        }
     });
 }
 
