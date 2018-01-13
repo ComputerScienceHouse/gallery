@@ -250,17 +250,7 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
 
     path = get_full_dir_path(parent_id)
 
-    # at this point path is something like
-    # gallery-data/root
     file_path = os.path.join(path, request.form.get('dir_name'))
-    _, count = re.subn(r'[^a-zA-Z0-9 \/\-\_]', '', file_path)
-    if not file_path.startswith("/gallery-data/root") or count != 0:
-        return "invalid path" + file_path, 400
-
-    # strip out new dir names now filtered by regex!
-    if file_path.startswith(path):
-        file_path = file_path[(len(path)):]
-
 
     upload_status = {}
     upload_status['error'] = []
