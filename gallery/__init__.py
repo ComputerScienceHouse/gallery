@@ -247,9 +247,7 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
     # hardcoding is bad
     parent_id = request.form.get('parent_id')
 
-    path = get_full_dir_path(parent_id)
-
-    file_path = os.path.join(path, request.form.get('dir_name'))
+    file_path = os.path.join('/', request.form.get('dir_name'))
 
     upload_status = {}
     upload_status['error'] = []
