@@ -613,13 +613,14 @@ def display_dir_thumbnail(dir_id):
     dir_id = int(dir_id)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
+    thumbnail_uuid = dir_model.thumbnail_uuid
     # let's make this a bit more nuanced for the transition
-    if len(dir_model.thumbnail_uuid.split('.')) > 1:
-        return send_from_directory('/gallery-data/thumbnails', dir_model.thumbnail_uuid)
+    if len(thumbnail_uuid.split('.')) > 1:
+        thumbnail_uuid = thumbnail_uuid.split('.')[0]
 
     presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
                                             "thumbnails/" +
-                                            dir_model.thumbnail_uuid,
+                                            thumbnail_uuid,
                                             expires=timedelta(minutes=5))
     return redirect(presigned_url)
 @app.route("/api/file/next/<int:file_id>")
