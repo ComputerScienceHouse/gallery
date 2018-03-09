@@ -21,11 +21,11 @@ def ldap_get_members():
             "ou=Users,dc=csh,dc=rit,dc=edu",
             pyldap.SCOPE_SUBTREE,
             "(memberof=cn=member,ou=groups,dc=csh,dc=rit,dc=edu)",
-            ["entryUUID", "displayName"])
+            ["ipaUniqueID", "displayName"])
 
     members = [{
         "name": m[1]['displayName'][0].decode('utf-8'),
-        "uuid": m[1]['entryUUID'][0].decode('utf-8')
+        "uuid": m[1]['ipaUniqueID'][0].decode('utf-8')
         } for m in res]
 
     return members
