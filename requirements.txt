@@ -1,6 +1,6 @@
 flask
 flask-pyoidc
-csh_ldap
+csh_ldap==2.0.1
 addict
 flask_sqlalchemy
 flask_migrate
