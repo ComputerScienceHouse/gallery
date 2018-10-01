@@ -18,14 +18,15 @@ def ldap_get_members():
     con = ldap.get_con()
 
     res = con.search_s(
-            "ou=Users,dc=csh,dc=rit,dc=edu",
+            "dc=csh,dc=rit,dc=edu",
             pyldap.SCOPE_SUBTREE,
-            "(memberof=cn=member,ou=groups,dc=csh,dc=rit,dc=edu)",
+            "(memberof=cn=member,cn=groups,cn=accounts,dc=csh,dc=rit,dc=edu)",
             ["ipaUniqueID", "displayName"])
 
-    members = [{
+    members = filter(lambda m: 'displayName' in m[1], res)
+
+    return [{
         "name": m[1]['displayName'][0].decode('utf-8'),
         "uuid": m[1]['ipaUniqueID'][0].decode('utf-8')
-        } for m in res]
+        } for m in members]
 
-    return members
