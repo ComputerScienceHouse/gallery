@@ -27,13 +27,19 @@ from sqlalchemy.sql import func as sql_func
 from sqlalchemy.orm import load_only
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
+from gallery._version import __version__, BUILD_REFERENCE, COMMIT_HASH
 from gallery.s3 import S3
 import flask_migrate
 import requests
 from werkzeug import secure_filename
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_TRACK_NOTIFICATIONS'] = False
+app.config.update({
+    "SQLALCHEMY_TRACK_NOTIFICATIONS": False,
+    "VERSION": __version__,
+    "BUILD_REFERENCE": BUILD_REFERENCE,
+    "COMMIT_HASH": COMMIT_HASH
+})
 
 
 if os.path.exists(os.path.join(os.getcwd(), "config.py")):
@@ -46,11 +52,6 @@ migrate = flask_migrate.Migrate(app, db)
 
 # Disable SSL certificate verification warning
 requests.packages.urllib3.disable_warnings()
-
-app.config["GIT_REVISION"] = subprocess.check_output(['git',
-                                                      'rev-parse',
-                                                      '--short',
-                                                      'HEAD']).decode('utf-8').rstrip()
 
 auth = OIDCAuthentication({
     'default': ProviderConfiguration(
