@@ -26,6 +26,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func as sql_func
 from sqlalchemy.orm import load_only
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
+from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
 from gallery.s3 import S3
 import flask_migrate
 import requests
@@ -51,10 +52,15 @@ app.config["GIT_REVISION"] = subprocess.check_output(['git',
                                                       '--short',
                                                       'HEAD']).decode('utf-8').rstrip()
 
-
-auth = OIDCAuthentication(app,
-                          issuer=app.config['OIDC_ISSUER'],
-                          client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
+auth = OIDCAuthentication({
+    'default': ProviderConfiguration(
+        issuer=app.config['OIDC_ISSUER'],
+        client_metadata=ClientMetadata(
+            client_id=app.config['OIDC_CLIENT_ID'],
+            client_secret=app.config['OIDC_CLIENT_SECRET']
+        )
+    )
+}, app)
 
 ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
                app.config['LDAP_BIND_PW'])
@@ -121,13 +127,13 @@ if len([d for d in Directory.query.all()]) == 0:
 
 
 @app.route("/")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def index():
     root_id = get_dir_tree(internal=True)
     return redirect("/view/dir/" + str(root_id['id']))
 
 @app.route('/upload', methods=['GET'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def view_upload(auth_dict=None):
     dir_filter = re.compile(".*\/view\/dir\/(\d*)")
@@ -146,7 +152,7 @@ def view_upload(auth_dict=None):
                             dir_id=dir_id)
 
 @app.route('/upload', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def upload_file(auth_dict=None):
     # Dropzone multi file is broke with .getlist()
@@ -212,7 +218,7 @@ def upload_file(auth_dict=None):
     return jsonify(upload_status)
 
 @app.route('/create_folder', methods=['GET'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def view_mkdir(auth_dict=None):
     dir_filter = re.compile(".*\/view\/dir\/(\d*)")
@@ -231,14 +237,14 @@ def view_mkdir(auth_dict=None):
                             dir_id=dir_id)
 
 @app.route('/jump_dir', methods=['GET'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def view_jumpdir(auth_dict=None):
     return render_template("jumpdir.html",
                             auth_dict=auth_dict)
 
 @app.route('/api/mkdir', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
               auth_dict=None):
@@ -351,7 +357,7 @@ def refresh_thumbnail():
         db.session.refresh(dir_model)
 
 @app.route("/api/file/delete/<int:file_id>", methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def delete_file(file_id, auth_dict=None):
     file_id = int(file_id)
@@ -385,7 +391,7 @@ def delete_file(file_id, auth_dict=None):
     return "ok", 200
 
 @app.route("/api/dir/delete/<int:dir_id>", methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def delete_dir(dir_id, auth_dict=None):
     dir_id = int(dir_id)
@@ -419,7 +425,7 @@ def delete_dir(dir_id, auth_dict=None):
     return "ok", 200
 
 @app.route("/api/file/move/<int:file_id>", methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def move_file(file_id, auth_dict=None):
     file_id = int(file_id)
@@ -444,7 +450,7 @@ def move_file(file_id, auth_dict=None):
     return "ok", 200
 
 @app.route("/api/dir/move/<int:dir_id>", methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def move_dir(dir_id, auth_dict=None):
     dir_id = int(dir_id)
@@ -469,7 +475,7 @@ def move_dir(dir_id, auth_dict=None):
     return "ok", 200
 
 @app.route("/api/file/rename/<int:file_id>", methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def rename_file(file_id, auth_dict=None):
     file_id = int(file_id)
@@ -489,7 +495,7 @@ def rename_file(file_id, auth_dict=None):
     return "ok", 200
 
 @app.route("/api/dir/rename/<int:dir_id>", methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def rename_dir(dir_id, auth_dict=None):
     dir_id = int(dir_id)
@@ -509,7 +515,7 @@ def rename_dir(dir_id, auth_dict=None):
     return "ok", 200
 
 @app.route("/api/file/describe/<int:file_id>", methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def describe_file(file_id, auth_dict=None):
     file_id = int(file_id)
@@ -531,7 +537,7 @@ def describe_file(file_id, auth_dict=None):
     return "ok", 200
 
 @app.route("/api/dir/describe/<int:dir_id>", methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def describe_dir(dir_id, auth_dict=None):
     dir_id = int(dir_id)
@@ -552,7 +558,7 @@ def describe_dir(dir_id, auth_dict=None):
 
 
 @app.route("/api/file/tag/<int:file_id>", methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def tag_file(file_id, auth_dict=None):
     file_id = int(file_id)
@@ -582,7 +588,7 @@ def tag_file(file_id, auth_dict=None):
 
 
 @app.route("/api/file/get/<int:file_id>")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def display_file(file_id):
     file_id = int(file_id)
     path_stack = []
@@ -597,7 +603,7 @@ def display_file(file_id):
     return redirect(presigned_url)
 
 @app.route("/api/thumbnail/get/<int:file_id>")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def display_thumbnail(file_id):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
@@ -608,7 +614,7 @@ def display_thumbnail(file_id):
     return redirect(presigned_url)
 
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def display_dir_thumbnail(dir_id):
     dir_id = int(dir_id)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
@@ -624,7 +630,7 @@ def display_dir_thumbnail(dir_id):
                                             expires=timedelta(minutes=5))
     return redirect(presigned_url)
 @app.route("/api/file/next/<int:file_id>")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def get_file_next_id(file_id, internal=False):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
@@ -642,7 +648,7 @@ def get_file_next_id(file_id, internal=False):
     return jsonify({"index": idx})
 
 @app.route("/api/file/prev/<int:file_id>")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def get_file_prev_id(file_id, internal=False):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
@@ -660,12 +666,12 @@ def get_file_prev_id(file_id, internal=False):
     return jsonify({"index": idx})
 
 @app.route("/api/get_supported_mimetypes")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def get_supported_mimetypes():
     return jsonify({"mimetypes": supported_mimetypes()})
 
 @app.route("/api/get_dir_tree")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def get_dir_tree(internal=False):
     def get_dir_children(dir_id):
         dirs = [d for d in Directory.query.filter(Directory.parent == dir_id).all()]
@@ -694,7 +700,7 @@ def get_dir_tree(internal=False):
         return jsonify(tree)
 
 @app.route("/api/directory/get/<int:dir_id>")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def display_files(dir_id, internal=False):
     dir_id = int(dir_id)
 
@@ -713,7 +719,7 @@ def display_files(dir_id, internal=False):
     return jsonify(ret_dict)
 
 @app.route("/api/directory/get_parent/<int:dir_id>", methods=['GET'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def get_dir_parent(dir_id):
     dir_id = int(dir_id)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
@@ -722,7 +728,7 @@ def get_dir_parent(dir_id):
     return dir_model.parent
 
 @app.route("/api/file/get_parent/<int:file_id>", methods=['GET'])
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def get_file_parent(file_id):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
@@ -731,7 +737,7 @@ def get_file_parent(file_id):
     return file_model.parent
 
 @app.route("/view/dir/<int:dir_id>")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def render_dir(dir_id, auth_dict=None):
     dir_id = int(dir_id)
@@ -768,7 +774,7 @@ def render_dir(dir_id, auth_dict=None):
                            auth_dict=auth_dict)
 
 @app.route("/view/file/<int:file_id>")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def render_file(file_id, auth_dict=None):
     file_id = int(file_id)
@@ -803,14 +809,14 @@ def render_file(file_id, auth_dict=None):
                            auth_dict=auth_dict)
 
 @app.route("/view/random_file")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def get_random_file():
     file_model = File.query.order_by(sql_func.random()).first()
     return redirect("/view/file/" + str(file_model.id))
 
 
 @app.route("/view/filtered")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 @gallery_auth
 def view_filtered(auth_dict=None):
     uuids = request.args.get('uuids').split('+')
@@ -822,7 +828,7 @@ def view_filtered(auth_dict=None):
 
 
 @app.route("/api/memberlist")
-@auth.oidc_auth
+@auth.oidc_auth('default')
 def get_member_list():
     return jsonify(ldap_get_members())
 

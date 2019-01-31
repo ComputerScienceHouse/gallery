@@ -14,13 +14,10 @@ LDAP_BIND_PW=os.environ.get('GALLERY_LDAP_BIND_PW', '')
 LDAP_USER_OU=os.environ.get('GALLERY_LDAP_USER_OU', 'ou=Users,dc=csh,dc=rit,dc=edu')
 
 # OpenID Connect SSO config
-OIDC_ISSUER = os.environ.get('GALLERY_OIDC_ISSUER', 'https://sso.csh.rit.edu/realms/csh')
-OIDC_CLIENT_CONFIG = {
-    'client_id': os.environ.get('GALLERY_OIDC_CLIENT_ID', 'gallery'),
-    'client_secret': os.environ.get('GALLERY_OIDC_CLIENT_SECRET', ''),
-    'post_logout_redirect_uris': [os.environ.get('GALLERY_OIDC_LOGOUT_REDIRECT_URI',
-                                                 'https://gallery-py.csh.rit.edu/logout')]
-}
+OIDC_ISSUER = os.environ.get('GALLERY_OIDC_ISSUER', 'https://sso.csh.rit.edu/auth/realms/csh')
+OIDC_CLIENT_ID = os.environ.get('GALLERY_OIDC_CLIENT_ID', 'gallery')
+OIDC_CLIENT_SECRET = os.environ.get('GALLERY_OIDC_CLIENT_SECRET', '')
+
 SQLALCHEMY_DATABASE_URI = os.environ.get(
     'GALLERY_DATABASE_URI',
     'sqlite:///{}'.format(os.path.join(os.getcwd(), 'data.db')))
