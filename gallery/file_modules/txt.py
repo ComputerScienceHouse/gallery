@@ -6,6 +6,7 @@ from wand.font import Font
 from gallery.file_modules import FileModule
 from gallery.util import hash_file
 
+
 class TXTFile(FileModule):
 
     def __init__(self, file_path, dir_path):
@@ -22,7 +23,6 @@ class TXTFile(FileModule):
                 text = f.read()
                 if len(text) > 512:
                     text = text[0:512]
-                font = Font(path="Arial",size=20,color=Color('#333333'))
-                bg.caption(text=text,left=10,top=10,font=font)
-                bg.save(filename=os.path.join(self.dir_path,
-                        self.thumbnail_uuid))
+                font = Font(path="Arial", size=20, color=Color('#333333'))
+                bg.caption(text=text, left=10, top=10, font=font)
+                bg.save(filename=os.path.join(self.dir_path, self.thumbnail_uuid))

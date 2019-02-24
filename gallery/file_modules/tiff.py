@@ -1,9 +1,5 @@
-import os
-from wand.image import Image
-from wand.color import Color
-
 from gallery.file_modules import FileModule
-from gallery.util import hash_file
+
 
 class TIFFFile(FileModule):
 
