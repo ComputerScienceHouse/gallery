@@ -8,11 +8,13 @@ import tempfile
 
 from datetime import timedelta
 from sys import stderr
+from typing import Any, Dict, Optional, List, Union, cast
 
 from alembic import command
 import click
 from csh_ldap import CSHLDAP
 from flask import Flask
+from flask import config
 from flask import current_app
 from flask import jsonify
 from flask import redirect
@@ -26,7 +28,10 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func as sql_func
 from sqlalchemy.orm import load_only
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
-from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
+from flask_pyoidc.provider_configuration import (
+    ProviderConfiguration,
+    ClientMetadata,
+)
 from gallery._version import __version__, BUILD_REFERENCE, COMMIT_HASH
 from gallery.s3 import S3
 import flask_migrate
@@ -42,12 +47,15 @@ app.config.update({
 })
 
 
+# NOTE(rossdylan): the types are imprecise here due to something in flask
+# so we manually cast it to the config type.
+app_config: config.Config = cast(config.Config, app.config)
 if os.path.exists(os.path.join(os.getcwd(), "config.py")):
-    app.config.from_pyfile(os.path.join(os.getcwd(), "config.py"))
+    app_config.from_pyfile(os.path.join(os.getcwd(), "config.py"))
 else:
-    app.config.from_pyfile(os.path.join(os.getcwd(), "config.env.py"))
+    app_config.from_pyfile(os.path.join(os.getcwd(), "config.env.py"))
 
-db = SQLAlchemy(app)
+db: SQLAlchemy = SQLAlchemy(app)
 migrate = flask_migrate.Migrate(app, db)
 
 # Disable SSL certificate verification warning
@@ -67,9 +75,9 @@ ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
                app.config['LDAP_BIND_PW'])
 
 s3 = S3('s3.csh.rit.edu',
-           access_key=app.config['S3_ACCESS_ID'],
-           secret_key=app.config['S3_SECRET_KEY'],
-           secure=True)
+        access_key=app.config['S3_ACCESS_ID'],
+        secret_key=app.config['S3_SECRET_KEY'],
+        secure=True)
 
 # pylint: disable=C0413
 from gallery.models import Directory
@@ -133,13 +141,16 @@ def index():
     root_id = get_dir_tree(internal=True)
     return redirect("/view/dir/" + str(root_id['id']))
 
+
 @app.route('/upload', methods=['GET'])
 @auth.oidc_auth('default')
 @gallery_auth
-def view_upload(auth_dict=None):
-    dir_filter = re.compile(".*\/view\/dir\/(\d*)")
+def view_upload(auth_dict: Optional[Dict[str, Any]] = None):
+    if request.referrer is None:
+        return redirect("/")
+    dir_filter = re.compile(r".*\/view\/dir\/(\d*)")
     dir_search = dir_filter.search(request.referrer)
-    file_filter = re.compile(".*\/view\/file\/(\d*)")
+    file_filter = re.compile(r".*\/view\/file\/(\d*)")
     file_search = file_filter.search(request.referrer)
     if dir_search:
         dir_id = int(dir_search.group(1))
@@ -149,27 +160,30 @@ def view_upload(auth_dict=None):
     else:
         return redirect("/")
     return render_template("upload.html",
-                            auth_dict=auth_dict,
-                            dir_id=dir_id)
+                           auth_dict=auth_dict,
+                           dir_id=dir_id)
+
 
 @app.route('/upload', methods=['POST'])
 @auth.oidc_auth('default')
 @gallery_auth
-def upload_file(auth_dict=None):
+def upload_file(auth_dict: Optional[Dict[str, Any]] = None):
     # Dropzone multi file is broke with .getlist()
     uploaded_files = [t[1] for t in request.files.items()]
 
-    files = []
+    assert auth_dict is not None
     owner = auth_dict['uuid']
 
     # hardcoding is bad
     parent = request.form.get('parent_id')
 
     # Create return object
-    upload_status = {}
-    upload_status['error'] = []
-    upload_status['success'] = []
+    # NOTE(rossdylan): We split out the errors and success into their own
+    # variables so we don't have to do funky casting
+    upload_status: Dict[str, Union[str, List[str], List[Dict[str, Any]]]] = {}
     upload_status['redirect'] = "/view/dir/" + str(parent)
+    errors: List[str] = []
+    success: List[Dict[str, Any]] = []
 
     for upload in uploaded_files:
         filename = secure_filename(upload.filename)
@@ -180,6 +194,10 @@ def upload_file(auth_dict=None):
             filepath = os.path.join(dir_path, filename)
             upload.save(filepath)
 
+            assert filename
+            assert dir_path
+            assert parent
+            assert owner
             file_model = add_file(filename, dir_path, parent, "", owner)
 
             # Upload File
@@ -202,29 +220,36 @@ def upload_file(auth_dict=None):
             os.remove(filepath)
             os.rmdir(dir_path)
             if file_model is None:
-                upload_status['error'].append(filename)
+                errors.append(filename)
                 continue
 
-            upload_status['success'].append(
+            success.append(
                 {
                     "name": file_model.name,
                     "id": file_model.id
                 })
         else:
-            upload_status['error'].append(filename)
+            errors.append(filename)
+
+    upload_status['error'] = errors
+    upload_status['success'] = success
 
     refresh_thumbnail()
     # actually redirect to URL
     # change from FORM post to AJAX maybe?
     return jsonify(upload_status)
 
+
 @app.route('/create_folder', methods=['GET'])
 @auth.oidc_auth('default')
 @gallery_auth
-def view_mkdir(auth_dict=None):
-    dir_filter = re.compile(".*\/view\/dir\/(\d*)")
+def view_mkdir(auth_dict: Optional[Dict[str, Any]] = None):
+    if request.referrer is None:
+        return redirect("/")
+
+    dir_filter = re.compile(r".*\/view\/dir\/(\d*)")
     dir_search = dir_filter.search(request.referrer)
-    file_filter = re.compile(".*\/view\/file\/(\d*)")
+    file_filter = re.compile(r".*\/view\/file\/(\d*)")
     file_search = file_filter.search(request.referrer)
     if dir_search:
         dir_id = int(dir_search.group(1))
@@ -234,31 +259,43 @@ def view_mkdir(auth_dict=None):
     else:
         return redirect("/")
     return render_template("mkdir.html",
-                            auth_dict=auth_dict,
-                            dir_id=dir_id)
+                           auth_dict=auth_dict,
+                           dir_id=dir_id)
+
 
 @app.route('/jump_dir', methods=['GET'])
 @auth.oidc_auth('default')
 @gallery_auth
-def view_jumpdir(auth_dict=None):
+def view_jumpdir(auth_dict: Optional[Dict[str, Any]] = None):
     return render_template("jumpdir.html",
-                            auth_dict=auth_dict)
+                           auth_dict=auth_dict)
+
 
 @app.route('/api/mkdir', methods=['POST'])
 @auth.oidc_auth('default')
 @gallery_auth
-def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
-              auth_dict=None):
+def api_mkdir(
+    internal: bool = False,
+    parent_id: Optional[str] = None,
+    dir_name: Optional[str] = None,
+    owner: Optional[str] = None,
+    auth_dict: Optional[Dict[str, Any]] = None
+):
+
+    assert auth_dict is not None
     owner = auth_dict['uuid']
 
     # hardcoding is bad
     parent_id = request.form.get('parent_id')
 
-    file_path = os.path.join('/', request.form.get('dir_name'))
+    # TODO: Validate all the params coming in
+    dir_name = request.form.get("dir_name")
+    assert dir_name is not None
+    file_path = os.path.join('/', dir_name)
 
-    upload_status = {}
-    upload_status['error'] = []
-    upload_status['success'] = []
+    upload_status: Dict[str, Union[str, List[str], List[Dict[str, Any]]]] = {}
+    error: List[str] = []
+    success: List[Dict[str, Any]] = []
 
     # Sometimes we want to put things in their place
     if file_path != "" and file_path != "/":
@@ -270,11 +307,16 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
             # ignore dir//dir patterns
             if directory == "":
                 continue
+
+            # We really need better validation at some point
+            assert parent_id
+            assert directory
+            assert owner
             parent_id = add_directory(parent_id, directory, "", owner)
             if parent_id is None:
-                upload_status['error'].append(directory)
+                error.append(directory)
             else:
-                upload_status['success'].append(
+                success.append(
                     {
                         "name": directory,
                         "id": parent_id
@@ -282,14 +324,18 @@ def api_mkdir(internal=False, parent_id=None, dir_name=None, owner=None,
 
     # Create return object
     upload_status['redirect'] = "/view/dir/" + str(parent_id)
+    upload_status['error'] = error
+    upload_status['success'] = success
     return jsonify(upload_status)
+
 
 @app.cli.command()
 def refresh_thumbnails():
     click.echo("Refreshing thumbnails")
     refresh_thumbnail()
 
-def add_directory(parent_id, name, description, owner):
+
+def add_directory(parent_id: str, name: str, description: str, owner: str):
     dir_siblings = Directory.query.filter(Directory.parent == parent_id).all()
     for sibling in dir_siblings:
         if sibling.get_name() == name:
@@ -305,27 +351,34 @@ def add_directory(parent_id, name, description, owner):
 
     return dir_model.id
 
-def add_file(file_name, path, dir_id, description, owner):
-    uuid_thumbnail = DEFAULT_THUMBNAIL_NAME
 
+def add_file(file_name: str, path: str, dir_id: str, description: str, owner: str) -> Optional[File]:
     file_path = os.path.join('/', path, file_name)
 
     file_data = parse_file_info(file_path, path)
     if file_data is None:
         return None
 
-    file_model = File(dir_id, file_data.get_name(), description, owner,
-                      file_data.get_thumbnail(), file_data.get_type(),
-                      json.dumps(file_data.get_exif()),
-                      file_data.get_thumbnail().split(".")[0])
+    file_model = File(
+        dir_id,
+        file_data.get_name(),
+        description,
+        owner,
+        file_data.get_thumbnail(),
+        file_data.get_type(),
+        json.dumps(file_data.get_exif()),
+        # NOTE(rossdylan): Default thumbnails come from the FileModule base
+        file_data.get_thumbnail().split(".")[0],
+    )
     db.session.add(file_model)
     db.session.flush()
     db.session.commit()
     db.session.refresh(file_model)
     return file_model
 
+
 def refresh_thumbnail():
-    def refresh_thumbnail_helper(dir_model):
+    def refresh_thumbnail_helper(dir_model: Directory) -> str:
         dir_children = [d for d in Directory.query.filter(Directory.parent == dir_model.id).all()]
         file_children = [f for f in File.query.filter(File.parent == dir_model.id).all()]
         for file in file_children:
@@ -336,6 +389,8 @@ def refresh_thumbnail():
                 return d.thumbnail_uuid
         # WE HAVE TO GO DEEPER (inception noise)
         for d in dir_children:
+            # TODO: Switch to iterative tree walk using a queue to avoid
+            # recursion issues with super large directory structures
             return refresh_thumbnail_helper(d)
         # No thumbnail found
         return DEFAULT_THUMBNAIL_NAME
@@ -357,16 +412,17 @@ def refresh_thumbnail():
         db.session.commit()
         db.session.refresh(dir_model)
 
+
 @app.route("/api/file/delete/<int:file_id>", methods=['POST'])
 @auth.oidc_auth('default')
 @gallery_auth
-def delete_file(file_id, auth_dict=None):
-    file_id = int(file_id)
+def delete_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     file_model = File.query.filter(File.id == file_id).first()
 
     if file_model is None:
         return "file not found", 404
 
+    assert auth_dict
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
             or auth_dict['uuid'] == file_model.author):
@@ -391,17 +447,19 @@ def delete_file(file_id, auth_dict=None):
 
     return "ok", 200
 
+
 @app.route("/api/dir/delete/<int:dir_id>", methods=['POST'])
 @auth.oidc_auth('default')
 @gallery_auth
-def delete_dir(dir_id, auth_dict=None):
-    dir_id = int(dir_id)
+def delete_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
     if dir_model is None:
         return "dir not found", 404
     if dir_model.id <= ROOT_DIR_ID:
         return "Permission denied", 403
+
+    assert auth_dict
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
             or auth_dict['uuid'] == dir_model.author):
@@ -425,11 +483,11 @@ def delete_dir(dir_id, auth_dict=None):
 
     return "ok", 200
 
+
 @app.route("/api/file/move/<int:file_id>", methods=['POST'])
 @auth.oidc_auth('default')
 @gallery_auth
-def move_file(file_id, auth_dict=None):
-    file_id = int(file_id)
+def move_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     file_model = File.query.filter(File.id == file_id).first()
 
     if file_model is None:
@@ -437,6 +495,7 @@ def move_file(file_id, auth_dict=None):
 
     parent = request.form.get('parent')
 
+    assert auth_dict
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
             or auth_dict['uuid'] == file_model.author):
@@ -450,11 +509,11 @@ def move_file(file_id, auth_dict=None):
 
     return "ok", 200
 
+
 @app.route("/api/dir/move/<int:dir_id>", methods=['POST'])
 @auth.oidc_auth('default')
 @gallery_auth
-def move_dir(dir_id, auth_dict=None):
-    dir_id = int(dir_id)
+def move_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
     if dir_model is None:
@@ -462,6 +521,7 @@ def move_dir(dir_id, auth_dict=None):
 
     parent = request.form.get('parent')
 
+    assert auth_dict
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
             or auth_dict['uuid'] == dir_model.author):
@@ -475,11 +535,10 @@ def move_dir(dir_id, auth_dict=None):
 
     return "ok", 200
 
+
 @app.route("/api/file/rename/<int:file_id>", methods=['POST'])
 @auth.oidc_auth('default')
-@gallery_auth
-def rename_file(file_id, auth_dict=None):
-    file_id = int(file_id)
+def rename_file(file_id: int):
     file_model = File.query.filter(File.id == file_id).first()
 
     if file_model is None:
@@ -495,11 +554,10 @@ def rename_file(file_id, auth_dict=None):
 
     return "ok", 200
 
+
 @app.route("/api/dir/rename/<int:dir_id>", methods=['POST'])
 @auth.oidc_auth('default')
-@gallery_auth
-def rename_dir(dir_id, auth_dict=None):
-    dir_id = int(dir_id)
+def rename_dir(dir_id: int):
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
     if dir_model is None:
@@ -515,11 +573,10 @@ def rename_dir(dir_id, auth_dict=None):
 
     return "ok", 200
 
+
 @app.route("/api/file/describe/<int:file_id>", methods=['POST'])
 @auth.oidc_auth('default')
-@gallery_auth
-def describe_file(file_id, auth_dict=None):
-    file_id = int(file_id)
+def describe_file(file_id: int):
     file_model = File.query.filter(File.id == file_id).first()
 
     if file_model is None:
@@ -537,11 +594,10 @@ def describe_file(file_id, auth_dict=None):
 
     return "ok", 200
 
+
 @app.route("/api/dir/describe/<int:dir_id>", methods=['POST'])
 @auth.oidc_auth('default')
-@gallery_auth
-def describe_dir(dir_id, auth_dict=None):
-    dir_id = int(dir_id)
+def describe_dir(dir_id: int):
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
     if dir_model is None:
@@ -560,8 +616,7 @@ def describe_dir(dir_id, auth_dict=None):
 
 @app.route("/api/file/tag/<int:file_id>", methods=['POST'])
 @auth.oidc_auth('default')
-@gallery_auth
-def tag_file(file_id, auth_dict=None):
+def tag_file(file_id: int):
     file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
 
@@ -574,7 +629,7 @@ def tag_file(file_id, auth_dict=None):
         db.session.flush()
         db.session.commit()
 
-    uuids = json.loads(request.form.get('members'))
+    uuids = json.loads(request.form.get('members', '[]'))
 
     for uuid in uuids:
         # Don't allow empty tag entries
@@ -590,9 +645,8 @@ def tag_file(file_id, auth_dict=None):
 
 @app.route("/api/file/get/<int:file_id>")
 @auth.oidc_auth('default')
-def display_file(file_id):
+def display_file(file_id: int):
     file_id = int(file_id)
-    path_stack = []
     file_model = File.query.filter(File.id == file_id).first()
 
     if file_model is None:
@@ -603,10 +657,10 @@ def display_file(file_id):
                                             expires=timedelta(minutes=5))
     return redirect(presigned_url)
 
+
 @app.route("/api/thumbnail/get/<int:file_id>")
 @auth.oidc_auth('default')
-def display_thumbnail(file_id):
-    file_id = int(file_id)
+def display_thumbnail(file_id: int):
     file_model = File.query.filter(File.id == file_id).first()
 
     presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
@@ -614,10 +668,10 @@ def display_thumbnail(file_id):
                                             expires=timedelta(minutes=5))
     return redirect(presigned_url)
 
+
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
 @auth.oidc_auth('default')
-def display_dir_thumbnail(dir_id):
-    dir_id = int(dir_id)
+def display_dir_thumbnail(dir_id: int):
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
     thumbnail_uuid = dir_model.thumbnail_uuid
@@ -630,10 +684,11 @@ def display_dir_thumbnail(dir_id):
                                             thumbnail_uuid,
                                             expires=timedelta(minutes=5))
     return redirect(presigned_url)
+
+
 @app.route("/api/file/next/<int:file_id>")
 @auth.oidc_auth('default')
-def get_file_next_id(file_id, internal=False):
-    file_id = int(file_id)
+def get_file_next_id(file_id: int, internal: bool = False):
     file_model = File.query.filter(File.id == file_id).first()
     files = [f.id for f in get_dir_file_contents(file_model.parent)]
 
@@ -648,10 +703,10 @@ def get_file_next_id(file_id, internal=False):
         return idx
     return jsonify({"index": idx})
 
+
 @app.route("/api/file/prev/<int:file_id>")
 @auth.oidc_auth('default')
-def get_file_prev_id(file_id, internal=False):
-    file_id = int(file_id)
+def get_file_prev_id(file_id: int, internal: bool = False):
     file_model = File.query.filter(File.id == file_id).first()
     files = [f.id for f in get_dir_file_contents(file_model.parent)]
 
@@ -666,15 +721,20 @@ def get_file_prev_id(file_id, internal=False):
         return idx
     return jsonify({"index": idx})
 
+
 @app.route("/api/get_supported_mimetypes")
 @auth.oidc_auth('default')
 def get_supported_mimetypes():
     return jsonify({"mimetypes": supported_mimetypes()})
 
+
 @app.route("/api/get_dir_tree")
 @auth.oidc_auth('default')
-def get_dir_tree(internal=False):
-    def get_dir_children(dir_id):
+def get_dir_tree(internal: bool = False):
+
+    # TODO: Convert to iterative tree traversal using a queue to avoid
+    # recursion issues with large directory structures
+    def get_dir_children(dir_id: int) -> Any:
         dirs = [d for d in Directory.query.filter(Directory.parent == dir_id).all()]
         children = []
         for child in dirs:
@@ -686,7 +746,7 @@ def get_dir_tree(internal=False):
         children.sort(key=lambda x: x['name'])
         return children
 
-    root = dir_model = Directory.query.filter(Directory.parent == None).first()
+    root = Directory.query.filter(Directory.parent is None).first()
 
     tree = {}
 
@@ -700,11 +760,10 @@ def get_dir_tree(internal=False):
     else:
         return jsonify(tree)
 
+
 @app.route("/api/directory/get/<int:dir_id>")
 @auth.oidc_auth('default')
-def display_files(dir_id, internal=False):
-    dir_id = int(dir_id)
-
+def display_files(dir_id: int, internal: bool = False):
     file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).all()]
     dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).all()]
 
@@ -719,28 +778,29 @@ def display_files(dir_id, internal=False):
         return ret_dict
     return jsonify(ret_dict)
 
+
 @app.route("/api/directory/get_parent/<int:dir_id>", methods=['GET'])
 @auth.oidc_auth('default')
-def get_dir_parent(dir_id):
-    dir_id = int(dir_id)
+def get_dir_parent(dir_id: int):
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
     print("Dir name: " + dir_model.get_name())
     print("Dir's Parent: " + str(dir_model.parent))
     return dir_model.parent
 
+
 @app.route("/api/file/get_parent/<int:file_id>", methods=['GET'])
 @auth.oidc_auth('default')
-def get_file_parent(file_id):
-    file_id = int(file_id)
+def get_file_parent(file_id: int):
     file_model = File.query.filter(File.id == file_id).first()
     print("File name: " + file_model.get_name())
     print("File's Parent: " + str(file_model.parent))
     return file_model.parent
 
+
 @app.route("/view/dir/<int:dir_id>")
 @auth.oidc_auth('default')
 @gallery_auth
-def render_dir(dir_id, auth_dict=None):
+def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     dir_id = int(dir_id)
     if dir_id < ROOT_DIR_ID:
         return redirect('/view/dir/'+ str(ROOT_DIR_ID))
@@ -763,7 +823,14 @@ def render_dir(dir_id, auth_dict=None):
         dir_model_breadcrumbs = Directory.query.filter(Directory.id == dir_model_breadcrumbs.parent).first()
         path_stack.append(dir_model_breadcrumbs)
     path_stack.reverse()
-    auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == dir_model.author)
+
+    assert auth_dict
+    auth_dict['can_edit'] = (
+        auth_dict['is_eboard'] or
+        auth_dict['is_rtp'] or
+        auth_dict['uuid'] == dir_model.author
+    )
+
     return render_template("view_dir.html",
                            children=children,
                            directory=dir_model,
@@ -777,8 +844,7 @@ def render_dir(dir_id, auth_dict=None):
 @app.route("/view/file/<int:file_id>")
 @auth.oidc_auth('default')
 @gallery_auth
-def render_file(file_id, auth_dict=None):
-    file_id = int(file_id)
+def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     file_model = File.query.filter(File.id == file_id).first()
     if file_model is None:
         abort(404)
@@ -794,7 +860,13 @@ def render_file(file_id, auth_dict=None):
         dir_model = Directory.query.filter(Directory.id == dir_model.parent).first()
         path_stack.append(dir_model)
     path_stack.reverse()
-    auth_dict['can_edit'] = (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['uuid'] == file_model.author)
+
+    assert auth_dict
+    auth_dict['can_edit'] = (
+        auth_dict['is_eboard'] or
+        auth_dict['is_rtp'] or
+        auth_dict['uuid'] == file_model.author
+    )
     tags = [tag.uuid for tag in Tag.query.filter(Tag.file_id == file_id).all()]
     return render_template("view_file.html",
                            file_id=file_id,
@@ -809,6 +881,7 @@ def render_file(file_id, auth_dict=None):
                            tags=tags,
                            auth_dict=auth_dict)
 
+
 @app.route("/view/random_file")
 @auth.oidc_auth('default')
 def get_random_file():
@@ -819,8 +892,8 @@ def get_random_file():
 @app.route("/view/filtered")
 @auth.oidc_auth('default')
 @gallery_auth
-def view_filtered(auth_dict=None):
-    uuids = request.args.get('uuids').split('+')
+def view_filtered(auth_dict: Optional[Dict[str, Any]] = None):
+    uuids = request.args.get('uuids', '').split('+')
     files = get_files_tagged(uuids)
     return render_template("view_filtered.html",
                            files=files,
@@ -833,10 +906,11 @@ def view_filtered(auth_dict=None):
 def get_member_list():
     return jsonify(ldap_get_members())
 
+
 @app.errorhandler(404)
 @app.errorhandler(500)
 @gallery_auth
-def route_errors(error, auth_dict=None):
+def route_errors(error: Any, auth_dict: Optional[Dict[str, Any]] = None):
     if isinstance(error, int):
         code = error
     elif hasattr(error, 'code'):
@@ -850,9 +924,10 @@ def route_errors(error, auth_dict=None):
         error_desc = type(error).__name__
 
     return render_template('errors.html',
-                            error=error_desc,
-                            error_code=code,
-                            auth_dict=auth_dict), int(code)
+                           error=error_desc,
+                           error_code=code,
+                           auth_dict=auth_dict), int(code)
+
 
 @app.route("/logout")
 @auth.oidc_logout

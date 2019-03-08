@@ -1,5 +1,6 @@
 import magic
 import os
+from typing import Any, Dict, List, Optional
 from wand.image import Image
 from wand.color import Color
 
@@ -7,33 +8,31 @@ from gallery.util import DEFAULT_THUMBNAIL_NAME
 from gallery.util import hash_file
 from gallery.util import convert_bytes_to_utf8
 
-class FileModule:
-    file_path = None
-    dir_path = None
-    exif_dict = {'Exif': {}}
-    mime_type = None
-    thumbnail_uuid = DEFAULT_THUMBNAIL_NAME
-    file_name = None
 
-    def __init__(self, file_path, dir_path):
+class FileModule(object):
+    file_path: Optional[str] = None
+    dir_path: Optional[str] = None
+    exif_dict: Dict[str, Any] = {'Exif': {}}
+    mime_type: Optional[str] = None
+    thumbnail_uuid: str = DEFAULT_THUMBNAIL_NAME
+    file_name: Optional[str] = None
+
+    def __init__(self, file_path: str, dir_path: str):
         print("BASE CONSTRUCTOR")
         self.file_path = file_path
         self.file_name = file_path.split('/')[-1]
         self.dir_path = dir_path
 
-
-    def get_exif(self):
+    def get_exif(self) -> Dict[str, Any]:
         return convert_bytes_to_utf8(self.exif_dict['Exif'])
 
-
-    def get_type(self):
+    def get_type(self) -> Optional[str]:
         return self.mime_type
 
-
-    def get_thumbnail(self):
+    def get_thumbnail(self) -> str:
         return self.thumbnail_uuid
 
-    def get_name(self):
+    def get_name(self) -> Optional[str]:
         return self.file_name
 
     def generate_thumbnail(self):
@@ -81,8 +80,9 @@ file_mimetype_relation = {
     "text/plain": TXTFile
 }
 
+
 # classism
-def parse_file_info(file_path, dir_path):
+def parse_file_info(file_path: str, dir_path: str) -> Optional[FileModule]:
     print("entering parse_file_info")
     mime_type = magic.from_file(file_path, mime=True)
     print(mime_type)
@@ -92,8 +92,11 @@ def parse_file_info(file_path, dir_path):
 
     return None
 
-def supported_mimetypes():
+
+def supported_mimetypes() -> List[str]:
     return [m for m in file_mimetype_relation.keys()]
 
-def generate_image_thumbnail(file_path, dir_path, mime_type):
-    return file_mimetype_relation[mime_type](file_path, dir_path).get_thumbnail()
+
+def generate_image_thumbnail(file_path: str, dir_path: str, mime_type: str) -> Optional[str]:
+    module = file_mimetype_relation[mime_type]
+    return module(file_path, dir_path).get_thumbnail()

@@ -1,6 +1,7 @@
-from addict import Dict
+from addict import Dict  # type: ignore
 from flask import session
 from functools import wraps
+from typing import Any, Callable, Dict, List, Union
 import hashlib
 import os
 
@@ -8,19 +9,21 @@ from gallery.ldap import ldap_is_eboard
 from gallery.ldap import ldap_is_rtp
 from gallery.ldap import ldap_convert_uuid_to_displayname
 
-from gallery.models import Directory
-from gallery.models import File
+from gallery.models import Directory, File, Tag
+
 
 DEFAULT_THUMBNAIL_NAME = 'reedphoto'
 ROOT_DIR_ID = 1
 
-def get_dir_file_contents(dir_id):
+
+def get_dir_file_contents(dir_id: int) -> List[File]:
     contents = [f for f in File.query.filter(File.parent == dir_id).all()]
     contents.sort(key=lambda x: x.get_name())
     contents.sort(key=lambda x: x.date_uploaded)
     return contents
 
-def get_full_dir_path(dir_id):
+
+def get_full_dir_path(dir_id: int) -> str:
     path_stack = []
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
     path_stack.append(dir_model.name)
@@ -35,19 +38,8 @@ def get_full_dir_path(dir_id):
 
     return os.path.join('/', path)
 
-def get_files_tagged(uuids):
-    for uuid in uuids:
-        if tags:
-            tags = Tag.query.filter(
-                Tag.file_id.in_(files),
-                Tag.uuid == uuid
-            )
-        else:
-            tags = Tag.query.filter(Tag.uuid == uuid)
-    return tags
 
-
-def convert_bytes_to_utf8(dic):
+def convert_bytes_to_utf8(dic: Dict[Any, Any]) -> Dict[Any, Any]:
     for key in dic:
         if isinstance(key, bytes):
             try:
@@ -65,16 +57,26 @@ def convert_bytes_to_utf8(dic):
             dic[key] = v
     return dic
 
-def gallery_auth(func):
+
+def get_files_tagged(uuids: List[str]) -> List[File]:
+    # NOTE(rossdylan): I think this is what was originally intended for this
+    # function. It was seriously broken so I rewrote it from scratch
+    fids = Tag.query(Tag.file_id).filter(Tag.uid in uuids).all()
+    return File.query.filter(File.id in fids).all()
+
+
+def gallery_auth(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
-    def wrapped_function(*args, **kwargs):
+    def wrapped_function(*args: Any, **kwargs: Any) -> Any:
         uuid = str(session['userinfo'].get('sub', ''))
         uid = str(session['userinfo'].get('preferred_username', ''))
         name = ldap_convert_uuid_to_displayname(uuid)
         is_eboard = ldap_is_eboard(uid)
         is_rtp = ldap_is_rtp(uid)
 
-        auth_dict = {}
+        # NOTE(rossdylan): This is probably a more precise type than we need,
+        # if different data is needed just expand the value type to Any
+        auth_dict: Dict[str, Union[str, bool]] = {}
         auth_dict['uuid'] = uuid
         auth_dict['uid'] = uid
         auth_dict['name'] = name
@@ -84,7 +86,8 @@ def gallery_auth(func):
         return func(*args, **kwargs)
     return wrapped_function
 
-def hash_file(fname):
+
+def hash_file(fname: str) -> str:
     m = hashlib.md5()
     with open(fname, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
