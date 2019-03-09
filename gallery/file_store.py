@@ -98,7 +98,7 @@ class S3Storage(FileStorage):
             aws_secret_access_key=app.config['S3_ACCESS_ID'],
             endpoint_url=app.config['S3_URI'],
         )
-        self._bucket = app.config['S3_BUCKET']
+        self._bucket = app.config['S3_BUCKET_ID']
         self._link_expiration = timedelta(minutes=5)
 
     def put(self, key: str, handle: IO[bytes]):
