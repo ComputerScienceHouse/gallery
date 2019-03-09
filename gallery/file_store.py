@@ -104,10 +104,10 @@ class S3Storage(FileStorage):
         self._link_expiration = timedelta(minutes=5)
 
     def put(self, key: str, handle: IO[bytes]):
-        self._client.Bucket(self._bucket).upload_fileobj(handle, key)
+        self._client.upload_fileobj(handle, self._bucket, key)
 
     def remove(self, key: str):
-        self._client.Object(self._bucket, key).delete()
+        self._client.delete_object(Bucket=self._bucket, Key=key)
 
     def get_link(self, key: str) -> str:
         return self._client.generate_presigned_url(
