@@ -61,7 +61,7 @@ View File
               <strong>Tagged: </strong>
               <ul>
                 {% for tag in tags %}
-                <li>{{ ldap_convert_uuid_to_displayname(tag) }}{% if not loop.last %}, {% endif %}</li>
+                <li>{{ ldap.convert_uuid_to_displayname(tag) }}{% if not loop.last %}, {% endif %}</li>
                 {% endfor %}
               </ul>
             </div>
