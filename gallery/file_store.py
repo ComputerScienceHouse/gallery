@@ -4,6 +4,7 @@ from datetime import timedelta
 from typing import IO
 
 import boto3
+from botocore.client import Config
 import flask
 from flask import abort, send_from_directory, url_for
 from itsdangerous import (
@@ -97,6 +98,7 @@ class S3Storage(FileStorage):
             aws_access_key_id=app.config['S3_ACCESS_ID'],
             aws_secret_access_key=app.config['S3_ACCESS_ID'],
             endpoint_url=app.config['S3_URI'],
+            config=Config(signature_version='s3v4'),
         )
         self._bucket = app.config['S3_BUCKET_ID']
         self._link_expiration = timedelta(minutes=5)
