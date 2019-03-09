@@ -96,7 +96,7 @@ class S3Storage(FileStorage):
         self._client = boto3.client(
             's3',
             aws_access_key_id=app.config['S3_ACCESS_ID'],
-            aws_secret_access_key=app.config['S3_ACCESS_ID'],
+            aws_secret_access_key=app.config['S3_SECRET_KEY'],
             endpoint_url=app.config['S3_URI'],
             config=Config(signature_version='s3v4'),
         )
@@ -104,10 +104,10 @@ class S3Storage(FileStorage):
         self._link_expiration = timedelta(minutes=5)
 
     def put(self, key: str, handle: IO[bytes]):
-        self._client.put_object(Bucket=self._bucket, Key=key, Body=handle)
+        self._client.Bucket(self._bucket).upload_fileobj(handle, key)
 
     def remove(self, key: str):
-        self._client.remove_object(Bucket=self._bucket, Key=key)
+        self._client.Object(self._bucket, key).delete()
 
     def get_link(self, key: str) -> str:
         return self._client.generate_presigned_url(
