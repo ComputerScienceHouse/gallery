@@ -5,11 +5,8 @@ from typing import Any, Callable, Dict, List, Union
 import hashlib
 import os
 
-from gallery.ldap import ldap_is_eboard
-from gallery.ldap import ldap_is_rtp
-from gallery.ldap import ldap_convert_uuid_to_displayname
-
 from gallery.models import Directory, File, Tag
+from gallery import ldap
 
 
 DEFAULT_THUMBNAIL_NAME = 'reedphoto'
@@ -68,11 +65,11 @@ def get_files_tagged(uuids: List[str]) -> List[File]:
 def gallery_auth(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
     def wrapped_function(*args: Any, **kwargs: Any) -> Any:
-        uuid = str(session['userinfo'].get('sub', ''))
-        uid = str(session['userinfo'].get('preferred_username', ''))
-        name = ldap_convert_uuid_to_displayname(uuid)
-        is_eboard = ldap_is_eboard(uid)
-        is_rtp = ldap_is_rtp(uid)
+        uuid = str(session.get('userinfo', {}).get('sub', ''))
+        uid = str(session.get('userinfo', {}).get('preferred_username', ''))
+        name = ldap.convert_uuid_to_displayname(uuid)
+        is_eboard = ldap.is_eboard(uid)
+        is_rtp = ldap.is_rtp(uid)
 
         # NOTE(rossdylan): This is probably a more precise type than we need,
         # if different data is needed just expand the value type to Any

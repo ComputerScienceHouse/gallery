@@ -13,7 +13,7 @@ View Directory
         <div class="col-xs-12">
             <h4>Files of
                 {% for uuid in uuids %}
-                {{ ldap_convert_uuid_to_displayname(uuid) }}{% if not loop.last %}, {% endif %}
+                {{ ldap.convert_uuid_to_displayname(uuid) }}{% if not loop.last %}, {% endif %}
                 {% endfor %}
         </div>
     </div>
@@ -27,7 +27,7 @@ View Directory
                     <img src="/api/thumbnail/get/{{ file.id }}">
                     <p>{{ file.get_name() }}</p>
                 </a>
-                <p>Owner: {{ ldap_convert_uuid_to_displayname(file.author) }}</p>
+                <p>Owner: {{ ldap.convert_uuid_to_displayname(file.author) }}</p>
                 <p>Date Uploaded: {{ file.date() }}</p>
                 </div>
             </div>

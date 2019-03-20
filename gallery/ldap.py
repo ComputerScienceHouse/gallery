@@ -1,36 +1,53 @@
 from typing import Dict, List
-from gallery import ldap
 import ldap as pyldap  # type: ignore
+from typing import Optional, List, Dict
+from csh_ldap import CSHLDAP
 
 
-def ldap_convert_uuid_to_displayname(uuid: str) -> str:
-    if uuid == "root":
-        return uuid
-    return ldap.get_member(uuid).displayName
+class LDAPWrapper(object):
+    def __init__(self, ldap: Optional[CSHLDAP], eboard: Optional[List[str]] = None, rtp: Optional[List[str]] = None):
+        self._ldap = ldap
+        self._eboard: List[str] = []
+        self._rtp: List[str] = []
 
+        if eboard:
+            self._eboard = eboard
+        if rtp:
+            self._rtp = rtp
 
-def ldap_is_eboard(uid: str) -> bool:
-    eboard_group = ldap.get_group('eboard')
-    return eboard_group.check_member(ldap.get_member(uid, uid=True))
+    def convert_uuid_to_displayname(self, uuid: str) -> str:
+        if uuid == "root":
+            return uuid
+        if self._ldap is None:
+            return "unknown"
+        return self._ldap.get_member(uuid).displayName
 
+    def is_eboard(self, uid: str) -> bool:
+        if self._ldap is None:
+            return uid in self._eboard
+        eboard_group = self._ldap.get_group('eboard')
+        return eboard_group.check_member(self._ldap.get_member(uid, uid=True))
 
-def ldap_is_rtp(uid: str) -> bool:
-    rtp_group = ldap.get_group('rtp')
-    return rtp_group.check_member(ldap.get_member(uid, uid=True))
+    def is_rtp(self, uid: str) -> bool:
+        if self._ldap is None:
+            return uid in self._rtp
+        rtp_group = self._ldap.get_group('rtp')
+        return rtp_group.check_member(self._ldap.get_member(uid, uid=True))
 
+    def get_members(self) -> List[Dict[str, str]]:
+        if self._ldap is None:
+            return []
+        con = self._ldap.get_con()
 
-def ldap_get_members() -> List[Dict[str, str]]:
-    con = ldap.get_con()
+        res = con.search_s(
+                "dc=csh,dc=rit,dc=edu",
+                pyldap.SCOPE_SUBTREE,
+                "(memberof=cn=member,cn=groups,cn=accounts,dc=csh,dc=rit,dc=edu)",
+                ["ipaUniqueID", "displayName"])
 
-    res = con.search_s(
-            "dc=csh,dc=rit,dc=edu",
-            pyldap.SCOPE_SUBTREE,
-            "(memberof=cn=member,cn=groups,cn=accounts,dc=csh,dc=rit,dc=edu)",
-            ["ipaUniqueID", "displayName"])
+        members = filter(lambda m: 'displayName' in m[1], res)
 
-    members = filter(lambda m: 'displayName' in m[1], res)
-
-    return [{
-        "name": m[1]['displayName'][0].decode('utf-8'),
-        "uuid": m[1]['ipaUniqueID'][0].decode('utf-8')
-        } for m in members]
+        return [{
+            "name": m[1]['displayName'][0].decode('utf-8'),
+            "uuid": m[1]['ipaUniqueID'][0].decode('utf-8')
+            } for m in members]

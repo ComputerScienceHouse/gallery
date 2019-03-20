@@ -33,7 +33,8 @@ from flask_pyoidc.provider_configuration import (
     ClientMetadata,
 )
 from gallery._version import __version__, BUILD_REFERENCE, COMMIT_HASH
-from gallery.s3 import S3
+from gallery.file_store import (S3Storage, LocalStorage, FileStorage)
+from gallery.ldap import LDAPWrapper
 import flask_migrate
 import requests
 from werkzeug import secure_filename
@@ -54,6 +55,7 @@ if os.path.exists(os.path.join(os.getcwd(), "config.py")):
     app_config.from_pyfile(os.path.join(os.getcwd(), "config.py"))
 else:
     app_config.from_pyfile(os.path.join(os.getcwd(), "config.env.py"))
+app.config.update(app_config)
 
 db: SQLAlchemy = SQLAlchemy(app)
 migrate = flask_migrate.Migrate(app, db)
@@ -63,21 +65,35 @@ requests.packages.urllib3.disable_warnings()
 
 auth = OIDCAuthentication({
     'default': ProviderConfiguration(
-        issuer=app.config['OIDC_ISSUER'],
+        issuer=app_config['OIDC_ISSUER'],
         client_metadata=ClientMetadata(
-            client_id=app.config['OIDC_CLIENT_ID'],
-            client_secret=app.config['OIDC_CLIENT_SECRET']
+            client_id=app_config['OIDC_CLIENT_ID'],
+            client_secret=app_config['OIDC_CLIENT_SECRET']
         )
     )
 }, app)
 
-ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
-               app.config['LDAP_BIND_PW'])
+if "LDAP_BIND_DN" in app.config:
+    ldap = LDAPWrapper(CSHLDAP(
+        app.config['LDAP_BIND_DN'],
+        app.config['LDAP_BIND_PW'],
+    ))
+else:
+    ldap = LDAPWrapper(
+        None,
+        app.config.get("EBOARD_UIDS", "").split(","),
+        app.config.get("RTP_UIDS", "").split(","),
+    )
 
-s3 = S3('s3.csh.rit.edu',
-        access_key=app.config['S3_ACCESS_ID'],
-        secret_key=app.config['S3_SECRET_KEY'],
-        secure=True)
+app.add_template_global(ldap, name="ldap")
+
+storage_interface: FileStorage
+if "LOCAL_STORAGE_PATH" in app.config:
+    storage_interface = LocalStorage(app)
+elif "S3_URI" in app.config:
+    storage_interface = S3Storage(app)
+else:
+    raise Exception("Please configure a storage provider")
 
 # pylint: disable=C0413
 from gallery.models import Directory
@@ -96,43 +112,6 @@ from gallery.file_modules import parse_file_info
 from gallery.file_modules import generate_image_thumbnail
 from gallery.file_modules import supported_mimetypes
 from gallery.file_modules import FileModule
-
-import gallery.ldap as gallery_ldap
-from gallery.ldap import ldap_convert_uuid_to_displayname
-from gallery.ldap import ldap_get_members
-
-for func in inspect.getmembers(gallery_ldap):
-    if func[0].startswith("ldap_"):
-        unwrapped = inspect.unwrap(func[1])
-        if inspect.isfunction(unwrapped):
-            app.add_template_global(inspect.unwrap(unwrapped), name=func[0])
-
-# Ensure that we have a root directory
-# XXX there's definitely a better way to do this, I don't have access to the
-# docs right now since I'm on a plane, but I'd wager the SQLAlchemy has a way to
-# get the number of rows in a table without retrieving them (especially since
-# Postgres definitely support this)
-if len([d for d in Directory.query.all()]) == 0:
-    root_dir = Directory(None, "Gallery!",
-                         "A Multimedia Gallery Written in Python with Flask!",
-                         "root", DEFAULT_THUMBNAIL_NAME, "{\"g\":[]}")
-    db.session.add(root_dir)
-    db.session.flush()
-    db.session.commit()
-
-    # Upload the default thumbnail photo to S3 if it's not already up there
-    # XXX it's probably a good idea to move this outside of the root directory
-    # creation check. That way if a deployment is given incorrect S3 credentials
-    # when the root directory is created we can still recover from the case
-    # where there is not default thumbnail
-    default_thumbnail_path = "thumbnails/" + DEFAULT_THUMBNAIL_NAME + ".jpg"
-    file_stat = os.stat(default_thumbnail_path)
-
-    with open(default_thumbnail_path, "rb") as f_hnd:
-        s3.put_object(app.config['S3_BUCKET_ID'],
-                      "files/" + DEFAULT_THUMBNAIL_NAME,
-                      f_hnd,
-                      file_stat.st_size)
 
 
 @app.route("/")
@@ -203,20 +182,20 @@ def upload_file(auth_dict: Optional[Dict[str, Any]] = None):
             # Upload File
             file_stat = os.stat(filepath)
             with open(filepath, "rb") as f_hnd:
-                s3.put_object(app.config['S3_BUCKET_ID'],
-                              "files/" + file_model.s3_id,
-                              f_hnd,
-                              file_stat.st_size)
+                storage_interface.put(
+                    "files/{}".format(file_model.s3_id),
+                    f_hnd
+                )
             os.remove(filepath)
 
             # Upload Thumbnail
             filepath = os.path.join(dir_path, file_model.thumbnail_uuid)
             file_stat = os.stat(filepath)
             with open(filepath, "rb") as f_hnd:
-                s3.put_object(app.config['S3_BUCKET_ID'],
-                              "thumbnails/" + file_model.s3_id,
-                              f_hnd,
-                              file_stat.st_size)
+                storage_interface.put(
+                    "thumbnails/" + file_model.s3_id,
+                    f_hnd,
+                )
             os.remove(filepath)
             os.rmdir(dir_path)
             if file_model is None:
@@ -335,6 +314,36 @@ def refresh_thumbnails():
     refresh_thumbnail()
 
 
+@app.cli.command()
+def init_root():
+    click.echo("Initializing root directory")
+    # Ensure that we have a root directory
+    # XXX there's definitely a better way to do this, I don't have access to the
+    # docs right now since I'm on a plane, but I'd wager the SQLAlchemy has a way to
+    # get the number of rows in a table without retrieving them (especially since
+    # Postgres definitely support this)
+    if len([d for d in Directory.query.all()]) == 0:
+        root_dir = Directory(None, "Gallery!",
+                            "A Multimedia Gallery Written in Python with Flask!",
+                            "root", DEFAULT_THUMBNAIL_NAME, "{\"g\":[]}")
+        db.session.add(root_dir)
+        db.session.flush()
+        db.session.commit()
+
+        # Upload the default thumbnail photo to S3 if it's not already up there
+        # XXX it's probably a good idea to move this outside of the root directory
+        # creation check. That way if a deployment is given incorrect S3 credentials
+        # when the root directory is created we can still recover from the case
+        # where there is not default thumbnail
+        default_thumbnail_path = "thumbnails/" + DEFAULT_THUMBNAIL_NAME + ".jpg"
+
+        with open(default_thumbnail_path, "rb") as f_hnd:
+            storage_interface.put(
+                "files/{}".format(DEFAULT_THUMBNAIL_NAME),
+                f_hnd,
+            )
+
+
 def add_directory(parent_id: str, name: str, description: str, owner: str):
     dir_siblings = Directory.query.filter(Directory.parent == parent_id).all()
     for sibling in dir_siblings:
@@ -433,10 +442,13 @@ def delete_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
                 ).filter(
         File.s3_id == file_model.s3_id
                 ).first() is None:
-        s3.remove_object(app.config['S3_BUCKET_ID'],
-                         "files/" + file_model.s3_id)
-        s3.remove_object(app.config['S3_BUCKET_ID'],
-                         "thumbnails/" + file_model.s3_id)
+
+        storage_interface.remove(
+            "files/" + file_model.s3_id,
+        )
+        storage_interface.remove(
+            "thumbnails/" + file_model.s3_id,
+        )
 
     current_tags = Tag.query.filter(Tag.file_id == file_id).all()
     for tag in current_tags:
@@ -646,16 +658,13 @@ def tag_file(file_id: int):
 @app.route("/api/file/get/<int:file_id>")
 @auth.oidc_auth('default')
 def display_file(file_id: int):
-    file_id = int(file_id)
     file_model = File.query.filter(File.id == file_id).first()
 
     if file_model is None:
         return "file not found", 404
 
-    presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
-                                            "files/" + file_model.s3_id,
-                                            expires=timedelta(minutes=5))
-    return redirect(presigned_url)
+    link = storage_interface.get_link("files/{}".format(file_model.s3_id))
+    return redirect(link)
 
 
 @app.route("/api/thumbnail/get/<int:file_id>")
@@ -663,10 +672,8 @@ def display_file(file_id: int):
 def display_thumbnail(file_id: int):
     file_model = File.query.filter(File.id == file_id).first()
 
-    presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
-                                            "thumbnails/" + file_model.s3_id,
-                                            expires=timedelta(minutes=5))
-    return redirect(presigned_url)
+    link = storage_interface.get_link("thumbnails/{}".format(file_model.s3_id))
+    return redirect(link)
 
 
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
@@ -679,11 +686,8 @@ def display_dir_thumbnail(dir_id: int):
     if len(thumbnail_uuid.split('.')) > 1:
         thumbnail_uuid = thumbnail_uuid.split('.')[0]
 
-    presigned_url = s3.presigned_get_object(app.config['S3_BUCKET_ID'],
-                                            "thumbnails/" +
-                                            thumbnail_uuid,
-                                            expires=timedelta(minutes=5))
-    return redirect(presigned_url)
+    link = storage_interface.get_link("thumbnails/{}".format(thumbnail_uuid))
+    return redirect(link)
 
 
 @app.route("/api/file/next/<int:file_id>")
@@ -746,7 +750,7 @@ def get_dir_tree(internal: bool = False):
         children.sort(key=lambda x: x['name'])
         return children
 
-    root = Directory.query.filter(Directory.parent is None).first()
+    root = Directory.query.filter(Directory.parent == None).first()
 
     tree = {}
 
@@ -904,7 +908,7 @@ def view_filtered(auth_dict: Optional[Dict[str, Any]] = None):
 @app.route("/api/memberlist")
 @auth.oidc_auth('default')
 def get_member_list():
-    return jsonify(ldap_get_members())
+    return jsonify(ldap.get_members())
 
 
 @app.errorhandler(404)

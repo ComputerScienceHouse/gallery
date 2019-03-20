@@ -12,8 +12,7 @@ from gallery import db
 
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    import flask_sqlalchemy  # type: ignore
+import flask_sqlalchemy  # type: ignore
 
 strfformat = "%Y-%m-%d"
 
