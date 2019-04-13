@@ -52,7 +52,6 @@ class FileModule(object):
 
             with Image(width=img.width, height=img.height,
                     background=Color("#EEEEEE")) as bg:
-				
                 bg.composite(img, 0, 0)
                 size = img.width if img.width < img.height else img.height
                 bg.crop(width=size, height=size, gravity='center')
