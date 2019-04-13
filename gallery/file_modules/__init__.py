@@ -39,8 +39,20 @@ class FileModule(object):
         self.thumbnail_uuid = hash_file(self.file_path)
 
         with Image(filename=self.file_path) as img:
+
+			# read metadata to find orientation of image
+			# then rotate accordingly. 
+			rotation = img.metadata["exif:Orientation"]
+			if rotation == "6":
+				img.rotate(90, reset_coords=False)
+			if rotation == "8":
+				img.rotate(270, reset_coords=False)
+			if rotation == "3":
+				img.rotate(180, reset_coords=False)
+
             with Image(width=img.width, height=img.height,
                     background=Color("#EEEEEE")) as bg:
+				
                 bg.composite(img, 0, 0)
                 size = img.width if img.width < img.height else img.height
                 bg.crop(width=size, height=size, gravity='center')
