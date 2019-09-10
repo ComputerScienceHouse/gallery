@@ -11,6 +11,15 @@ View File
 
 <div class="container">
     <div class="row">
+        {% if file.hidden %}
+            <div class="col-xs-12">
+                <div class="alert alert-warning">
+                    <p class="mb-0">This file has been hidden from regular users. Avoid viewing in public rooms!</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="row">
         <div class="col-xs-12">
             <ul class="breadcrumb">
                 {% for p in parents %}
@@ -138,6 +147,42 @@ View File
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
                                 <button type="button" id="confirm-{{ file.id }}" class="btn btn-primary" data-dismiss="modal">Yes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if (auth_dict['is_eboard'] or auth_dict['is_rtp']) and file.hidden != True %}
+                <a href="#!" class="btn btn-danger" onclick="hideFile()">Hide</a>
+
+                <div class="modal fade" id="hide" role="dialog">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">Are you sure?</h4>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                                <button type="button" id="hide-{{ file.id }}" class="btn btn-primary" data-dismiss="modal">Yes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% elif (auth_dict['is_eboard'] or auth_dict['is_rtp']) %}
+                <a href="#!" class="btn btn-danger" onclick="showFile()">Show</a>
+
+                <div class="modal fade" id="show" role="dialog">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">Are you sure?</h4>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                                <button type="button" id="show-{{ file.id }}" class="btn btn-primary" data-dismiss="modal">Yes</button>
                             </div>
                         </div>
                     </div>

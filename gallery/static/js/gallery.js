@@ -235,6 +235,36 @@ function deleteFile() {
     });
 }
 
+function hideFile() {
+    $('#hide').modal('show');
+    $('#hide button[id^="hide"]').click(function(e) {
+        e.preventDefault();
+        var this_id = $('#hide button[id^="hide"]').attr('id').substr($('#hide button[id^="hide"]').attr('id').indexOf("-") + 1);
+        $.ajax({
+            method: "POST",
+            url: "/api/file/hide/" + this_id,
+            success: function() {
+                window.location.href = '/view/dir/' + parent;
+            }
+        });
+    });
+}
+
+function showFile() {
+    $('#show').modal('show');
+    $('#show button[id^="hide"]').click(function(e) {
+        e.preventDefault();
+        var this_id = $('#show button[id^="show"]').attr('id').substr($('#show button[id^="show"]').attr('id').indexOf("-") + 1);
+        $.ajax({
+            method: "POST",
+            url: "/api/file/show/" + this_id,
+            success: function() {
+                window.location.href = '/view/dir/' + parent;
+            }
+        });
+    });
+}
+
 function moveFile() {
     $('#move').modal('show');
     $('#move button[id^="move"]').click(function(e) {

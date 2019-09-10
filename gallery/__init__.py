@@ -460,6 +460,53 @@ def delete_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     return "ok", 200
 
 
+@app.route("/api/file/hide/<int:file_id>", methods=['POST'])
+@auth.oidc_auth('default')
+@gallery_auth
+def hide_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    file_model = File.query.filter(File.id == file_id).first()
+
+    if file_model is None:
+        return "file not found", 404
+
+    assert auth_dict
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['uuid'] == file_model.author):
+        return "Permission denied", 403
+
+    file_model.update({
+        'hidden': True
+    })
+    db.session.flush()
+    db.session.commit()
+
+    return "ok", 200
+
+
+@app.route("/api/file/show/<int:file_id>", methods=['POST'])
+@auth.oidc_auth('default')
+@gallery_auth
+def show_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    file_model = File.query.filter(File.id == file_id).first()
+
+    if file_model is None:
+        return "file not found", 404
+
+    assert auth_dict
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']):
+        return "Permission denied", 403
+
+    file_model.update({
+        'hidden': False
+    })
+    db.session.flush()
+    db.session.commit()
+
+    return "ok", 200
+
+
 @app.route("/api/dir/delete/<int:dir_id>", methods=['POST'])
 @auth.oidc_auth('default')
 @gallery_auth
@@ -851,6 +898,8 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
 def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     file_model = File.query.filter(File.id == file_id).first()
     if file_model is None:
+        abort(404)
+    if file_model.hidden and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
         abort(404)
     description = file_model.caption
     display_description = len(description) > 0
