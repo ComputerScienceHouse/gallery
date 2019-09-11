@@ -1,21 +1,11 @@
 from datetime import datetime
 
-from sqlalchemy import Column
-from sqlalchemy import Integer
-from sqlalchemy import Enum
-from sqlalchemy import ForeignKey
-from sqlalchemy import DateTime
-from sqlalchemy import String
-from sqlalchemy import Text
+import flask_sqlalchemy  # type: ignore
+from sqlalchemy import Text, String, Integer, Boolean, ForeignKey, DateTime, Column
 
 from gallery import db
 
-from typing import TYPE_CHECKING
-
-import flask_sqlalchemy  # type: ignore
-
 strfformat = "%Y-%m-%d"
-
 
 _base: flask_sqlalchemy.Model = db.Model
 
@@ -61,6 +51,7 @@ class File(_base):
     thumbnail_uuid = Column(Text, nullable=False)
     mimetype = Column(Text, nullable=False)
     exif_data = Column(Text, nullable=False)
+    hidden = Column(Boolean, nullable=True)
     s3_id = Column(String(32))  # MD5 sums are always 32 chars long
 
     def __init__(self, parent, name, caption,
@@ -91,3 +82,8 @@ class Tag(_base):
     def __init__(self, file_id, uuid):
         self.file_id = file_id
         self.uuid = uuid
+
+
+class Administration(_base):
+    __tablename__ = 'admin'
+    lockdown = Column(Boolean, primary_key=True, default=False)

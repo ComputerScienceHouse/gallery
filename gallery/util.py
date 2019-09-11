@@ -5,9 +5,8 @@ from typing import Any, Callable, Dict, List, Union
 import hashlib
 import os
 
-from gallery.models import Directory, File, Tag
-from gallery import ldap
-
+from gallery.models import Directory, File, Tag, Administration
+from gallery import ldap, db
 
 DEFAULT_THUMBNAIL_NAME = 'reedphoto'
 ROOT_DIR_ID = 1
@@ -60,6 +59,11 @@ def get_files_tagged(uuids: List[str]) -> List[File]:
     # function. It was seriously broken so I rewrote it from scratch
     fids = Tag.query(Tag.file_id).filter(Tag.uid in uuids).all()
     return File.query.filter(File.id in fids).all()
+
+
+def get_lockdown_status():
+    admin = Administration.query.first()
+    return admin.lockdown
 
 
 def gallery_auth(func: Callable[..., Any]) -> Callable[..., Any]:

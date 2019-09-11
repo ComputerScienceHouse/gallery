@@ -26,6 +26,20 @@
                             </ul>
                         </li>
                     {% endif %}
+                    {% if auth_dict['is_eboard'] or auth_dict['is_rtp'] %}
+                        <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                            <span class="glyphicon glyphicon-lock"></span> Admin
+                            <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                {% if lockdown %}
+                                    <li><a href="#" onclick="galleryLockdown(event);"><span class="glyphicon glyphicon-off"></span> Open Gallery</a></li>
+                                    {% else %}
+                                    <li><a href="#" onclick="galleryLockdown(event);"><span class="glyphicon glyphicon-lock"></span> Lockdown</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                    {% endif %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown navbar-user">
