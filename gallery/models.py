@@ -86,4 +86,4 @@ class Tag(_base):
 
 class Administration(_base):
     __tablename__ = 'admin'
-    lockdown = Column(Boolean, nullable=True)
+    lockdown = Column(Boolean, primary_key=True, default=False)
