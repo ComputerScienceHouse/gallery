@@ -10,6 +10,13 @@ View Directory
 {% block body %}
 
 <div class="container">
+    {% if lockdown %}
+        <div class="row">
+            <div class="alert alert-danger">
+                <p class="mb-0">Gallery is in Lockdown! Regular members cannot view content.</p>
+            </div>
+        </div>
+    {% endif %}
     <div class="row">
         <div class="col-xs-12">
             <ul class="breadcrumb">
@@ -28,33 +35,33 @@ View Directory
 {% if children|length >= 1 %}
     <div class="row" id="child_list">
     {% for child_type, child in children %}
-        <div class="col-md-3 col-sm-4 col-xs-6">
-            <div class="panel panel-default">
-                <div class="panel-body">
-                {% if child_type == "Directory" %}
-                <div class="album-wrapper">
-                    <a href="/view/dir/{{ child.id }}">
-                        <img class="album" src="/api/thumbnail/get/dir/{{ child.id }}">
-                    </a>
-                </div>
-                <a href="/view/dir/{{ child.id }}">
-                    <p>{{ child.get_name() }}</p>
-                </a>
-                <p>Owner: {{ ldap.convert_uuid_to_displayname(child.author) }}</p>
-                <p>Date Created: {{ child.date() }}</p>
-                {% elif child_type == "File" %}
-                    {% if not child.hidden or (auth_dict['is_eboard'] or auth_dict['is_rtp']) %}
-                        <a class="file" href="/view/file/{{ child.id }}">
-                            <img src="/api/thumbnail/get/{{ child.id }}">
-                            <p>{{ child.get_name() }}</p>
-                        </a>
-                        <p>Owner: {{ ldap.convert_uuid_to_displayname(child.author) }}</p>
-                        <p>Date Uploaded: {{ child.date() }}</p>
-                    {% endif %}
-                {% endif %}
+        {% if not child.hidden or (auth_dict['is_eboard'] or auth_dict['is_rtp']) %}
+            <div class="col-md-3 col-sm-4 col-xs-6">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        {% if child_type == "Directory" %}
+                            <div class="album-wrapper">
+                                <a href="/view/dir/{{ child.id }}">
+                                    <img class="album" src="/api/thumbnail/get/dir/{{ child.id }}">
+                                </a>
+                            </div>
+                            <a href="/view/dir/{{ child.id }}">
+                                <p>{{ child.get_name() }}</p>
+                            </a>
+                            <p>Owner: {{ ldap.convert_uuid_to_displayname(child.author) }}</p>
+                            <p>Date Created: {{ child.date() }}</p>
+                        {% elif child_type == "File" %}
+                            <a class="file" href="/view/file/{{ child.id }}">
+                                <img {% if child.hidden %}class="filter-hidden"{% endif %} src="/api/thumbnail/get/{{ child.id }}">
+                                <p>{{ child.get_name() }}</p>
+                            </a>
+                            <p>Owner: {{ ldap.convert_uuid_to_displayname(child.author) }}</p>
+                            <p>Date Uploaded: {{ child.date() }}</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     {% endfor %}
     </div>
 

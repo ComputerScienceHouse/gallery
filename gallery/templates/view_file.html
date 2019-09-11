@@ -10,15 +10,22 @@ View File
 {% block body %}
 
 <div class="container">
-    <div class="row">
-        {% if file.hidden %}
-            <div class="col-xs-12">
-                <div class="alert alert-warning">
-                    <p class="mb-0">This file has been hidden from regular users. Avoid viewing in public rooms!</p>
+    {% if file.hidden or lockdown %}
+        <div class="row">
+            {% if lockdown %}
+                <div class="alert alert-danger">
+                    <p class="mb-0">Gallery is in Lockdown! Regular members cannot view content.</p>
                 </div>
-            </div>
-        {% endif %}
-    </div>
+            {% endif %}
+            {% if file.hidden %}
+                <div class="col-xs-12">
+                    <div class="alert alert-warning">
+                        <p class="mb-0">This file has been hidden from regular users. Avoid viewing in public rooms!</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
     <div class="row">
         <div class="col-xs-12">
             <ul class="breadcrumb">

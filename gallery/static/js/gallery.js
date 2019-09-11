@@ -265,6 +265,20 @@ function showFile() {
     });
 }
 
+function galleryLockdown() {
+    $('#lockdown').modal('show');
+    $('#lockdown button[id^="lockdown-toggle"]').click(function(e) {
+        e.preventDefault();
+        $.ajax({
+            method: "POST",
+            url: "/api/admin/lockdown",
+            success: function() {
+                window.location.href = '/';
+            }
+        });
+    });
+}
+
 function moveFile() {
     $('#move').modal('show');
     $('#move button[id^="move"]').click(function(e) {

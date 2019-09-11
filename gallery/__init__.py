@@ -96,7 +96,7 @@ else:
     raise Exception("Please configure a storage provider")
 
 # pylint: disable=C0413
-from gallery.models import Directory
+from gallery.models import Directory, Administration
 from gallery.models import File
 from gallery.models import Tag
 
@@ -475,9 +475,7 @@ def hide_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
             or auth_dict['uuid'] == file_model.author):
         return "Permission denied", 403
 
-    file_model.update({
-        'hidden': True
-    })
+    file_model.hidden = True
     db.session.flush()
     db.session.commit()
 
@@ -498,9 +496,7 @@ def show_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
             or auth_dict['is_rtp']):
         return "Permission denied", 403
 
-    file_model.update({
-        'hidden': False
-    })
+    file_model.hidden = False
     db.session.flush()
     db.session.commit()
 
@@ -589,6 +585,24 @@ def move_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     Directory.query.filter(Directory.id == dir_id).update({
         'parent': parent
     })
+    db.session.flush()
+    db.session.commit()
+
+    return "ok", 200
+
+
+@app.route("/api/admin/lockdown", methods=['POST'])
+@auth.oidc_auth('default')
+@gallery_auth
+def gallery_lockdown(auth_dict: Optional[Dict[str, Any]] = None):
+    assert auth_dict
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']):
+        return "Permission denied", 403
+
+    admin = Administration.query.first()
+    admin.lockdown = not admin.lockdown
+
     db.session.flush()
     db.session.commit()
 
@@ -855,6 +869,9 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     dir_id = int(dir_id)
     if dir_id < ROOT_DIR_ID:
         return redirect('/view/dir/'+ str(ROOT_DIR_ID))
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
 
     children = display_files(dir_id, internal=True)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
@@ -890,7 +907,9 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
                            display_parent=display_parent,
                            description=description,
                            display_description=display_description,
-                           auth_dict=auth_dict)
+                           auth_dict=auth_dict,
+                           lockdown=gallery_lockdown)
+
 
 @app.route("/view/file/<int:file_id>")
 @auth.oidc_auth('default')
@@ -901,6 +920,10 @@ def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
         abort(404)
     if file_model.hidden and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
         abort(404)
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     description = file_model.caption
     display_description = len(description) > 0
     display_parent = True
@@ -932,7 +955,8 @@ def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
                            description=description,
                            display_description=display_description,
                            tags=tags,
-                           auth_dict=auth_dict)
+                           auth_dict=auth_dict,
+                           lockdown=gallery_lockdown)
 
 
 @app.route("/view/random_file")
@@ -961,6 +985,7 @@ def get_member_list():
 
 
 @app.errorhandler(404)
+@app.errorhandler(405)
 @app.errorhandler(500)
 @gallery_auth
 def route_errors(error: Any, auth_dict: Optional[Dict[str, Any]] = None):
@@ -973,6 +998,8 @@ def route_errors(error: Any, auth_dict: Optional[Dict[str, Any]] = None):
 
     if code == 404:
         error_desc = "Page Not Found"
+    elif code == 405:
+        error_desc = "Page Not Available"
     else:
         error_desc = type(error).__name__
 
