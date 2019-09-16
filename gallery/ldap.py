@@ -1,7 +1,15 @@
 from typing import Dict, List
 import ldap as pyldap  # type: ignore
 from typing import Optional, List, Dict
-from csh_ldap import CSHLDAP
+from csh_ldap import CSHLDAP, CSHMember
+
+
+def is_member_of_group(member: CSHMember, group: str) -> bool:
+    group_list = member.get("memberOf")
+    for group_dn in group_list:
+        if group == group_dn.split(",")[0][3:]:
+            return True
+    return False
 
 
 class LDAPWrapper(object):
@@ -25,8 +33,7 @@ class LDAPWrapper(object):
     def is_eboard(self, uid: str) -> bool:
         if self._ldap is None:
             return uid in self._eboard
-        eboard_group = self._ldap.get_group('eboard')
-        return eboard_group.check_member(self._ldap.get_member(uid, uid=True))
+        return is_member_of_group(self._ldap.get_member(uid, uid=True), 'eboard')
 
     def is_rtp(self, uid: str) -> bool:
         if self._ldap is None:
