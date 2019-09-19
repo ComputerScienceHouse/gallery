@@ -5,7 +5,7 @@ from wand.image import Image
 from wand.color import Color
 
 from gallery.file_modules import FileModule
-from gallery.util import hash_file
+
 
 class CR2File(FileModule):
 
@@ -15,7 +15,6 @@ class CR2File(FileModule):
         self.load_exif()
         self.generate_thumbnail()
 
-
     def load_exif(self):
         print("LOAD EXIF")
         try:
@@ -23,8 +22,7 @@ class CR2File(FileModule):
         except Exception as e:
             print(e)
 
-
-    def convert_to_jpg(self, _file_path):
+    def convert_to_jpg(self, _file_path: str) -> str:
         # wand convert from cr2 to jpeg remove cr2 file
         old_file_path = _file_path
         file_path = os.path.splitext(_file_path)[0]

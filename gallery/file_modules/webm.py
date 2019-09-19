@@ -1,11 +1,11 @@
 from moviepy.editor import VideoFileClip
 import os
-import piexif
 from wand.image import Image
 from wand.color import Color
 
 from gallery.file_modules import FileModule
 from gallery.util import hash_file
+
 
 class WebMFile(FileModule):
 
@@ -14,7 +14,6 @@ class WebMFile(FileModule):
         self.mime_type = "video/webm"
 
         self.generate_thumbnail()
-
 
     def generate_thumbnail(self):
         self.thumbnail_uuid = hash_file(self.file_path) + ".jpg"

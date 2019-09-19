@@ -81,6 +81,7 @@ celerybeat-schedule
 # virtualenv
 venv/
 ENV/
+.gallery/
 
 # Spyder project settings
 .spyderproject
@@ -93,3 +94,6 @@ data.db
 
 # Pycharm
 .idea/
+
+# mypy
+.mypy_cache

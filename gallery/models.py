@@ -1,21 +1,19 @@
 from datetime import datetime
 
-from sqlalchemy import Column
-from sqlalchemy import Integer
-from sqlalchemy import Enum
-from sqlalchemy import ForeignKey
-from sqlalchemy import DateTime
-from sqlalchemy import String
-from sqlalchemy import Text
+import flask_sqlalchemy  # type: ignore
+from sqlalchemy import Text, String, Integer, Boolean, ForeignKey, DateTime, Column
 
 from gallery import db
 
 strfformat = "%Y-%m-%d"
 
-class Directory(db.Model):
+_base: flask_sqlalchemy.Model = db.Model
+
+
+class Directory(_base):
     __tablename__ = 'directories'
     id = Column(Integer, primary_key=True)
-    parent = Column(ForeignKey('directories.id'))
+    parent = Column(ForeignKey('directories.id'))  # type: ignore
     name = Column(Text, nullable=False)
     title = Column(Text)
     description = Column(Text, nullable=False)
@@ -40,10 +38,11 @@ class Directory(db.Model):
     def get_name(self):
         return self.title or self.name
 
-class File(db.Model):
+
+class File(_base):
     __tablename__ = 'files'
     id = Column(Integer, primary_key=True)
-    parent = Column(ForeignKey('directories.id'), nullable=False)
+    parent = Column(ForeignKey('directories.id'), nullable=False)  # type: ignore
     name = Column(Text, nullable=False)
     title = Column(Text)
     caption = Column(Text, nullable=False)
@@ -52,7 +51,8 @@ class File(db.Model):
     thumbnail_uuid = Column(Text, nullable=False)
     mimetype = Column(Text, nullable=False)
     exif_data = Column(Text, nullable=False)
-    s3_id = Column(String(32)) # MD5 sums are always 32 chars long
+    hidden = Column(Boolean, nullable=True)
+    s3_id = Column(String(32))  # MD5 sums are always 32 chars long
 
     def __init__(self, parent, name, caption,
                  author, thumbnail_uuid,
@@ -73,11 +73,17 @@ class File(db.Model):
     def get_name(self):
         return self.title or self.name
 
-class Tag(db.Model):
+
+class Tag(_base):
     __tablename__ = 'tags'
-    file_id = Column(ForeignKey('files.id'), primary_key=True)
+    file_id = Column(ForeignKey('files.id'), primary_key=True)  # type: ignore
     uuid = Column(Text, primary_key=True)
 
     def __init__(self, file_id, uuid):
         self.file_id = file_id
         self.uuid = uuid
+
+
+class Administration(_base):
+    __tablename__ = 'admin'
+    lockdown = Column(Boolean, primary_key=True, default=False)

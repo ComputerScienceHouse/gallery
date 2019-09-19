@@ -12,9 +12,6 @@ LDAP_BIND_PW = ''
 LDAP_USER_OU = 'ou=Users,dc=csh,dc=rit,dc=edu'
 
 # OpenID Connect SSO config
-OIDC_ISSUER = 'https://sso.csh.rit.edu/realms/csh'
-OIDC_CLIENT_CONFIG = {
-    'client_id': 'gallery',
-    'client_secret': '',
-    'post_logout_redirect_uris': ['http://localhost:8080/logout']
-}
+OIDC_ISSUER = 'https://sso.csh.rit.edu/auth/realms/csh'
+OIDC_CLIENT_ID = 'gallery'
+OIDC_CLIENT_SECRET = ''
