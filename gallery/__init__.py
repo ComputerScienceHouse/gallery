@@ -391,7 +391,7 @@ def refresh_thumbnail():
         dir_children = [d for d in Directory.query.filter(Directory.parent == dir_model.id).all()]
         file_children = [f for f in File.query.filter(File.parent == dir_model.id).all()]
         for file in file_children:
-            if file.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME:
+            if file.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME and not file.hidden:
                 return file.thumbnail_uuid
         for d in dir_children:
             if d.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME:
@@ -476,6 +476,13 @@ def hide_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
         return "Permission denied", 403
 
     file_model.hidden = True
+
+    # Remove hidden file from directory thumbnails
+    for d in Directory.query.filter(Directory.thumbnail_uuid == file.model.thumbnail_uuid).all():
+        d.thumbnail_uuid = DEFAULT_THUMBNAIL_NAME
+
+    refresh_thumbnail()
+
     db.session.flush()
     db.session.commit()
 
