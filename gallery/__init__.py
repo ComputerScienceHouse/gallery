@@ -478,7 +478,7 @@ def hide_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     file_model.hidden = True
 
     # Remove hidden file from directory thumbnails
-    for d in Directory.query.filter(Directory.thumbnail_uuid == file.model.thumbnail_uuid).all():
+    for d in Directory.query.filter(Directory.thumbnail_uuid == file_model.thumbnail_uuid).all():
         d.thumbnail_uuid = DEFAULT_THUMBNAIL_NAME
 
     refresh_thumbnail()
