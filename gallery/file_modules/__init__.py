@@ -62,6 +62,7 @@ from gallery.file_modules.webm import WebMFile
 from gallery.file_modules.ogg import OggFile
 from gallery.file_modules.pdf import PDFFile
 from gallery.file_modules.txt import TXTFile
+from gallery.file_modules.mp3 import MP3File
 
 file_mimetype_relation = {
     "image/jpeg": JPEGFile,
@@ -77,7 +78,8 @@ file_mimetype_relation = {
     "video/webm": WebMFile,
     "video/ogg": OggFile,
     "application/pdf": PDFFile,
-    "text/plain": TXTFile
+    "text/plain": TXTFile,
+    "audio/mpeg": MP3File
 }
 
 
