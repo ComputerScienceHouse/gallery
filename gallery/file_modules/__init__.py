@@ -63,6 +63,7 @@ from gallery.file_modules.ogg import OggFile
 from gallery.file_modules.pdf import PDFFile
 from gallery.file_modules.txt import TXTFile
 from gallery.file_modules.mp3 import MP3File
+from gallery.file_modules.wav import WAVFile
 
 file_mimetype_relation = {
     "image/jpeg": JPEGFile,
@@ -79,7 +80,8 @@ file_mimetype_relation = {
     "video/ogg": OggFile,
     "application/pdf": PDFFile,
     "text/plain": TXTFile,
-    "audio/mpeg": MP3File
+    "audio/mpeg": MP3File,
+    "audio/x-wav": WAVFile
 }
 
 

@@ -4,10 +4,10 @@ from wand.image import Image
 from gallery.file_modules import FileModule
 from gallery.util import hash_file
 
-class MP3File(FileModule):
+class WAVFile(FileModule):
     def __init__(self, file_path, dir_path):
         FileModule.__init__(self, file_path, dir_path)
-        self.mime_type = "audio/mpeg"
+        self.mime_type = "audio/x-wav"
 
         self.generate_thumbnail()
 
