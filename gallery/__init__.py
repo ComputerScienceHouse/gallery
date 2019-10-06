@@ -25,6 +25,7 @@ from flask import session
 from flask import send_from_directory
 from flask import abort
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 from sqlalchemy.sql import func as sql_func
 from sqlalchemy.orm import load_only
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
@@ -213,7 +214,7 @@ def upload_file(auth_dict: Optional[Dict[str, Any]] = None):
     upload_status['error'] = errors
     upload_status['success'] = success
 
-    refresh_thumbnail()
+    refresh_default_thumbnails()
     # actually redirect to URL
     # change from FORM post to AJAX maybe?
     return jsonify(upload_status)
@@ -311,7 +312,7 @@ def api_mkdir(
 @app.cli.command()
 def refresh_thumbnails():
     click.echo("Refreshing thumbnails")
-    refresh_thumbnail()
+    refresh_default_thumbnails()
 
 
 @app.cli.command()
@@ -386,24 +387,25 @@ def add_file(file_name: str, path: str, dir_id: str, description: str, owner: st
     return file_model
 
 
-def refresh_thumbnail():
-    def refresh_thumbnail_helper(dir_model: Directory) -> str:
-        dir_children = [d for d in Directory.query.filter(Directory.parent == dir_model.id).all()]
-        file_children = [f for f in File.query.filter(File.parent == dir_model.id).all()]
-        for file in file_children:
-            if file.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME and not file.hidden:
-                return file.thumbnail_uuid
-        for d in dir_children:
-            if d.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME:
-                return d.thumbnail_uuid
-        # WE HAVE TO GO DEEPER (inception noise)
-        for d in dir_children:
-            # TODO: Switch to iterative tree walk using a queue to avoid
-            # recursion issues with super large directory structures
-            return refresh_thumbnail_helper(d)
-        # No thumbnail found
-        return DEFAULT_THUMBNAIL_NAME
+def refresh_directory_thumbnail(dir_model: Directory) -> str:
+    dir_children = [d for d in Directory.query.filter(Directory.parent == dir_model.id).all()]
+    file_children = [f for f in File.query.filter(File.parent == dir_model.id).all()]
+    for file in file_children:
+        if file.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME and not file.hidden:
+            return file.thumbnail_uuid
+    for d in dir_children:
+        if d.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME:
+            return d.thumbnail_uuid
+    # WE HAVE TO GO DEEPER (inception noise)
+    for d in dir_children:
+        # TODO: Switch to iterative tree walk using a queue to avoid
+        # recursion issues with super large directory structures
+        return refresh_directory_thumbnail(d)
+    # No thumbnail found
+    return DEFAULT_THUMBNAIL_NAME
 
+
+def refresh_default_thumbnails():
     missing_thumbnails = File.query.filter(File.thumbnail_uuid == DEFAULT_THUMBNAIL_NAME).all()
     for file_model in missing_thumbnails:
         dir_path = get_full_dir_path(file_model.parent)
@@ -416,7 +418,7 @@ def refresh_thumbnail():
 
     missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == DEFAULT_THUMBNAIL_NAME).all()
     for dir_model in missing_thumbnails:
-        dir_model.thumbnail_uuid = refresh_thumbnail_helper(dir_model)
+        dir_model.thumbnail_uuid = refresh_directory_thumbnail(dir_model)
         db.session.flush()
         db.session.commit()
         db.session.refresh(dir_model)
@@ -477,11 +479,11 @@ def hide_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
 
     file_model.hidden = True
 
-    # Remove hidden file from directory thumbnails
-    for d in Directory.query.filter(Directory.thumbnail_uuid == file_model.thumbnail_uuid).all():
-        d.thumbnail_uuid = DEFAULT_THUMBNAIL_NAME
-
-    refresh_thumbnail()
+    # Remove image from thumbnails
+    dirs = Directory.query.filter(or_(Directory.thumbnail_uuid == file_model.thumbnail_uuid, \
+        Directory.thumbnail_uuid == file_model.thumbnail_uuid[:-4]))
+    for d in dirs:
+        d.thumbnail_uuid = refresh_directory_thumbnail(d)
 
     db.session.flush()
     db.session.commit()
@@ -504,6 +506,12 @@ def show_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
         return "Permission denied", 403
 
     file_model.hidden = False
+
+    # Add image as directory thumbnail
+    parent_model = Directory.query.filter(Directory.id == file_model.parent).first()
+    if parent_model.thumbnail_uuid == DEFAULT_THUMBNAIL_NAME:
+        parent_model.thumbnail_uuid = refresh_directory_thumbnail(parent_model)
+
     db.session.flush()
     db.session.commit()
 
