@@ -1,6 +1,6 @@
 Flask==1.0.2
 Flask-pyoidc==2.0.0
-csh_ldap==2.1.1
+csh_ldap~=2.2.0
 addict==2.2.0
 flask_sqlalchemy==2.3.2
 flask_migrate==2.3.1

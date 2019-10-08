@@ -252,7 +252,7 @@ function hideFile() {
 
 function showFile() {
     $('#show').modal('show');
-    $('#show button[id^="hide"]').click(function(e) {
+    $('#show button[id^="show"]').click(function(e) {
         e.preventDefault();
         var this_id = $('#show button[id^="show"]').attr('id').substr($('#show button[id^="show"]').attr('id').indexOf("-") + 1);
         $.ajax({

@@ -65,3 +65,14 @@ an Openshift Origin cluster.
    GALLERY_S3_BUCKET_ID = $s3BucketID
    GALLERY_S3_SECRET_KEY = $s3SecretKey
    ```
+
+## Local Development
+Below are instructions for running gallery locally. It assumes that you have already forked and cloned this repository onto your local machine.
+
+1. Change the line in `__init__.py` that sets the config file from `config.env.py` to `localconfig.env.py`.
+
+2. Get gallery dev secrets from an RTP and fill in `localconfig.env.py`. *DO NOT COMMIT THESE TO GIT*
+
+3. Run `pip install -r requirements.txt`
+
+4. Run `python3 wsgi.py`
