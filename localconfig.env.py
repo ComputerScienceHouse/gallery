@@ -20,7 +20,7 @@ OIDC_CLIENT_SECRET = os.environ.get('GALLERY_OIDC_CLIENT_SECRET', '')
 
 SQLALCHEMY_DATABASE_URI = os.environ.get(
     'GALLERY_DATABASE_URI',
-    'postgresql://gallery:undergrowth7803824=exhibitionist@postgres.csh.rit.edu/gallery-dev')
+    'postgresql://DB_USERNAME:DB_PASSWORD@postgres.csh.rit.edu/gallery-dev')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 S3_URI = os.environ.get('GALLERY_S3_URI', 'https://s3.csh.rit.edu')
