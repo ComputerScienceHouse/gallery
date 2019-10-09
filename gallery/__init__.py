@@ -247,6 +247,9 @@ def view_mkdir(auth_dict: Optional[Dict[str, Any]] = None):
 @auth.oidc_auth('default')
 @gallery_auth
 def view_jumpdir(auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
     return render_template("jumpdir.html",
                            auth_dict=auth_dict)
 
@@ -733,7 +736,12 @@ def tag_file(file_id: int):
 
 @app.route("/api/file/get/<int:file_id>")
 @auth.oidc_auth('default')
-def display_file(file_id: int):
+@gallery_auth
+def display_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     file_model = File.query.filter(File.id == file_id).first()
 
     if file_model is None:
@@ -745,7 +753,12 @@ def display_file(file_id: int):
 
 @app.route("/api/thumbnail/get/<int:file_id>")
 @auth.oidc_auth('default')
-def display_thumbnail(file_id: int):
+@gallery_auth
+def display_thumbnail(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     file_model = File.query.filter(File.id == file_id).first()
 
     link = storage_interface.get_link("thumbnails/{}".format(file_model.s3_id))
@@ -754,7 +767,12 @@ def display_thumbnail(file_id: int):
 
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
 @auth.oidc_auth('default')
-def display_dir_thumbnail(dir_id: int):
+@gallery_auth
+def display_dir_thumbnail(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
     thumbnail_uuid = dir_model.thumbnail_uuid
@@ -810,7 +828,11 @@ def get_supported_mimetypes():
 
 @app.route("/api/get_dir_tree")
 @auth.oidc_auth('default')
-def get_dir_tree(internal: bool = False):
+@gallery_auth
+def get_dir_tree(internal: bool = False, auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
 
     # TODO: Convert to iterative tree traversal using a queue to avoid
     # recursion issues with large directory structures
@@ -843,7 +865,12 @@ def get_dir_tree(internal: bool = False):
 
 @app.route("/api/directory/get/<int:dir_id>")
 @auth.oidc_auth('default')
-def display_files(dir_id: int, internal: bool = False):
+@gallery_auth
+def display_files(dir_id: int, internal: bool = False, auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).all()]
     dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).all()]
 
@@ -995,7 +1022,12 @@ def view_filtered(auth_dict: Optional[Dict[str, Any]] = None):
 
 @app.route("/api/memberlist")
 @auth.oidc_auth('default')
-def get_member_list():
+@gallery_auth
+def get_member_list(auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     return jsonify(ldap.get_members())
 
 
@@ -1014,7 +1046,7 @@ def route_errors(error: Any, auth_dict: Optional[Dict[str, Any]] = None):
     if code == 404:
         error_desc = "Page Not Found"
     elif code == 405:
-        error_desc = "Page Not Available"
+        error_desc = "Gallery is currently unavailable"
     else:
         error_desc = type(error).__name__
 

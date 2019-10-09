@@ -97,3 +97,6 @@ data.db
 
 # mypy
 .mypy_cache
+
+# vim swap files
+*.swp
