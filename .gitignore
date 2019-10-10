@@ -89,6 +89,8 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# Local development files
+localconfig.env.py
 config.py
 data.db
 

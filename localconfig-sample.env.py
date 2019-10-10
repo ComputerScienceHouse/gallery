@@ -8,10 +8,8 @@ SERVER_NAME = os.environ.get('GALLERY_SERVER_NAME', 'localhost:6969')
 SECRET_KEY = os.environ.get('GALLERY_SECRET_KEY', '')
 
 # LDAP config
-LDAP_URL=os.environ.get('GALLERY_LDAP_URL', 'ldaps://ldap.csh.rit.edu:636')
 LDAP_BIND_DN=os.environ.get('GALLERY_LDAP_BIND_DN', '')
 LDAP_BIND_PW=os.environ.get('GALLERY_LDAP_BIND_PW', '')
-LDAP_USER_OU=os.environ.get('GALLERY_LDAP_USER_OU', 'ou=Users,dc=csh,dc=rit,dc=edu')
 
 # OpenID Connect SSO config
 OIDC_ISSUER = os.environ.get('GALLERY_OIDC_ISSUER', 'https://sso.csh.rit.edu/auth/realms/csh')
