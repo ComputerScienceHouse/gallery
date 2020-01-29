@@ -922,7 +922,6 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     description = dir_model.description
     display_description = len(description) > 0
 
-
     display_parent = True
     if dir_model is None or dir_model.parent is None or dir_id == ROOT_DIR_ID:
         display_parent = False
@@ -960,7 +959,7 @@ def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     file_model = File.query.filter(File.id == file_id).first()
     if file_model is None:
         abort(404)
-    if file_model.hidden and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+    if file_model.hidden and (not auth_dict['is_eboard'] and not auth_dict['is_rtp'] and not auth_dict['is_alumni']):
         abort(404)
     gallery_lockdown = util.get_lockdown_status()
     if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):

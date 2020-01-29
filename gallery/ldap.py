@@ -41,6 +41,9 @@ class LDAPWrapper(object):
         rtp_group = self._ldap.get_group('rtp')
         return rtp_group.check_member(self._ldap.get_member(uid, uid=True))
 
+    def is_alumni(self, uid: str) -> bool:
+        return not is_member_of_group(self._ldap.get_member(uid, uid=True), 'current_student')
+
     def get_members(self) -> List[Dict[str, str]]:
         if self._ldap is None:
             return []
