@@ -10,6 +10,8 @@ RUN apt-get update && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     mkdir -p /opt/gallery /var/lib/gallery
 
+RUN pip install --upgrade pip
+
 WORKDIR /opt/gallery
 ADD . /opt/gallery
 
