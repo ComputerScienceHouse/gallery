@@ -4,7 +4,7 @@ csh_ldap~=2.2.0
 addict==2.2.0
 flask_sqlalchemy==2.3.2
 flask_migrate==2.3.1
-psycopg2==2.7.7
+psycopg2==2.8.5
 python-magic==0.4.15
 piexif==1.1.2
 wand==0.5.0
