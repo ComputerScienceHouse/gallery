@@ -35,7 +35,7 @@ View Directory
 {% if children|length >= 1 %}
     <div class="row" id="child_list">
     {% for child_type, child in children %}
-        {% if not child.hidden or (auth_dict['is_eboard'] or auth_dict['is_rtp']) %}
+        {% if not child.hidden or (auth_dict['is_eboard'] or auth_dict['is_rtp'])  or auth_dict['is_alumni'] %}
             <div class="col-md-3 col-sm-4 col-xs-6">
                 <div class="panel panel-default">
                     <div class="panel-body">

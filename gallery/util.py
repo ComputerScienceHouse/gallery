@@ -74,6 +74,7 @@ def gallery_auth(func: Callable[..., Any]) -> Callable[..., Any]:
         name = ldap.convert_uuid_to_displayname(uuid)
         is_eboard = ldap.is_eboard(uid)
         is_rtp = ldap.is_rtp(uid)
+        is_alumni = ldap.is_alumni(uid)
 
         # NOTE(rossdylan): This is probably a more precise type than we need,
         # if different data is needed just expand the value type to Any
@@ -83,6 +84,7 @@ def gallery_auth(func: Callable[..., Any]) -> Callable[..., Any]:
         auth_dict['name'] = name
         auth_dict['is_eboard'] = is_eboard
         auth_dict['is_rtp'] = is_rtp
+        auth_dict['is_alumni'] = is_alumni
         kwargs['auth_dict'] = auth_dict
         return func(*args, **kwargs)
     return wrapped_function

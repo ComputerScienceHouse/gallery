@@ -4,11 +4,13 @@ MAINTAINER Computer Science House <rtp@csh.rit.edu>
 ENV IMAGEIO_USERDIR /var/lib/gallery
 
 RUN apt-get update && \
-    apt-get install -y libldap-dev libsasl2-dev libmagic-dev && \
+    apt-get install -y libldap-dev libsasl2-dev libmagic-dev ghostscript && \
     apt-get autoremove --yes && \
     apt-get clean autoclean && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     mkdir -p /opt/gallery /var/lib/gallery
+
+RUN pip install --upgrade pip
 
 WORKDIR /opt/gallery
 ADD . /opt/gallery
