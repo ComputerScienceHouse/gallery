@@ -64,6 +64,12 @@ View File
 
             {% elif file.mimetype == "application/pdf" or file.mimetype == "text/plain" %}
             <embed id="file-content" src="/api/file/get/{{file.id}}">
+
+            {% elif file.mimetype.split('/')[0] == "audio" %}
+            <audio controls>
+              <source src="/api/file/get/{{file.id}}">
+            </audio>
+
             {% else %}
                 Text Data
             {% endif %}

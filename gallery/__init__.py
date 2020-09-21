@@ -25,6 +25,7 @@ from flask import session
 from flask import send_from_directory
 from flask import abort
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 from sqlalchemy.sql import func as sql_func
 from sqlalchemy.orm import load_only
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
@@ -213,7 +214,7 @@ def upload_file(auth_dict: Optional[Dict[str, Any]] = None):
     upload_status['error'] = errors
     upload_status['success'] = success
 
-    refresh_thumbnail()
+    refresh_default_thumbnails()
     # actually redirect to URL
     # change from FORM post to AJAX maybe?
     return jsonify(upload_status)
@@ -246,6 +247,9 @@ def view_mkdir(auth_dict: Optional[Dict[str, Any]] = None):
 @auth.oidc_auth('default')
 @gallery_auth
 def view_jumpdir(auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
     return render_template("jumpdir.html",
                            auth_dict=auth_dict)
 
@@ -311,7 +315,7 @@ def api_mkdir(
 @app.cli.command()
 def refresh_thumbnails():
     click.echo("Refreshing thumbnails")
-    refresh_thumbnail()
+    refresh_default_thumbnails()
 
 
 @app.cli.command()
@@ -386,24 +390,25 @@ def add_file(file_name: str, path: str, dir_id: str, description: str, owner: st
     return file_model
 
 
-def refresh_thumbnail():
-    def refresh_thumbnail_helper(dir_model: Directory) -> str:
-        dir_children = [d for d in Directory.query.filter(Directory.parent == dir_model.id).all()]
-        file_children = [f for f in File.query.filter(File.parent == dir_model.id).all()]
-        for file in file_children:
-            if file.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME:
-                return file.thumbnail_uuid
-        for d in dir_children:
-            if d.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME:
-                return d.thumbnail_uuid
-        # WE HAVE TO GO DEEPER (inception noise)
-        for d in dir_children:
-            # TODO: Switch to iterative tree walk using a queue to avoid
-            # recursion issues with super large directory structures
-            return refresh_thumbnail_helper(d)
-        # No thumbnail found
-        return DEFAULT_THUMBNAIL_NAME
+def refresh_directory_thumbnail(dir_model: Directory) -> str:
+    dir_children = [d for d in Directory.query.filter(Directory.parent == dir_model.id).all()]
+    file_children = [f for f in File.query.filter(File.parent == dir_model.id).all()]
+    for file in file_children:
+        if file.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME and not file.hidden:
+            return file.thumbnail_uuid
+    for d in dir_children:
+        if d.thumbnail_uuid != DEFAULT_THUMBNAIL_NAME:
+            return d.thumbnail_uuid
+    # WE HAVE TO GO DEEPER (inception noise)
+    for d in dir_children:
+        # TODO: Switch to iterative tree walk using a queue to avoid
+        # recursion issues with super large directory structures
+        return refresh_directory_thumbnail(d)
+    # No thumbnail found
+    return DEFAULT_THUMBNAIL_NAME
 
+
+def refresh_default_thumbnails():
     missing_thumbnails = File.query.filter(File.thumbnail_uuid == DEFAULT_THUMBNAIL_NAME).all()
     for file_model in missing_thumbnails:
         dir_path = get_full_dir_path(file_model.parent)
@@ -416,7 +421,7 @@ def refresh_thumbnail():
 
     missing_thumbnails = Directory.query.filter(Directory.thumbnail_uuid == DEFAULT_THUMBNAIL_NAME).all()
     for dir_model in missing_thumbnails:
-        dir_model.thumbnail_uuid = refresh_thumbnail_helper(dir_model)
+        dir_model.thumbnail_uuid = refresh_directory_thumbnail(dir_model)
         db.session.flush()
         db.session.commit()
         db.session.refresh(dir_model)
@@ -476,6 +481,13 @@ def hide_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
         return "Permission denied", 403
 
     file_model.hidden = True
+
+    # Remove image from thumbnails
+    dirs = Directory.query.filter(or_(Directory.thumbnail_uuid == file_model.thumbnail_uuid, \
+        Directory.thumbnail_uuid == file_model.thumbnail_uuid[:-4]))
+    for d in dirs:
+        d.thumbnail_uuid = refresh_directory_thumbnail(d)
+
     db.session.flush()
     db.session.commit()
 
@@ -497,6 +509,12 @@ def show_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
         return "Permission denied", 403
 
     file_model.hidden = False
+
+    # Add image as directory thumbnail
+    parent_model = Directory.query.filter(Directory.id == file_model.parent).first()
+    if parent_model.thumbnail_uuid == DEFAULT_THUMBNAIL_NAME:
+        parent_model.thumbnail_uuid = refresh_directory_thumbnail(parent_model)
+
     db.session.flush()
     db.session.commit()
 
@@ -718,7 +736,12 @@ def tag_file(file_id: int):
 
 @app.route("/api/file/get/<int:file_id>")
 @auth.oidc_auth('default')
-def display_file(file_id: int):
+@gallery_auth
+def display_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     file_model = File.query.filter(File.id == file_id).first()
 
     if file_model is None:
@@ -730,7 +753,12 @@ def display_file(file_id: int):
 
 @app.route("/api/thumbnail/get/<int:file_id>")
 @auth.oidc_auth('default')
-def display_thumbnail(file_id: int):
+@gallery_auth
+def display_thumbnail(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     file_model = File.query.filter(File.id == file_id).first()
 
     link = storage_interface.get_link("thumbnails/{}".format(file_model.s3_id))
@@ -739,7 +767,12 @@ def display_thumbnail(file_id: int):
 
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
 @auth.oidc_auth('default')
-def display_dir_thumbnail(dir_id: int):
+@gallery_auth
+def display_dir_thumbnail(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
 
     thumbnail_uuid = dir_model.thumbnail_uuid
@@ -795,7 +828,11 @@ def get_supported_mimetypes():
 
 @app.route("/api/get_dir_tree")
 @auth.oidc_auth('default')
-def get_dir_tree(internal: bool = False):
+@gallery_auth
+def get_dir_tree(internal: bool = False, auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
 
     # TODO: Convert to iterative tree traversal using a queue to avoid
     # recursion issues with large directory structures
@@ -828,7 +865,12 @@ def get_dir_tree(internal: bool = False):
 
 @app.route("/api/directory/get/<int:dir_id>")
 @auth.oidc_auth('default')
-def display_files(dir_id: int, internal: bool = False):
+@gallery_auth
+def display_files(dir_id: int, internal: bool = False, auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).all()]
     dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).all()]
 
@@ -880,7 +922,6 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     description = dir_model.description
     display_description = len(description) > 0
 
-
     display_parent = True
     if dir_model is None or dir_model.parent is None or dir_id == ROOT_DIR_ID:
         display_parent = False
@@ -918,7 +959,7 @@ def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     file_model = File.query.filter(File.id == file_id).first()
     if file_model is None:
         abort(404)
-    if file_model.hidden and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+    if file_model.hidden and (not auth_dict['is_eboard'] and not auth_dict['is_rtp'] and not auth_dict['is_alumni']):
         abort(404)
     gallery_lockdown = util.get_lockdown_status()
     if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
@@ -980,7 +1021,12 @@ def view_filtered(auth_dict: Optional[Dict[str, Any]] = None):
 
 @app.route("/api/memberlist")
 @auth.oidc_auth('default')
-def get_member_list():
+@gallery_auth
+def get_member_list(auth_dict: Optional[Dict[str, Any]] = None):
+    gallery_lockdown = util.get_lockdown_status()
+    if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
+        abort(405)
+
     return jsonify(ldap.get_members())
 
 
@@ -999,7 +1045,7 @@ def route_errors(error: Any, auth_dict: Optional[Dict[str, Any]] = None):
     if code == 404:
         error_desc = "Page Not Found"
     elif code == 405:
-        error_desc = "Page Not Available"
+        error_desc = "Gallery is currently unavailable"
     else:
         error_desc = type(error).__name__
 
