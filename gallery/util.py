@@ -69,9 +69,11 @@ def get_lockdown_status():
 def gallery_auth(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
     def wrapped_function(*args: Any, **kwargs: Any) -> Any:
-        uuid = str(session.get('userinfo', {}).get('sub', ''))
+        print(session.get('userinfo', {}))
+        uuid = str(session.get('userinfo', {}).get('uuid', ''))
         uid = str(session.get('userinfo', {}).get('preferred_username', ''))
         name = ldap.convert_uuid_to_displayname(uuid)
+        print(name)
         is_eboard = ldap.is_eboard(uid)
         is_rtp = ldap.is_rtp(uid)
 
