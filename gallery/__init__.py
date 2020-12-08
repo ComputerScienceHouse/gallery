@@ -1059,3 +1059,11 @@ def route_errors(error: Any, auth_dict: Optional[Dict[str, Any]] = None):
 @auth.oidc_logout
 def logout():
     return redirect(url_for('index'), 302)
+
+
+@app.route("/health")
+def health():
+    """
+    Shows an ok status if the application is up and running
+    """
+    return {'status': 'ok'}
