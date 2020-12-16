@@ -1066,4 +1066,4 @@ def health():
     """
     Shows an ok status if the application is up and running
     """
-    return {'status': 'ok'}
+    return jsonify({'status': 'ok'})
