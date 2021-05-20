@@ -55,6 +55,7 @@ from gallery.file_modules.jpg import JPEGFile
 from gallery.file_modules.cr2 import CR2File
 from gallery.file_modules.png import PNGFile
 from gallery.file_modules.gif import GIFFile
+from gallery.file_modules.heic import HEICFile
 from gallery.file_modules.bmp import BMPFile
 from gallery.file_modules.tiff import TIFFFile
 from gallery.file_modules.mp4 import MP4File
@@ -70,6 +71,7 @@ file_mimetype_relation = {
     "image/x-canon-cr2": CR2File,
     "image/png": PNGFile,
     "image/gif": GIFFile,
+    "image/heic": HEICFILE,
     "image/bmp": BMPFile,
     "image/x-ms-bmp": BMPFile,
     "image/x-windows-bmp": BMPFile,
