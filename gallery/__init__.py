@@ -458,6 +458,13 @@ def delete_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     current_tags = Tag.query.filter(Tag.file_id == file_id).all()
     for tag in current_tags:
         db.session.delete(tag)
+
+    # Remove image from directory thumbnails
+    dirs = Directory.query.filter(or_(Directory.thumbnail_uuid == file_model.thumbnail_uuid, \
+        Directory.thumbnail_uuid == file_model.thumbnail_uuid[:-4]))
+    for d in dirs:
+        d.thumbnail_uuid = refresh_directory_thumbnail(d)
+
     db.session.delete(file_model)
     db.session.flush()
     db.session.commit()
