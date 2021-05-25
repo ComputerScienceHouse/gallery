@@ -39,6 +39,7 @@ class FileModule(object):
         self.thumbnail_uuid = hash_file(self.file_path)
 
         with Image(filename=self.file_path) as img:
+            img.auto_orient()
             with Image(width=img.width, height=img.height,
                     background=Color("#EEEEEE")) as bg:
                 bg.composite(img, 0, 0)
