@@ -80,3 +80,8 @@ Below are instructions for running gallery locally. It assumes that you have alr
 5. `pip install -r requirements.txt`
 
 6. `python3 wsgi.py`
+    
+    a. If you get an error like: `Fatal Python error: saving thread twice?`, you can fix it by modifying `wsgi.py`, 
+    changing `app.run(host=app.config['IP'], port=app.config['PORT'])`
+    to `app.run(host=app.config['IP'], port=app.config['PORT'], threaded=False)`
+    A short discussion of this issue can be found [here](https://github.com/pallets/flask/issues/2744).
