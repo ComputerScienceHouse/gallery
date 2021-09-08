@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pip install mypy typeshed sqlalchemy-stubs
+pip install mypy sqlalchemy-stubs
 
 DIR=$(dirname "$(readlink -f "$0")")
 
