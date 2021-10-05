@@ -61,9 +61,11 @@
             </div>
         </div>
     </nav>
-    <center>
-	<a href="https://plug.csh.rit.edu">
-	        <img src="https://plug.csh.rit.edu/data" alt="Advertisements By CSH Plug!">
-	</a>
-    </center>
+    <div class="text-center" id="plug_integration"></div>
+    
+    <script>
+        if (window.location.pathname == '/view/dir/1'){
+        	document.getElementById("plug_integration").innerHTML = '<a href="https://plug.csh.rit.edu"><img src="https://plug.csh.rit.edu/data" alt="Advertisements By CSH Plug!"></a>';
+        }
+    </script>
 {% endblock %}
