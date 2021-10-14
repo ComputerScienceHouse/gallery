@@ -84,6 +84,8 @@ else:
         None,
         app.config.get("EBOARD_UIDS", "").split(","),
         app.config.get("RTP_UIDS", "").split(","),
+        app.config.get("ORGANIZER_UIDS", "").split(","),
+        app.config.get("ALUMNI_UIDS", "").split(","),
     )
 
 app.add_template_global(ldap, name="ldap")
@@ -571,6 +573,7 @@ def move_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     assert auth_dict
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
+            or auth_dict['is_organizer']
             or auth_dict['uuid'] == file_model.author):
         return "Permission denied", 403
 
@@ -597,6 +600,7 @@ def move_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     assert auth_dict
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
+            or auth_dict['is_organizer']
             or auth_dict['uuid'] == dir_model.author):
         return "Permission denied", 403
 

@@ -15,3 +15,8 @@ LDAP_USER_OU = 'ou=Users,dc=csh,dc=rit,dc=edu'
 OIDC_ISSUER = 'https://sso.csh.rit.edu/auth/realms/csh'
 OIDC_CLIENT_ID = 'gallery'
 OIDC_CLIENT_SECRET = ''
+
+EBOARD_UIDS = ''
+RTP_UIDS = ''
+ORGANIZER_UIDS = ''
+ALUMNI_UIDS = ''

@@ -13,15 +13,21 @@ def is_member_of_group(member: CSHMember, group: str) -> bool:
 
 
 class LDAPWrapper(object):
-    def __init__(self, ldap: Optional[CSHLDAP], eboard: Optional[List[str]] = None, rtp: Optional[List[str]] = None):
+    def __init__(self, ldap: Optional[CSHLDAP], eboard: Optional[List[str]] = None, rtp: Optional[List[str]] = None, organizer: Optional[List[str]] = None, alumni: Optional[List[str]] = None):
         self._ldap = ldap
         self._eboard: List[str] = []
         self._rtp: List[str] = []
+        self._organizer: List[str] = []
+        self._alumni: List[str] = []
 
         if eboard:
             self._eboard = eboard
         if rtp:
             self._rtp = rtp
+        if organizer:
+            self._organizer = organizer
+        if alumni:
+            self._alumni = alumni
 
     def convert_uuid_to_displayname(self, uuid: str) -> str:
         if uuid == "root":
@@ -38,17 +44,23 @@ class LDAPWrapper(object):
     def is_rtp(self, uid: str) -> bool:
         if self._ldap is None:
             return uid in self._rtp
-        rtp_group = self._ldap.get_group('rtp')
-        return rtp_group.check_member(self._ldap.get_member(uid, uid=True))
+        return is_member_of_group(self._ldap.get_member(uid, uid=True), 'rtp')
 
     def is_alumni(self, uid: str) -> bool:
+        if self._ldap is None:
+            return uid in self._alumni
         return not is_member_of_group(self._ldap.get_member(uid, uid=True), 'current_student')
+
+    def is_organizer(self, uid: str) -> bool:
+        if self._ldap is None:
+            return uid in self._organizer
+        return is_member_of_group(self._ldap.get_member(uid, uid=True), 'gallery_organizers')
+        
 
     def get_members(self) -> List[Dict[str, str]]:
         if self._ldap is None:
             return []
         con = self._ldap.get_con()
-
         res = con.search_s(
                 "dc=csh,dc=rit,dc=edu",
                 pyldap.SCOPE_SUBTREE,
