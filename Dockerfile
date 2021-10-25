@@ -1,4 +1,4 @@
-FROM python:3.7.2
+FROM docker.io/python:3.9.7-buster
 MAINTAINER Computer Science House <rtp@csh.rit.edu>
 
 ENV IMAGEIO_USERDIR /var/lib/gallery
