@@ -81,8 +81,10 @@ View Directory
 <div class="row">
     <div class="col-xs-12 text-center">
         <a href="#!" class="btn btn-primary" onclick="editDirDescription()">Edit</a>
-        {% if auth_dict['can_edit'] %}
+        {% if auth_dict['can_edit'] or auth_dict['is_organizer'] %}
         <a href="#!" class="btn btn-warning" onclick="moveDir()">Move</a>
+        {% endif %}
+        {% if auth_dict['can_edit'] %}
         <a href="#!" class="btn btn-danger" onclick="deleteDir()">Delete</a>
         {% endif %}
     </div>
@@ -110,7 +112,7 @@ View Directory
         </div>
     </div>
 
-    {% if auth_dict['can_edit'] %}
+    {% if auth_dict['can_edit'] or auth_dict['is_organizer'] %}
     <div class="modal fade" id="move" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -129,7 +131,8 @@ View Directory
             </div>
         </div>
     </div>
-
+    {% endif %}
+    {% if auth_dict['can_edit'] %}
     <div class="modal fade" id="delete" role="dialog">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
