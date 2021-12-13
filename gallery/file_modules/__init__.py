@@ -1,6 +1,6 @@
 import magic
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from wand.image import Image
 from wand.color import Color
 
@@ -87,15 +87,17 @@ file_mimetype_relation = {
 
 
 # classism
-def parse_file_info(file_path: str, dir_path: str) -> Optional[FileModule]:
+def parse_file_info(file_path: str, dir_path: str) -> Tuple[str, Optional[FileModule]]:
     print("entering parse_file_info")
     mime_type = magic.from_file(file_path, mime=True)
     print(mime_type)
     print(file_path)
-    if mime_type in file_mimetype_relation:
-        return file_mimetype_relation[mime_type](file_path, dir_path)
 
-    return None
+    model = None
+    if mime_type in file_mimetype_relation:
+        model = file_mimetype_relation[mime_type](file_path, dir_path)
+
+    return mime_type, model
 
 
 def supported_mimetypes() -> List[str]:

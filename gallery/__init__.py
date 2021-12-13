@@ -8,7 +8,7 @@ import tempfile
 
 from datetime import timedelta
 from sys import stderr
-from typing import Any, Dict, Optional, List, Union, cast
+from typing import Any, Dict, Optional, List, Union, cast, Tuple
 
 from alembic import command
 import click
@@ -180,14 +180,16 @@ def upload_file(auth_dict: Optional[Dict[str, Any]] = None):
             assert dir_path
             assert parent
             assert owner
-            file_model = add_file(filename, dir_path, parent, "", owner)
+            mime, file_model = add_file(filename, dir_path, parent, "", owner)
 
             # Upload File
             file_stat = os.stat(filepath)
             with open(filepath, "rb") as f_hnd:
                 storage_interface.put(
                     "files/{}".format(file_model.s3_id),
-                    f_hnd
+                    f_hnd,
+                    filename,
+                    mime
                 )
             os.remove(filepath)
 
@@ -198,6 +200,8 @@ def upload_file(auth_dict: Optional[Dict[str, Any]] = None):
                 storage_interface.put(
                     "thumbnails/" + file_model.s3_id,
                     f_hnd,
+                    "thumb_" + filename + "." + filepath.split(".")[-1],
+                    "image/gif" if filepath.endswith(".gif") else "image/jpeg"
                 )
             os.remove(filepath)
             os.rmdir(dir_path)
@@ -347,6 +351,8 @@ def init_root():
             storage_interface.put(
                 "files/{}".format(DEFAULT_THUMBNAIL_NAME),
                 f_hnd,
+                "thumb_" + DEFAULT_THUMBNAIL_NAME + ".jpg",
+                "image/jpeg"
             )
 
 
@@ -367,12 +373,12 @@ def add_directory(parent_id: str, name: str, description: str, owner: str):
     return dir_model.id
 
 
-def add_file(file_name: str, path: str, dir_id: str, description: str, owner: str) -> Optional[File]:
+def add_file(file_name: str, path: str, dir_id: str, description: str, owner: str) -> Tuple[str, Optional[File]]:
     file_path = os.path.join('/', path, file_name)
 
-    file_data = parse_file_info(file_path, path)
+    mime, file_data = parse_file_info(file_path, path)
     if file_data is None:
-        return None
+        return mime, None
 
     file_model = File(
         dir_id,
@@ -389,7 +395,7 @@ def add_file(file_name: str, path: str, dir_id: str, description: str, owner: st
     db.session.flush()
     db.session.commit()
     db.session.refresh(file_model)
-    return file_model
+    return mime, file_model
 
 
 def refresh_directory_thumbnail(dir_model: Directory) -> str:

@@ -19,7 +19,7 @@ class FileStorage(object):
     thumbnail data persistantly.
     """
 
-    def put(self, key: str, handle: IO[bytes]):
+    def put(self, key: str, handle: IO[bytes], filename: str, mime: str):
         """
         put is used to stream data from a local file descriptor into the backing
         storage implementation.
@@ -72,7 +72,7 @@ class LocalStorage(FileStorage):
         # sign and verify the file path anyway
         return send_from_directory(self._base_dir, payload["key"])
 
-    def put(self, key: str, handle: IO[bytes]):
+    def put(self, key: str, handle: IO[bytes], filename: str, mime: str):
         local_path = os.path.join(self._base_dir, key)
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
         with open(local_path, 'wb+') as f:
@@ -103,8 +103,14 @@ class S3Storage(FileStorage):
         self._bucket = app.config['S3_BUCKET_ID']
         self._link_expiration = timedelta(minutes=5)
 
-    def put(self, key: str, handle: IO[bytes]):
-        self._client.upload_fileobj(handle, self._bucket, key)
+    def put(self, key: str, handle: IO[bytes], filename: str, mime: str):
+        self._client.upload_fileobj(
+            handle, self._bucket, key,
+            ExtraArgs={
+                "ContentDisposition": f'inline; filename="{filename}"',
+                "ContentType": mime,
+            }
+        )
 
     def remove(self, key: str):
         self._client.delete_object(Bucket=self._bucket, Key=key)
