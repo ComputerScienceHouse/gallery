@@ -973,7 +973,7 @@ def display_files(dir_id: int, internal: bool = False, auth_dict: Optional[Dict[
     dir_list.sort(key=lambda x: x[1].get_name())
     dir_list.sort(key=lambda x: x[1].date_uploaded)
 
-    ret_dict = file_list + dir_list
+    ret_dict = dir_list + file_list
 
     if internal:
         return ret_dict
@@ -1011,6 +1011,9 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
 
     pin_children = display_files(dir_id, internal=True, pinned=True)
     children = display_files(dir_id, internal=True, pinned=False)
+
+    children = pin_children + children
+
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
     if dir_model is None:
         abort(404)
@@ -1036,7 +1039,6 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     )
 
     return render_template("view_dir.html",
-                           pin_children=pin_children,
                            children=children,
                            directory=dir_model,
                            parent=dir_model.parent,

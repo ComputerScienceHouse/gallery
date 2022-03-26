@@ -315,7 +315,7 @@ function moveDir() {
     });
 }
 
-function pinFile(pinned, this_id) {
+function toggleFilePin(pinned, this_id) {
     if (pinned) {
         $.ajax({
             type: "POST",
@@ -330,7 +330,7 @@ function pinFile(pinned, this_id) {
     location.reload();
 }
 
-function pinDir(pinned, this_id) {
+function toggleDirPin(pinned, this_id) {
     if (pinned) {
         $.ajax({
             type: "POST",
