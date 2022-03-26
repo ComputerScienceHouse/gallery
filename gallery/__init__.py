@@ -618,6 +618,89 @@ def move_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
 
     return "ok", 200
 
+@app.route("/api/file/pin/<int:file_id>", methods=['POST'])
+@auth.oidc_auth('default')
+@gallery_auth
+def pin_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    file_model = File.query.filter(File.id == file_id).first()
+
+    if file_model is None:
+        return "file not found", 404
+
+    assert auth_dict
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['is_organizer']):
+        return "Permission denied", 403
+    
+    file_model.pinned = True
+
+    db.session.commit()
+
+    return "ok", 200
+
+@app.route("/api/dir/pin/<int:dir_id>", methods=['POST'])
+@auth.oidc_auth('default')
+@gallery_auth
+def pin_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    dir_model = Directory.query.filter(Directory.id == dir_id).first()
+
+    if dir_model is None:
+        return "directory not found", 404
+
+    assert auth_dict
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['is_organizer']):
+        return "Permission denied", 403
+    
+    dir_model.pinned = True
+
+    db.session.commit()
+
+    return "ok", 200
+
+@app.route("/api/file/unpin/<int:file_id>", methods=['POST'])
+@auth.oidc_auth('default')
+@gallery_auth
+def unpin_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    file_model = File.query.filter(File.id == file_id).first()
+
+    if file_model is None:
+        return "file not found", 404
+
+    assert auth_dict
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['is_organizer']):
+        return "Permission denied", 403
+    
+    file_model.pinned = False
+
+    db.session.commit()
+
+    return "ok", 200
+
+@app.route("/api/dir/unpin/<int:dir_id>", methods=['POST'])
+@auth.oidc_auth('default')
+@gallery_auth
+def unpin_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
+    dir_model = Directory.query.filter(Directory.id == dir_id).first()
+
+    if dir_model is None:
+        return "directory not found", 404
+
+    assert auth_dict
+    if not (auth_dict['is_eboard']
+            or auth_dict['is_rtp']
+            or auth_dict['is_organizer']):
+        return "Permission denied", 403
+    
+    dir_model.pinned = False
+
+    db.session.commit()
+
+    return "ok", 200
 
 @app.route("/api/admin/lockdown", methods=['POST'])
 @auth.oidc_auth('default')
@@ -876,13 +959,13 @@ def get_dir_tree(internal: bool = False, auth_dict: Optional[Dict[str, Any]] = N
 @app.route("/api/directory/get/<int:dir_id>")
 @auth.oidc_auth('default')
 @gallery_auth
-def display_files(dir_id: int, internal: bool = False, auth_dict: Optional[Dict[str, Any]] = None):
+def display_files(dir_id: int, internal: bool = False, auth_dict: Optional[Dict[str, Any]] = None, pinned = False):
     gallery_lockdown = util.get_lockdown_status()
     if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
         abort(405)
 
-    file_list = [("File", f) for f in File.query.filter(File.parent == dir_id).all()]
-    dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id).all()]
+    file_list = [("File", f) for f in File.query.filter(File.parent == dir_id, File.pinned == pinned).all()]
+    dir_list = [("Directory", d) for d in Directory.query.filter(Directory.parent == dir_id, Directory.pinned == pinned).all()]
 
     # Sort by name/title
     file_list.sort(key=lambda x: x[1].get_name())
@@ -890,7 +973,8 @@ def display_files(dir_id: int, internal: bool = False, auth_dict: Optional[Dict[
     dir_list.sort(key=lambda x: x[1].get_name())
     dir_list.sort(key=lambda x: x[1].date_uploaded)
 
-    ret_dict = dir_list + file_list
+    ret_dict = file_list + dir_list
+
     if internal:
         return ret_dict
     return jsonify(ret_dict)
@@ -925,7 +1009,8 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
         abort(405)
 
-    children = display_files(dir_id, internal=True)
+    pin_children = display_files(dir_id, internal=True, pinned=True)
+    children = display_files(dir_id, internal=True, pinned=False)
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
     if dir_model is None:
         abort(404)
@@ -951,6 +1036,7 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     )
 
     return render_template("view_dir.html",
+                           pin_children=pin_children,
                            children=children,
                            directory=dir_model,
                            parent=dir_model.parent,

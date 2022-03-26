@@ -315,6 +315,36 @@ function moveDir() {
     });
 }
 
+function pinFile(pinned, this_id) {
+    if (pinned) {
+        $.ajax({
+            type: "POST",
+            url: "/api/file/pin/" + this_id,
+        });
+    } else {
+        $.ajax({
+            type: "POST",
+            url: "/api/file/unpin/" + this_id,
+        });
+    }
+    location.reload();
+}
+
+function pinDir(pinned, this_id) {
+    if (pinned) {
+        $.ajax({
+            type: "POST",
+            url: "/api/dir/pin/" + this_id,
+        });
+    } else {
+        $.ajax({
+            type: "POST",
+            url: "/api/dir/unpin/" + this_id,
+        });
+    }
+    location.reload();
+}
+
 function kbGalleryVideoSelect(e) {
     var video = $('video');
     if (video.length > 0) {
