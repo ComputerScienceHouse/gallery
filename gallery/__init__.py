@@ -123,7 +123,6 @@ def index():
     root_id = get_dir_tree(internal=True)
     return redirect("/view/dir/" + str(root_id['id']))
 
-
 @app.route('/upload', methods=['GET'])
 @auth.oidc_auth('default')
 @gallery_auth
@@ -628,6 +627,9 @@ def pin_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
         return "file not found", 404
 
     assert auth_dict
+    if file_model.hidden and not (auth_dict['is_eboard'] or auth_dict['is_rtp']):
+        return "Permission denied", 403
+
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
             or auth_dict['is_organizer']):
@@ -670,6 +672,10 @@ def unpin_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
         return "file not found", 404
 
     assert auth_dict
+    if file_model.hidden and not (auth_dict['is_eboard'] or auth_dict['is_rtp']):
+        return "Permission denied", 403
+
+
     if not (auth_dict['is_eboard']
             or auth_dict['is_rtp']
             or auth_dict['is_organizer']):
@@ -960,6 +966,14 @@ def get_dir_tree(internal: bool = False, auth_dict: Optional[Dict[str, Any]] = N
 @auth.oidc_auth('default')
 @gallery_auth
 def display_files(dir_id: int, internal: bool = False, auth_dict: Optional[Dict[str, Any]] = None, pinned = False):
+    """
+        Grab all children of the given directory, sort, and return as list
+
+        dir_id - ID of the directory to find children of
+        internal: If the call is being made internally, return python object instead of converting to JSON
+        auth_dict: Used for checking if user is E-Board or RTP
+        pinned: Only return pinned or unpinned children
+    """
     gallery_lockdown = util.get_lockdown_status()
     if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
         abort(405)
