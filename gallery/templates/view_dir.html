@@ -32,6 +32,20 @@ View Directory
             </ul>
         </div>
     </div>
+    {% if directory.id == 1 %}
+    <div class="row">
+		<div class="panel panel-default">
+			<div class="panel-heading" style="background-image:none;background:#b0197e">
+				<a class="text-white" href="https://plug.csh.rit.edu" style="color:white;font-size:150%;font-weight:700">Advertisements by CSH: Plug</a>
+			</div>
+			<div class="panel-body">
+				<a href="https://plug.csh.rit.edu">
+					<img src="https://plug.csh.rit.edu/data" style="width: 75%">
+				</a>
+			</div>
+		</div>
+     </div>
+     {% endif %}
 {% if children|length >= 1 %}
     <div class="row" id="child_list">
     {% for child_type, child in children %}
