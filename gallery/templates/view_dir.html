@@ -90,9 +90,9 @@ View Directory
         <a href="#!" class="btn btn-warning" onclick="moveDir()">Move</a>
         {% if directory.parent != None %}
             {% if directory.pinned %}
-            <a href="#!" class="btn btn-warning" onclick="toggleDirPin(false, {{ directory.id }})">Unpin</a>
+            <a href="#!" class="btn btn-warning" onclick="unpinDir({{ directory.id }})">Unpin</a>
             {% else %}
-            <a href="#!" class="btn btn-warning" onclick="toggleDirPin(true, {{ directory.id }})">Pin</a>
+            <a href="#!" class="btn btn-warning" onclick="pinDir({{ directory.id }})">Pin</a>
             {% endif %}
         {% endif %}
         {% endif %}

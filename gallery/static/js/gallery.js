@@ -315,33 +315,35 @@ function moveDir() {
     });
 }
 
-function toggleFilePin(pinned, this_id) {
-    if (pinned) {
-        $.ajax({
-            type: "POST",
-            url: "/api/file/pin/" + this_id,
-        });
-    } else {
-        $.ajax({
-            type: "POST",
-            url: "/api/file/unpin/" + this_id,
-        });
-    }
+function pinFile(this_id) {
+    $.ajax({
+        type: "POST",
+        url: "/api/file/pin/" + this_id,
+    });
     location.reload();
 }
 
-function toggleDirPin(pinned, this_id) {
-    if (pinned) {
-        $.ajax({
-            type: "POST",
-            url: "/api/dir/pin/" + this_id,
-        });
-    } else {
-        $.ajax({
-            type: "POST",
-            url: "/api/dir/unpin/" + this_id,
-        });
-    }
+function unpinFile(this_id) {
+    $.ajax({
+        type: "POST",
+        url: "/api/file/unpin/" + this_id,
+    });
+    location.reload();
+}
+
+function pinDir(this_id) {
+    $.ajax({
+        type: "POST",
+        url: "/api/dir/pin/" + this_id,
+    });
+    location.reload();
+}
+
+function unpinDir(this_id) {
+    $.ajax({
+        type: "POST",
+        url: "/api/dir/unpin/" + this_id,
+    });
     location.reload();
 }
 

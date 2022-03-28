@@ -129,9 +129,9 @@ View File
             {% if auth_dict['can_edit'] or auth_dict['is_organizer'] %}
                 <a href="#!" class="btn btn-warning" onclick="moveFile()">Move</a>
                 {% if file.pinned %}
-                <a href="#!" class="btn btn-warning" onclick="toggleFilePin(false, {{ file.id }})">Unpin</a>
+                <a href="#!" class="btn btn-warning" onclick="unpinFile({{ file.id }})">Unpin</a>
                 {% else %}
-                <a href="#!" class="btn btn-warning" onclick="toggleFilePin(true, {{ file.id }})">Pin</a>
+                <a href="#!" class="btn btn-warning" onclick="pinFile({{ file.id }})">Pin</a>
                 {% endif %}
                 <div class="modal fade" id="move" role="dialog">
                     <div class="modal-dialog">
