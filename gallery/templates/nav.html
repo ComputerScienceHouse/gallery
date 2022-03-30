@@ -37,6 +37,11 @@
                                     {% else %}
                                     <li><a href="#" onclick="galleryLockdown(event);"><span class="glyphicon glyphicon-lock"></span> Lockdown</a></li>
                                 {% endif %}
+                                {% if member_lock %}
+                                    <li><a href="#" onclick="memberModeToggle(event);"><span class="glyphicon glyphicon-star"></span> Admin Mode</a></li>
+                                    {% else %}
+                                    <li><a href="#" onclick="memberModeToggle(event);"><span class="glyphicon glyphicon-user"></span> Member Mode</a></li>
+                                {% endif %}
                             </ul>
                         </li>
                     {% endif %}

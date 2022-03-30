@@ -279,6 +279,16 @@ function galleryLockdown() {
     });
 }
 
+function memberModeToggle() {
+    $.ajax({
+        method: "POST",
+        url: "/member",
+        success: function() {
+            window.location.reload();
+        }
+    });
+}
+
 function moveFile() {
     $('#move').modal('show');
     $('#move button[id^="move"]').click(function(e) {
