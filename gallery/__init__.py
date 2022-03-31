@@ -778,7 +778,7 @@ def display_thumbnail(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     req = requests.get(link)
     if req.status_code == requests.codes.ok:
         return req.content
-    abort(404)
+    return display_thumbnail(util.DEFAULT_THUMBNAIL_NAME)
 
 
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
