@@ -37,7 +37,7 @@
                                     {% else %}
                                     <li><a href="#" onclick="galleryLockdown(event);"><span class="glyphicon glyphicon-lock"></span> Lockdown</a></li>
                                 {% endif %}
-                                {% if session['userinfo']['member-lock'] %}
+                                {% if session['userinfo'].get('member-lock') %}
                                     <li><a href="#" onclick="memberModeToggle(event);"><span class="glyphicon glyphicon-star"></span> Switch to Admin Mode</a></li>
                                     {% else %}
                                     <li><a href="#" onclick="memberModeToggle(event);"><span class="glyphicon glyphicon-user"></span> Switch to Member Mode</a></li>
