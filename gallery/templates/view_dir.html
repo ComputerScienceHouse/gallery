@@ -88,7 +88,7 @@ View Directory
         <a href="#!" class="btn btn-primary" onclick="editDirDescription()">Edit</a>
         {% if auth_dict['can_edit'] or auth_dict['is_organizer'] %}
         <a href="#!" class="btn btn-warning" onclick="moveDir()">Move</a>
-        {% if directory.parent != None %}
+        {% if directory.parent != None and (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['is_organizer']) %}
             {% if directory.pinned %}
             <a href="#!" class="btn btn-warning" onclick="unpinDir({{ directory.id }})">Unpin</a>
             {% else %}

@@ -123,6 +123,7 @@ def index():
     root_id = get_dir_tree(internal=True)
     return redirect("/view/dir/" + str(root_id['id']))
 
+
 @app.route('/upload', methods=['GET'])
 @auth.oidc_auth('default')
 @gallery_auth
@@ -641,6 +642,7 @@ def pin_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
 
     return "ok", 200
 
+
 @app.route("/api/dir/pin/<int:dir_id>", methods=['POST'])
 @auth.oidc_auth('default')
 @gallery_auth
@@ -661,6 +663,7 @@ def pin_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     db.session.commit()
 
     return "ok", 200
+
 
 @app.route("/api/file/unpin/<int:file_id>", methods=['POST'])
 @auth.oidc_auth('default')
@@ -687,6 +690,7 @@ def unpin_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
 
     return "ok", 200
 
+
 @app.route("/api/dir/unpin/<int:dir_id>", methods=['POST'])
 @auth.oidc_auth('default')
 @gallery_auth
@@ -707,6 +711,7 @@ def unpin_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     db.session.commit()
 
     return "ok", 200
+
 
 @app.route("/api/admin/lockdown", methods=['POST'])
 @auth.oidc_auth('default')
@@ -969,10 +974,10 @@ def display_files(dir_id: int, internal: bool = False, auth_dict: Optional[Dict[
     """
         Grab all children of the given directory, sort, and return as list
 
-        dir_id - ID of the directory to find children of
+        dir_id: ID of the directory to find children of
         internal: If the call is being made internally, return python object instead of converting to JSON
         auth_dict: Used for checking if user is E-Board or RTP
-        pinned: Only return pinned or unpinned children
+        pinned: If true, return only pinned children, otherwise, return only unpinned children
     """
     gallery_lockdown = util.get_lockdown_status()
     if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
