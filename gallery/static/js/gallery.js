@@ -282,7 +282,7 @@ function galleryLockdown() {
 function memberModeToggle() {
     $.ajax({
         method: "POST",
-        url: "/member",
+        url: "/member_mode_toggle",
         success: function() {
             window.location.reload();
         }

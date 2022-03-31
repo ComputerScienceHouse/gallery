@@ -128,8 +128,6 @@ def index():
 @auth.oidc_auth('default')
 @gallery_auth
 def view_upload(auth_dict: Optional[Dict[str, Any]] = None):
-    member_lock = session['userinfo'].get('member-lock')
-
     if request.referrer is None:
         return redirect("/")
     dir_filter = re.compile(r".*\/view\/dir\/(\d*)")
@@ -145,8 +143,7 @@ def view_upload(auth_dict: Optional[Dict[str, Any]] = None):
         return redirect("/")
     return render_template("upload.html",
                            auth_dict=auth_dict,
-                           dir_id=dir_id,
-                           member_lock=member_lock)
+                           dir_id=dir_id)
 
 
 @app.route('/upload', methods=['POST'])
@@ -233,8 +230,6 @@ def upload_file(auth_dict: Optional[Dict[str, Any]] = None):
 @auth.oidc_auth('default')
 @gallery_auth
 def view_mkdir(auth_dict: Optional[Dict[str, Any]] = None):
-    member_lock = session['userinfo'].get('member-lock')
-
     if request.referrer is None:
         return redirect("/")
 
@@ -251,22 +246,18 @@ def view_mkdir(auth_dict: Optional[Dict[str, Any]] = None):
         return redirect("/")
     return render_template("mkdir.html",
                            auth_dict=auth_dict,
-                           dir_id=dir_id,
-                           member_lock=member_lock)
+                           dir_id=dir_id)
 
 
 @app.route('/jump_dir', methods=['GET'])
 @auth.oidc_auth('default')
 @gallery_auth
 def view_jumpdir(auth_dict: Optional[Dict[str, Any]] = None):
-    member_lock = session['userinfo'].get('member-lock')
-
     gallery_lockdown = util.get_lockdown_status()
     if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
         abort(405)
     return render_template("jumpdir.html",
-                           auth_dict=auth_dict,
-                           member_lock=member_lock)
+                           auth_dict=auth_dict)
 
 
 @app.route('/api/mkdir', methods=['POST'])
@@ -927,8 +918,6 @@ def get_file_parent(file_id: int):
 @auth.oidc_auth('default')
 @gallery_auth
 def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
-    member_lock = session['userinfo'].get('member-lock')
-
     dir_id = int(dir_id)
     if dir_id < ROOT_DIR_ID:
         return redirect('/view/dir/'+ str(ROOT_DIR_ID))
@@ -970,21 +959,19 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
                            description=description,
                            display_description=display_description,
                            auth_dict=auth_dict,
-                           lockdown=gallery_lockdown,
-                           member_lock=member_lock)
+                           lockdown=gallery_lockdown)
 
 
 @app.route("/view/file/<int:file_id>")
 @auth.oidc_auth('default')
 @gallery_auth
 def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
-    member_lock = session['userinfo'].get('member-lock')
-    print(session)
-
     file_model = File.query.filter(File.id == file_id).first()
     if file_model is None:
         abort(404)
-    if file_model.hidden and ((not auth_dict['is_eboard'] and not auth_dict['is_rtp'] and not auth_dict['is_alumni']) or member_lock):
+    if file_model.hidden and ((not auth_dict['is_eboard']
+                               and not auth_dict['is_rtp']
+                               and not auth_dict['is_alumni']) or session['userinfo'].get('member-lock')):
         abort(404)
     gallery_lockdown = util.get_lockdown_status()
     if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
@@ -1022,8 +1009,7 @@ def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
                            display_description=display_description,
                            tags=tags,
                            auth_dict=auth_dict,
-                           lockdown=gallery_lockdown,
-                           member_lock=member_lock)
+                           lockdown=gallery_lockdown)
 
 
 @app.route("/view/random_file")
@@ -1037,15 +1023,12 @@ def get_random_file():
 @auth.oidc_auth('default')
 @gallery_auth
 def view_filtered(auth_dict: Optional[Dict[str, Any]] = None):
-    member_lock = session['userinfo'].get('member-lock')
-
     uuids = request.args.get('uuids', '').split('+')
     files = get_files_tagged(uuids)
     return render_template("view_filtered.html",
                            files=files,
                            uuids=uuids,
-                           auth_dict=auth_dict,
-                           member_lock=member_lock)
+                           auth_dict=auth_dict)
 
 
 @app.route("/api/memberlist")
@@ -1059,7 +1042,7 @@ def get_member_list(auth_dict: Optional[Dict[str, Any]] = None):
     return jsonify(ldap.get_members())
 
 
-@app.route("/member", methods = ["POST"])
+@app.route("/member_mode_toggle", methods = ["POST"])
 @auth.oidc_auth('default')
 @gallery_auth
 def member_mode(auth_dict: Optional[Dict[str, Any]] = None):
@@ -1075,8 +1058,6 @@ def member_mode(auth_dict: Optional[Dict[str, Any]] = None):
 @app.errorhandler(500)
 @gallery_auth
 def route_errors(error: Any, auth_dict: Optional[Dict[str, Any]] = None):
-    member_lock = session['userinfo'].get('member-lock')
-
     if isinstance(error, int):
         code = error
     elif hasattr(error, 'code'):
@@ -1094,8 +1075,7 @@ def route_errors(error: Any, auth_dict: Optional[Dict[str, Any]] = None):
     return render_template('errors.html',
                            error=error_desc,
                            error_code=code,
-                           auth_dict=auth_dict,
-                           member_lock=member_lock), int(code)
+                           auth_dict=auth_dict), int(code)
 
 
 @app.route("/logout")
