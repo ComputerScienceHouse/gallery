@@ -1046,10 +1046,7 @@ def get_member_list(auth_dict: Optional[Dict[str, Any]] = None):
 @auth.oidc_auth('default')
 @gallery_auth
 def member_mode(auth_dict: Optional[Dict[str, Any]] = None):
-    if session['userinfo'].get('member-lock'):
-        session['userinfo']['member-lock'] = not session['userinfo']['member-lock']
-    else:
-        session['userinfo']['member-lock'] = True
+    session['userinfo']['member-lock'] = not session['userinfo'].get('member-lock', False)
     return redirect('/')
 
 
