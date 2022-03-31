@@ -800,11 +800,14 @@ def display_dir_thumbnail(dir_id: int, auth_dict: Optional[Dict[str, Any]] = Non
     if "LOCAL_STORAGE_PATH" in app.config:
         link = "http://" + app.config["SERVER_NAME"] + link
     req = requests.get(link)
-    if req.status_code == requests.codes.ok:
-        return req.content
-    dir_model.thumbnail_uuid = refresh_directory_thumbnail(dir_model)
-    db.session.commit()
-    return display_dir_thumbnail(dir_id)
+    while req.status_code != requests.codes.ok:
+        dir_model.thumbnail_uuid = refresh_directory_thumbnail(dir_model)
+        db.session.commit()
+        link = storage_interface.get_link("thumbnails/{}".format(thumbnail_uuid))
+        if "LOCAL_STORAGE_PATH" in app.config:
+            link = "http://" + app.config["SERVER_NAME"] + link
+        req = requests.get(link)
+    return req.content
 
 
 @app.route("/api/file/next/<int:file_id>")
