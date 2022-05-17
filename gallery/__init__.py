@@ -3,6 +3,7 @@ import json
 import os
 import zipfile
 import re
+import requests
 import subprocess
 import tempfile
 
@@ -772,7 +773,12 @@ def display_thumbnail(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     file_model = File.query.filter(File.id == file_id).first()
 
     link = storage_interface.get_link("thumbnails/{}".format(file_model.s3_id))
-    return redirect(link)
+    if "LOCAL_STORAGE_PATH" in app.config:
+        link = "http://" + app.config["SERVER_NAME"] + link
+    req = requests.get(link)
+    if req.status_code == requests.codes.ok:
+        return req.content
+    return display_thumbnail(util.DEFAULT_THUMBNAIL_NAME)
 
 
 @app.route("/api/thumbnail/get/dir/<int:dir_id>")
@@ -791,7 +797,17 @@ def display_dir_thumbnail(dir_id: int, auth_dict: Optional[Dict[str, Any]] = Non
         thumbnail_uuid = thumbnail_uuid.split('.')[0]
 
     link = storage_interface.get_link("thumbnails/{}".format(thumbnail_uuid))
-    return redirect(link)
+    if "LOCAL_STORAGE_PATH" in app.config:
+        link = "http://" + app.config["SERVER_NAME"] + link
+    req = requests.get(link)
+    while req.status_code != requests.codes.ok:
+        dir_model.thumbnail_uuid = refresh_directory_thumbnail(dir_model)
+        db.session.commit()
+        link = storage_interface.get_link("thumbnails/{}".format(thumbnail_uuid))
+        if "LOCAL_STORAGE_PATH" in app.config:
+            link = "http://" + app.config["SERVER_NAME"] + link
+        req = requests.get(link)
+    return req.content
 
 
 @app.route("/api/file/next/<int:file_id>")
