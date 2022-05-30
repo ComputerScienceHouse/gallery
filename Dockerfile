@@ -27,7 +27,7 @@ RUN groupadd -r gallery && \
 
 USER gallery
 
-CMD gunicorn "wsgi:app" \
+CMD ddtrace-run gunicorn "wsgi:app" \
     --workers 4 \
     --timeout 600 \
     --capture-output \
