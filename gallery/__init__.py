@@ -985,7 +985,9 @@ def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     file_model = File.query.filter(File.id == file_id).first()
     if file_model is None:
         abort(404)
-    if file_model.hidden and (not auth_dict['is_eboard'] and not auth_dict['is_rtp'] and not auth_dict['is_alumni']):
+    if file_model.hidden and ((not auth_dict['is_eboard']
+                               and not auth_dict['is_rtp']
+                               and not auth_dict['is_alumni']) or session['userinfo'].get('member-lock')):
         abort(404)
     gallery_lockdown = util.get_lockdown_status()
     if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
@@ -1054,6 +1056,14 @@ def get_member_list(auth_dict: Optional[Dict[str, Any]] = None):
         abort(405)
 
     return jsonify(ldap.get_members())
+
+
+@app.route("/member_mode_toggle", methods = ["POST"])
+@auth.oidc_auth('default')
+@gallery_auth
+def member_mode(auth_dict: Optional[Dict[str, Any]] = None):
+    session['userinfo']['member-lock'] = not session['userinfo'].get('member-lock', False)
+    return redirect('/')
 
 
 @app.errorhandler(404)
