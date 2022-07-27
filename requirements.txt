@@ -1,10 +1,12 @@
-Flask==1.0.2
+Flask==1.1.4
+markupsafe==2.0.1
 Flask-pyoidc==2.0.0
 csh_ldap~=2.3.1
 addict==2.2.0
+ddtrace~=1.1.4
 flask_sqlalchemy==2.5
 flask_migrate==2.3.1
-psycopg2-binary==2.9.1
+psycopg2-binary==2.9.3
 python-magic==0.4.15
 piexif==1.1.2
 wand==0.5.0
