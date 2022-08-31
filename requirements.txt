@@ -29,7 +29,7 @@ jmespath==0.10.0
 Mako==1.1.5
 MarkupSafe==2.0.1
 moviepy==0.2.3.5
-numpy==1.21.3
+numpy==1.22.0
 oic==0.12.0
 piexif==1.1.2
 Pillow==8.4.0
