@@ -325,6 +325,38 @@ function moveDir() {
     });
 }
 
+function pinFile(this_id) {
+    $.ajax({
+        type: "POST",
+        url: "/api/file/pin/" + this_id,
+    });
+    location.reload();
+}
+
+function unpinFile(this_id) {
+    $.ajax({
+        type: "POST",
+        url: "/api/file/unpin/" + this_id,
+    });
+    location.reload();
+}
+
+function pinDir(this_id) {
+    $.ajax({
+        type: "POST",
+        url: "/api/dir/pin/" + this_id,
+    });
+    location.reload();
+}
+
+function unpinDir(this_id) {
+    $.ajax({
+        type: "POST",
+        url: "/api/dir/unpin/" + this_id,
+    });
+    location.reload();
+}
+
 function kbGalleryVideoSelect(e) {
     var video = $('video');
     if (video.length > 0) {

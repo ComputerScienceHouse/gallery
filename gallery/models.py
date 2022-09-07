@@ -21,6 +21,7 @@ class Directory(_base):
     author = Column(Text, nullable=False)
     thumbnail_uuid = Column(Text, nullable=False)
     blocked_groups = Column(Text, nullable=False)
+    pinned = Column(Boolean, nullable=False, default=False)
 
     def __init__(self, parent, name, description,
                  author, thumbnail_uuid, blocked_groups):
@@ -31,6 +32,7 @@ class Directory(_base):
         self.author = author
         self.thumbnail_uuid = thumbnail_uuid
         self.blocked_groups = blocked_groups
+        self.pinned = False
 
     def date(self):
         return self.date_uploaded.strftime(strfformat)
@@ -53,6 +55,7 @@ class File(_base):
     exif_data = Column(Text, nullable=False)
     hidden = Column(Boolean, nullable=True)
     s3_id = Column(String(32))  # MD5 sums are always 32 chars long
+    pinned = Column(Boolean, nullable=False, default=False)
 
     def __init__(self, parent, name, caption,
                  author, thumbnail_uuid,
@@ -66,6 +69,7 @@ class File(_base):
         self.mimetype = mimetype
         self.exif_data = exif_data
         self.s3_id = s3_id
+        self.pinned = False
 
     def date(self):
         return self.date_uploaded.strftime(strfformat)

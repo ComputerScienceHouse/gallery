@@ -51,8 +51,13 @@ View Directory
     {% for child_type, child in children %}
         {% if not child.hidden or (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['is_alumni']) and not session['userinfo'].get('member-lock') %}
             <div class="col-md-3 col-sm-4 col-xs-6">
+                {% if child.pinned %}
+                <div class="panel panel-warning">
+                    <div class="panel-body bg-warning">
+                {% else %}
                 <div class="panel panel-default">
                     <div class="panel-body">
+                {% endif %}
                         {% if child_type == "Directory" %}
                             <div class="album-wrapper">
                                 <a href="/view/dir/{{ child.id }}">
@@ -97,6 +102,13 @@ View Directory
         <a href="#!" class="btn btn-primary" onclick="editDirDescription()">Edit</a>
         {% if auth_dict['can_edit'] or auth_dict['is_organizer'] %}
         <a href="#!" class="btn btn-warning" onclick="moveDir()">Move</a>
+        {% if directory.parent != None and (auth_dict['is_eboard'] or auth_dict['is_rtp'] or auth_dict['is_organizer']) %}
+            {% if directory.pinned %}
+            <a href="#!" class="btn btn-warning" onclick="unpinDir({{ directory.id }})">Unpin</a>
+            {% else %}
+            <a href="#!" class="btn btn-warning" onclick="pinDir({{ directory.id }})">Pin</a>
+            {% endif %}
+        {% endif %}
         {% endif %}
         {% if auth_dict['can_edit'] %}
         <a href="#!" class="btn btn-danger" onclick="deleteDir()">Delete</a>
