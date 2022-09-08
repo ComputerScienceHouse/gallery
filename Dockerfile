@@ -7,6 +7,9 @@ RUN apt-get update && \
     apt-get install -y libldap-dev libsasl2-dev libmagic-dev ghostscript && \
     apt-get autoremove --yes && \
     apt-get clean autoclean && \
+    sed -i \
+      's/rights="none" pattern="PDF"/rights="read | write" pattern="PDF"/' \
+      /etc/ImageMagick-6/policy.xml && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     mkdir -p /opt/gallery /var/lib/gallery
 
