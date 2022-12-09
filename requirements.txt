@@ -4,7 +4,7 @@ alembic==1.7.4
 Beaker==1.11.0
 boto3==1.18.62
 botocore==1.21.65
-certifi==2021.10.8
+certifi==2022.12.7
 cffi==1.15.0
 charset-normalizer==2.0.7
 click==8.0.3
