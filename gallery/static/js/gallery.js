@@ -116,7 +116,7 @@ function populateDirTree() {
     $.get("/api/get_dir_tree", function(data) {
         $('#fileList').tree({
             data: [data],
-            autoOpen: 0
+            autoOpen: 0,
         });
         $('#fileList').bind(
             'tree.select',
@@ -132,7 +132,7 @@ function populateDirTree() {
 // Rebuild the directory tree
 function populateJumpDirTree() {
     $.get("/api/get_dir_tree", function(data) {
-        $('#fileList').tree({
+        const tree = $('#fileList').tree({
             data: [data],
             autoOpen: 0
         });
@@ -144,6 +144,89 @@ function populateJumpDirTree() {
                 window.location = "/view/dir/" + node.id;
             }
         );
+        $('#search').on('input', function (event) {
+            const searchTerm = $('#search').val()
+            const retain = new Set();
+            const searchCache = {};
+            function shouldInclude(node) {
+                if (searchCache[node.id] !== undefined) {
+                    return searchCache[node.id];
+                }
+                const goodName = node.name.toLowerCase().includes(searchTerm.toLowerCase()) && 1;
+                if (goodName) {
+                    const queue = [node];
+                    let child;
+                    while (child = queue.shift()) {
+                        retain.add(child.id);
+                        for(const next of child.children) {
+                            queue.push(next);
+                        }
+                    }
+                }
+                const goodChildren = node.children.reduce(
+                    (accum, child) => accum + shouldInclude(child),
+                    0
+                );
+                if (goodChildren) {
+                    retain.add(node.id);
+                }
+                searchCache[node.id] = goodName + goodChildren;
+                return searchCache[node.id];
+            }
+            shouldInclude(data);
+            function buildTree(node) {
+                if (!retain.has(node.id)) {
+                    return null;
+                }
+                return {
+                    id: node.id,
+                    children: node.children
+                        .sort((a, b) => shouldInclude(b) - shouldInclude(a))
+                        .map(buildTree)
+                        .filter(node => node !== null),
+                    name: node.name,
+                };
+            }
+            const treeNode = tree.tree('getNodeById', data.id);
+            const newTree = buildTree(data);
+            tree.tree('updateNode', treeNode, buildTree(data) ?? {id: data.id, name: data.name, children: []});
+            function highlight(node) {
+                for(const child of node.children) {
+                    highlight(child);
+                }
+                if (node.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                    let parent = node;
+                    while (parent = parent.parent) {
+                        tree.tree('openNode', parent, false);
+                    }
+                }
+                const title = node.element.children[0]?.getElementsByClassName("jqtree-title")?.[0];
+                if (!title) {
+                    return;
+                }
+
+                let textNode = title.childNodes[0];
+                while (true) {
+                    const startIndex = textNode.textContent.toLowerCase().indexOf(searchTerm.toLowerCase());
+                    if (startIndex == -1) {
+                        break;
+                    }
+                    const start = textNode.textContent.substring(0, startIndex);
+                    const middle = document.createElement("span");
+                    middle.textContent = textNode.textContent.substring(startIndex, startIndex + searchTerm.length);
+                    middle.className = "bg-warning";
+                    const end = document.createTextNode(textNode.textContent.substring(startIndex + searchTerm.length));
+                    textNode.textContent = start;
+                    title.appendChild(middle);
+                    textNode = end;
+                    title.appendChild(textNode);
+                }
+            }
+
+            if (searchTerm.length) {
+                highlight(tree.tree('getNodeById', data.id));
+            }
+        });
     });
 }
 

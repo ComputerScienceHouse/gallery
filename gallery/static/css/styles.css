@@ -94,7 +94,7 @@ h2 {
     height: auto;
 }
 
-.col-md-10 a {
+.col-md-10 a:not(.jqtree_common) {
     margin: 20px 0;
 }
 
