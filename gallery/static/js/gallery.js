@@ -107,8 +107,8 @@ function afterUpload(file, response) {
                     caption: $('input[id="desc-' + this_id + '"]').val()
                 }
             });
+            location.reload();
         });
-	location.reload();
     }
 }
 
