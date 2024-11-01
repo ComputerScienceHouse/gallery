@@ -108,6 +108,7 @@ function afterUpload(file, response) {
                 }
             });
         });
+	location.reload();
     }
 }
 
