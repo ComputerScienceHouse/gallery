@@ -11,7 +11,11 @@ RUN apt-get update && \
       's/rights="none" pattern="PDF"/rights="read | write" pattern="PDF"/' \
       /etc/ImageMagick-6/policy.xml && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
-    mkdir -p /opt/gallery /var/lib/gallery
+    mkdir -p /opt/gallery /var/lib/gallery && \
+    wget 'https://github.com/imageio/imageio-binaries/raw/504db2368125044a9da3bcfe031e1d9166fb7647/ffmpeg/ffmpeg-linux64-v3.3.1' && \
+    mv ffmpeg-linux64-v3.3.1 /var/lib/gallery/ffmpeg
+
+ENV FFMPEG_BINARY /var/lib/gallery/ffmpeg
 
 RUN pip install --upgrade pip
 
