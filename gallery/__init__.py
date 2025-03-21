@@ -39,7 +39,7 @@ from gallery.file_store import (S3Storage, LocalStorage, FileStorage)
 from gallery.ldap import LDAPWrapper
 import flask_migrate
 import requests
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config.update({

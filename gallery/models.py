@@ -7,7 +7,7 @@ from gallery import db
 
 strfformat = "%Y-%m-%d"
 
-_base: flask_sqlalchemy.Model = db.Model
+_base: flask_sqlalchemy.model.Model = db.Model
 
 
 class Directory(_base):

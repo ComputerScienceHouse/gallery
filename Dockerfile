@@ -1,10 +1,10 @@
-FROM docker.io/python:3.9.7-buster
+FROM docker.io/python:3.13-bookworm
 MAINTAINER Computer Science House <rtp@csh.rit.edu>
 
 ENV IMAGEIO_USERDIR /var/lib/gallery
 
 RUN apt-get update && \
-    apt-get install -y libldap-dev libsasl2-dev libmagic-dev ghostscript && \
+    apt-get install -y libldap-dev libsasl2-dev libmagic-dev ghostscript libldap-common && \
     apt-get autoremove --yes && \
     apt-get clean autoclean && \
     sed -i \
@@ -13,7 +13,8 @@ RUN apt-get update && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     mkdir -p /opt/gallery /var/lib/gallery && \
     wget 'https://github.com/imageio/imageio-binaries/raw/504db2368125044a9da3bcfe031e1d9166fb7647/ffmpeg/ffmpeg-linux64-v3.3.1' && \
-    mv ffmpeg-linux64-v3.3.1 /var/lib/gallery/ffmpeg
+    mv ffmpeg-linux64-v3.3.1 /var/lib/gallery/ffmpeg && \
+    chmod a+x /var/lib/gallery/ffmpeg
 
 ENV FFMPEG_BINARY /var/lib/gallery/ffmpeg
 
