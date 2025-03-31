@@ -34,7 +34,7 @@ itsdangerous==2.2.0
 Jinja2==3.1.6
 jmespath==0.10.0
 legacy-cgi==2.6.2
-Mako==1.1.5
+Mako==1.2.2
 MarkupSafe==3.0.2
 moviepy==0.2.3.5
 numpy==2.2.0
