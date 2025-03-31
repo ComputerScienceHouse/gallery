@@ -38,7 +38,7 @@ Mako==1.1.5
 MarkupSafe==3.0.2
 moviepy==0.2.3.5
 numpy==2.2.0
-oic==1.6.1
+oic==1.7.0
 opentelemetry-api==1.16.0
 piexif==1.1.2
 Pillow==11.1.0
