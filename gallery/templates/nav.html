@@ -26,6 +26,7 @@
                             </ul>
                         </li>
                     {% endif %}
+
                     {% if auth_dict['is_eboard'] or auth_dict['is_rtp'] %}
                         <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -34,17 +35,27 @@
                             <ul class="dropdown-menu" role="menu">
                                 {% if lockdown %}
                                     <li><a href="#" onclick="galleryLockdown(event);"><span class="glyphicon glyphicon-off"></span> Open Gallery</a></li>
-                                    {% else %}
+                                {% else %}
                                     <li><a href="#" onclick="galleryLockdown(event);"><span class="glyphicon glyphicon-lock"></span> Lockdown</a></li>
                                 {% endif %}
+
                                 {% if session['userinfo'].get('member-lock') %}
                                     <li><a href="#" onclick="memberModeToggle(event);"><span class="glyphicon glyphicon-star"></span> Switch to Admin Mode</a></li>
-                                    {% else %}
+                                {% else %}
                                     <li><a href="#" onclick="memberModeToggle(event);"><span class="glyphicon glyphicon-user"></span> Switch to Member Mode</a></li>
                                 {% endif %}
                             </ul>
                         </li>
+                    {% elif auth_dict['is_alumni'] %}
+                        <li>
+                            {% if session['userinfo'].get('member-lock') %}
+                                <a href="#" onclick="memberModeToggle(event);"><span class="glyphicon glyphicon-star"></span> Switch to Admin Mode</a>
+                            {% else %}
+                                <a href="#" onclick="memberModeToggle(event);"><span class="glyphicon glyphicon-user"></span> Switch to Member Mode</a></li>
+                            {% endif %}
+                        </li>
                     {% endif %}
+
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown navbar-user">
