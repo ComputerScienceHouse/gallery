@@ -1,6 +1,8 @@
 from os import environ as env
+from setuptools.config.setupcfg import read_configuration
 
-__version__ = "2.2.0"
+config = read_configuration('setup.cfg')
+__version__ = config["metadata"]["version"]
 
 BUILD_REFERENCE = env.get("OPENSHIFT_BUILD_REFERENCE")
 COMMIT_HASH = env.get("OPENSHIFT_BUILD_COMMIT")
