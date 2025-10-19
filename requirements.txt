@@ -42,7 +42,7 @@ oic==1.6.1
 opentelemetry-api==1.16.0
 piexif==1.1.2
 Pillow==11.1.0
-protobuf==6.30.1
+protobuf==6.31.1
 psycopg2-binary==2.9.10
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
@@ -55,7 +55,7 @@ pyjwkest==1.4.2
 pyOpenSSL==25.3.0
 python-dateutil==2.8.2
 python-dotenv==1.0.1
-python-ldap==3.4.0
+python-ldap==3.4.5
 python-magic==0.4.15
 requests==2.32.4
 s3transfer==0.10.4
