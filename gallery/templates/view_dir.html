@@ -70,6 +70,9 @@ View Directory
                             <p>Owner: {{ ldap.convert_uuid_to_displayname(child.author) }}</p>
                             <p>Date Created: {{ child.date() }}</p>
                         {% elif child_type == "File" %}
+                            {% if child.hidden %}
+                                <span class="badge">Hidden</span>
+                            {% endif %}
                             <a class="file" href="/view/file/{{ child.id }}">
                                 <img {% if child.hidden %}class="filter-hidden"{% endif %} src="/api/thumbnail/get/{{ child.id }}">
                                 <p>{{ child.get_name() }}</p>
