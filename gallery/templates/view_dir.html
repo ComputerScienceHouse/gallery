@@ -61,6 +61,8 @@ View Directory
                         {% if child_type == "Directory" %}
                             <div class="album-wrapper">
                                 <a href="/view/dir/{{ child.id }}">
+                                    <!-- Dummy div, needed for ensuring proper element sizing (see issue #80) -->
+                                    <div style="margin-top:100%"></div>
                                     <img class="album" src="/api/thumbnail/get/dir/{{ child.id }}">
                                 </a>
                             </div>
