@@ -65,6 +65,10 @@ from gallery.file_modules.pdf import PDFFile
 from gallery.file_modules.txt import TXTFile
 from gallery.file_modules.mp3 import MP3File
 from gallery.file_modules.wav import WAVFile
+from gallery.file_modules.heic import HEICFile
+from gallery.file_modules.nef import NEFFile
+from gallery.file_modules.mov import MOVFile
+from gallery.file_modules.m4a import M4AFile
 
 file_mimetype_relation = {
     "image/jpeg": JPEGFile,
@@ -76,13 +80,18 @@ file_mimetype_relation = {
     "image/x-windows-bmp": BMPFile,
     "image/tiff": TIFFFile,
     "image/x-tiff": TIFFFile,
+    "image/heic": HEICFile,
+    "image/x-nikon-nef": NEFFile,
     "video/mp4": MP4File,
     "video/webm": WebMFile,
     "video/ogg": OggFile,
+    "video/quicktime": MOVFile,
     "application/pdf": PDFFile,
     "text/plain": TXTFile,
     "audio/mpeg": MP3File,
-    "audio/x-wav": WAVFile
+    "audio/x-wav": WAVFile,
+    "audio/mp4": M4AFile,
+    "audio/x-m4a": M4AFile,
 }
 
 
