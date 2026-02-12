@@ -98,6 +98,12 @@ file_mimetype_relation = {
 # classism
 def parse_file_info(file_path: str, dir_path: str) -> Tuple[str, Optional[FileModule]]:
     print("entering parse_file_info")
+    ext = os.path.splitext(file_path)[-1].lower()
+    # .nef is a RAW file
+    if ext == ".nef": # .nef is a special case, magic reads it as .tiff, but it is not processed correctly by the tiff module
+        print("image/x-nikon-nef")
+        print(file_path)
+        return "image/x-nikon-nef", NEFFile(file_path, dir_path)
     mime_type = magic.from_file(file_path, mime=True)
     print(mime_type)
     print(file_path)
