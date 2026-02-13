@@ -71,7 +71,7 @@ wrapt==1.17.2
 xmltodict==0.14.2
 zipp==3.19.1
 # NEF and HEIC support
-pillow 
-pillow-heif 
-rawpy 
-imageio
+pillow==11.1.0
+pillow_heif==1.2.0
+rawpy==0.26.1
+imageio==2.4.0

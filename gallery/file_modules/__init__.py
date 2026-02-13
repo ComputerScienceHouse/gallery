@@ -3,6 +3,7 @@ import os
 from typing import Any, Dict, List, Optional, Tuple
 from wand.image import Image
 from wand.color import Color
+import rawpy
 
 from gallery.util import DEFAULT_THUMBNAIL_NAME
 from gallery.util import hash_file
@@ -98,13 +99,18 @@ file_mimetype_relation = {
 # classism
 def parse_file_info(file_path: str, dir_path: str) -> Tuple[str, Optional[FileModule]]:
     print("entering parse_file_info")
-    ext = os.path.splitext(file_path)[-1].lower()
-    # .nef is a RAW file
-    if ext == ".nef": # .nef is a special case, magic reads it as .tiff, but it is not processed correctly by the tiff module
-        print("image/x-nikon-nef")
-        print(file_path)
-        return "image/x-nikon-nef", NEFFile(file_path, dir_path)
+
     mime_type = magic.from_file(file_path, mime=True)
+    
+    if "tif" in mime_type: # .nef is a special case, magic reads it as .tiff, but it is not processed correctly by the tiff module
+        # check if it is a raw file
+        try:
+            with rawpy.imread(file_path): # this may cause issues for other raw files
+                mime_type = "image/x-nikon-nef"
+        except rawpy.LibRawFileUnsupportedError:
+            pass
+        except rawpy.LibRawIOError:
+            pass
     print(mime_type)
     print(file_path)
 
