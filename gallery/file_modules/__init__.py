@@ -3,6 +3,7 @@ import os
 from typing import Any, Dict, List, Optional, Tuple
 from wand.image import Image
 from wand.color import Color
+import rawpy
 
 from gallery.util import DEFAULT_THUMBNAIL_NAME
 from gallery.util import hash_file
@@ -65,6 +66,10 @@ from gallery.file_modules.pdf import PDFFile
 from gallery.file_modules.txt import TXTFile
 from gallery.file_modules.mp3 import MP3File
 from gallery.file_modules.wav import WAVFile
+from gallery.file_modules.heic import HEICFile
+from gallery.file_modules.nef import NEFFile
+from gallery.file_modules.mov import MOVFile
+from gallery.file_modules.m4a import M4AFile
 
 file_mimetype_relation = {
     "image/jpeg": JPEGFile,
@@ -76,20 +81,36 @@ file_mimetype_relation = {
     "image/x-windows-bmp": BMPFile,
     "image/tiff": TIFFFile,
     "image/x-tiff": TIFFFile,
+    "image/heic": HEICFile,
+    "image/x-nikon-nef": NEFFile,
     "video/mp4": MP4File,
     "video/webm": WebMFile,
     "video/ogg": OggFile,
+    "video/quicktime": MOVFile,
     "application/pdf": PDFFile,
     "text/plain": TXTFile,
     "audio/mpeg": MP3File,
-    "audio/x-wav": WAVFile
+    "audio/x-wav": WAVFile,
+    "audio/mp4": M4AFile,
+    "audio/x-m4a": M4AFile,
 }
 
 
 # classism
 def parse_file_info(file_path: str, dir_path: str) -> Tuple[str, Optional[FileModule]]:
     print("entering parse_file_info")
+
     mime_type = magic.from_file(file_path, mime=True)
+    
+    if "tif" in mime_type: # .nef is a special case, magic reads it as .tiff, but it is not processed correctly by the tiff module
+        # check if it is a raw file
+        try:
+            with rawpy.imread(file_path): # this may cause issues for other raw files
+                mime_type = "image/x-nikon-nef"
+        except rawpy.LibRawFileUnsupportedError:
+            pass
+        except rawpy.LibRawIOError:
+            pass
     print(mime_type)
     print(file_path)
 
