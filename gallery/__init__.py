@@ -866,7 +866,11 @@ def display_thumbnail(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
 
     file_model = File.query.filter(File.id == file_id).first()
 
-    link = storage_interface.get_link("thumbnails/{}".format(file_model.s3_id))
+    thumbnail_uuid = file_model.thumbnail_uuid
+    if len(thumbnail_uuid.split('.')) > 1:
+        thumbnail_uuid = thumbnail_uuid.split('.')[0]
+
+    link = storage_interface.get_link("thumbnails/{}".format(thumbnail_uuid))
     if "LOCAL_STORAGE_PATH" in app.config:
         link = "http://" + app.config["SERVER_NAME"] + link
     req = requests.get(link)
