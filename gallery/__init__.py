@@ -57,7 +57,7 @@ app_config: config.Config = cast(config.Config, app.config)
 if os.path.exists(os.path.join(os.getcwd(), "config.py")):
     app_config.from_pyfile(os.path.join(os.getcwd(), "config.py"))
 else:
-    app_config.from_pyfile(os.path.join(os.getcwd(), "localconfig.env.py"))
+    app_config.from_pyfile(os.path.join(os.getcwd(), "config.env.py"))
 app.config.update(app_config)
 
 db: SQLAlchemy = SQLAlchemy(app)
