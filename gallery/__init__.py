@@ -40,6 +40,7 @@ from gallery.ldap import LDAPWrapper
 import flask_migrate
 import requests
 from werkzeug.utils import secure_filename
+import shutil
 
 app = Flask(__name__)
 app.config.update({
@@ -56,7 +57,7 @@ app_config: config.Config = cast(config.Config, app.config)
 if os.path.exists(os.path.join(os.getcwd(), "config.py")):
     app_config.from_pyfile(os.path.join(os.getcwd(), "config.py"))
 else:
-    app_config.from_pyfile(os.path.join(os.getcwd(), "config.env.py"))
+    app_config.from_pyfile(os.path.join(os.getcwd(), "localconfig.env.py"))
 app.config.update(app_config)
 
 db: SQLAlchemy = SQLAlchemy(app)
@@ -1056,7 +1057,7 @@ def render_dir(dir_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     dir_model = Directory.query.filter(Directory.id == dir_id).first()
     if dir_model is None:
         abort(404)
-    description = dir_model.description
+    description = dir_model.description or ""
     display_description = len(description) > 0
 
     display_parent = True
@@ -1104,7 +1105,7 @@ def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
     if gallery_lockdown and (not auth_dict['is_eboard'] and not auth_dict['is_rtp']):
         abort(405)
 
-    description = file_model.caption
+    description = file_model.caption or ""
     display_description = len(description) > 0
     display_parent = True
     if file_model is None or file_model.parent is None:
@@ -1137,6 +1138,106 @@ def render_file(file_id: int, auth_dict: Optional[Dict[str, Any]] = None):
                            tags=tags,
                            auth_dict=auth_dict,
                            lockdown=gallery_lockdown)
+
+
+@app.route('/upload/chunk', methods=['POST'])
+@auth.oidc_auth('default')
+@gallery_auth
+def upload_chunk(auth_dict: Optional[Dict[str, Any]] = None):
+    chunk = request.files.get('gallery-upload')
+    if chunk is None:
+        return jsonify({'error': 'no chunk'}), 400
+    
+    dz_uuid      = request.form.get('dzuuid')
+    chunk_index  = int(request.form.get('dzchunkindex', 0))
+    chunk_size   = int(request.form.get('dzchunksize', 0))
+    filename     = secure_filename(request.form.get('dzfilename', ''))
+
+    if not dz_uuid or not filename:
+        return jsonify({'error': 'missing chunk metadata'}), 400
+
+    chunk_dir = os.path.join(tempfile.gettempdir(), 'chonks', dz_uuid)
+    os.makedirs(chunk_dir, exist_ok=True)
+
+    out_path = os.path.join(chunk_dir, 'assembled')
+    with open(out_path, 'ab') as out:
+        out.write(chunk.read())
+
+    return jsonify({'status': 'ok', 'chunk': chunk_index}), 200
+
+
+@app.route('/upload/chunk/finalize', methods=['POST'])
+@auth.oidc_auth('default')
+@gallery_auth
+def finalize_upload(auth_dict: Optional[Dict[str, Any]] = None):
+    assert auth_dict is not None
+    owner     = auth_dict['uuid']
+    parent    = request.form.get('parent_id')
+    dz_uuid   = request.form.get('dzuuid')
+    filename  = secure_filename(request.form.get('filename', ''))
+    total_chunks = int(request.form.get('dztotalchunkcount', 0))
+
+    if not all([parent, dz_uuid, filename, total_chunks]):
+        return jsonify({'error': 'missing parameters'}), 400
+
+    chunk_dir = os.path.join(tempfile.gettempdir(), 'chonks', dz_uuid)
+
+    upload_status: Dict[str, Any] = {}
+    upload_status['redirect'] = '/view/dir/' + str(parent)
+    errors: List[str] = []
+    success: List[Dict[str, Any]] = []
+
+    file_model = File.query.filter(File.parent == parent) \
+                           .filter(File.name == filename).first()
+    if file_model is not None:
+        errors.append(filename)
+        upload_status['error'] = errors
+        upload_status['success'] = success
+        return jsonify(upload_status), 200
+
+    dir_path = tempfile.mkdtemp()
+    filepath = os.path.join(dir_path, filename)
+    try:
+        assembled_path = os.path.join(chunk_dir, 'assembled')
+        if not os.path.exists(assembled_path):
+            return jsonify({'error': 'assembled file missing'}), 400
+        shutil.move(assembled_path, filepath)
+        try:
+            mime, file_model = add_file(filename, dir_path, parent, '', owner)
+        except OSError as e:
+            if e.errno == 28:
+                return jsonify({'error': 'storage full'}), 507
+            raise
+        if file_model is None:
+            errors.append(filename)
+        else:
+            with open(filepath, 'rb') as f_hnd:
+                storage_interface.put(
+                    'files/{}'.format(file_model.s3_id),
+                    f_hnd,
+                    filename,
+                    mime
+                )
+            os.remove(filepath)
+
+            thumb_path = os.path.join(dir_path, file_model.thumbnail_uuid)
+            with open(thumb_path, 'rb') as f_hnd:
+                storage_interface.put(
+                    'thumbnails/' + file_model.s3_id,
+                    f_hnd,
+                    'thumb_' + filename + '.' + thumb_path.split('.')[-1],
+                    'image/gif' if thumb_path.endswith('.gif') else 'image/jpeg'
+                )
+            os.remove(thumb_path)
+            success.append({'name': file_model.name, 'id': file_model.id})
+    finally:
+        shutil.rmtree(chunk_dir, ignore_errors=True)
+        shutil.rmtree(dir_path, ignore_errors=True)
+
+    upload_status['error'] = errors
+    upload_status['success'] = success
+    refresh_default_thumbnails()
+    return jsonify(upload_status), 200
 
 
 @app.route("/view/random_file")
