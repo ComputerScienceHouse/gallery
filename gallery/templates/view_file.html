@@ -59,7 +59,7 @@ View File
 
             {% elif file.mimetype.split('/')[0] == "video" %}
             <video id="file-content" controls>
-                <source src="/api/file/get/{{file.id}}">
+                <source src="/api/file/get/{{file.id}}" type="{{ file.mimetype }}">
             </video>
 
             {% elif file.mimetype == "application/pdf" or file.mimetype == "text/plain" %}

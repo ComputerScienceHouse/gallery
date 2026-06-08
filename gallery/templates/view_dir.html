@@ -245,23 +245,23 @@ View Directory
 Dropzone.autoDiscover = false;
 
     $(function() {
-
+        
         var myDropzone = new Dropzone('div#galleryUpload', {
-            url: '/upload',
+            url: '/upload/chunk',
             paramName: "gallery-upload",
             uploadMultiple: false,
             autoProcessQueue: false,
             parallelUploads: 3,
-            success: afterUpload,
-            maxFilesize: 1024,
+            maxFilesize: 5 * 1024,
+            chunking: true,
+            forceChunking: true,
+            chunkSize: 10 * 1024 * 1024,
+            retryChunks: true,
+            retryChunksLimit: 3,
+            timeout: 0,
             init: function() {
                 this.on('addedfile', function(file) {
                     console.log(file.name + ": " + file.size);
-                    if (file.size > (1024 * 1024 * 1024)) {
-                        var warning = "<div class='alert alert-dismissible alert-danger' id='upload-alert'><button type='button' class='close' data-dismiss='alert'>&times;</button><span class='glyphicon glyphicon-exclamation-sign'></span> File \"<strong>" + file.name + "</strong>\" is too large, max filesize is 1GB.</div>";
-                        $('#upload').after(warning);
-                        this.removeFile(file);
-                    }
                 });
 
                 this.on('accept', function(file, done) {
@@ -269,10 +269,36 @@ Dropzone.autoDiscover = false;
                 });
 
                 this.on('sending', function(file, xhr, formData) {
-                    formData.append('parent_id', "{{directory.id}}");
+                    formData.append('parent_id', '{{ directory.id }}');
+                    formData.append('dzfilename', file.name);
+                });
+                
+                this.on('success', function(file, response) {
+                    if (file.upload.chunked && file.upload.chunkIndex < file.upload.totalChunkCount - 1) {
+                        return;
+                    }
+                    var formData = new FormData();
+                    formData.append('parent_id', '{{ directory.id }}');
+                    formData.append('dzuuid', file.upload.uuid);
+                    formData.append('filename', file.name);
+                    formData.append('dztotalchunkcount', file.upload.totalChunkCount);
+                    fetch('/upload/chunk/finalize', {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        console.log('finalize response:', JSON.stringify(data));
+                        afterUpload(file, data);
+                    })
+                    .catch(function(err) {
+                        console.error('Finalize error:', err);
+                    });
                 });
 
-                this.on('complete', function(file) {
+                this.on('error', function(file, message) {
+                    var warning = "<div class='alert alert-dismissible alert-danger' id='upload-alert'><button type='button' class='close' data-dismiss='alert'>&times;</button><span class='glyphicon glyphicon-exclamation-sign'></span> Upload failed for <strong>" + file.name + "</strong>: " + (typeof message === 'object' ? (message.error || JSON.stringify(message)) : message) + "</div>";
+                    $('#upload').after(warning);
                     this.removeFile(file);
                 });
             }
