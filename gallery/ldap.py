@@ -34,7 +34,12 @@ class LDAPWrapper(object):
             return uuid
         if self._ldap is None:
             return "unknown"
-        return self._ldap.get_member(uuid).displayName
+        
+        try:
+            return self._ldap.get_member(uuid).displayName
+        except KeyError:
+            return "Unknown"
+
 
     def is_eboard(self, uid: str) -> bool:
         if self._ldap is None:
